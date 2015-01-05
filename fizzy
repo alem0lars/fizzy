@@ -24,13 +24,13 @@ module Fizzy
 
   module Utils # {{{
 
-    def exec_cmd(cmd, as_sudo: false)
-      if as_sudo
+    def exec_cmd(cmd, as_su: false)
+      if as_su
         say "[sudo] #{cmd}", :magenta
       else
         say cmd, :magenta
       end
-      system(as_sudo ? "sudo #{cmd}" : cmd)
+      system(as_su ? "sudo #{cmd}" : cmd)
     end
 
     def existing_dir(path, writable: true)
@@ -185,35 +185,14 @@ module Fizzy
           error("elem '#{elem['name']}' doesn't contain 'dst'")
         end
       end
+      # -> prepare install
+      meta['elems'] = normalize_elems(meta, paths)
 
       # perform install
       say 'installing the configuration instance into the system', :blue
       FileUtils.cd(paths.tmp) do # stay in a safe place
-        elems = []
-        # -> prepare
-        Find.find(paths.inst).each do |subfile_path|
-          subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
-              Pathname.new(paths.inst)).to_s
-          meta['elems'].each do |elem|
-            if md = Regexp.new(elem['src']).match(subfile_rel_path)
-              dst = elem['dst'].gsub(/<([0-9]+)>/) do
-                idx = Integer($1)
-                unless (1..md.length) === idx
-                  error("invalid 'dst' for elem '#{elem['name']}': nothing " +
-                        "captured at index '#{idx}'")
-                else
-                  md[idx]
-                end
-              end
-              elems << elem.merge({'src' => subfile_path, 'dst' => dst})
-            end
-          end
-        end
-        # -> apply
-        elems.each do |elem|
+        meta['elems'].each do |elem|
           say "installing elem: '#{elem['name']}'", :cyan
-          elem['src_path'] = File.join(paths.inst, elem['src'])
-          elem['dst'] = File.expand_path(elem['dst'])
           appliers.each { |applier| applier.call(elem) }
         end
       end
@@ -224,6 +203,34 @@ module Fizzy
 
     protected
 
+    def normalize_elems(meta, paths)
+      elems = []
+      FileUtils.cd(paths.tmp) do # stay in a safe place
+        Find.find(paths.inst).each do |subfile_path|
+          subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
+              Pathname.new(paths.inst)).to_s
+          meta['elems'].each do |elem|
+            if md = Regexp.new(elem['src']).match(subfile_rel_path)
+              dst_path = elem['dst'].gsub(/<([0-9]+)>/) do
+                idx = Integer($1)
+                unless (1..md.length) === idx
+                  error("invalid 'dst' for elem '#{elem['name']}': nothing " +
+                        "captured at index '#{idx}'")
+                else
+                  md[idx]
+                end
+              end
+              elems << elem.merge({
+                'src_path' => subfile_path,
+                'dst_path' => dst_path
+              })
+            end
+          end
+        end
+      end
+      elems
+    end
+
     ##
     # return a list of functions capable to apply modifications on the system
     # based on the current configuration instance
@@ -232,31 +239,32 @@ module Fizzy
     #
     def appliers
       [ lambda { |elem| # mkdir parent directories
-          parent_dir = File.dirname(elem['dst'])
+          parent_dir = File.dirname(elem['dst_path'])
+          if elem.has_key?('perms')
+            l_ex_dir_path = f_noex_dir_path = parent_dir
+            while !File.directory?(l_ex_dir_path)
+              f_noex_dir_path = l_ex_dir_path
+              l_ex_dir_path   = File.dirname(l_ex_dir_path)
+            end
+          else
+            l_ex_dir_path = f_noex_dir_path = nil
+          end
           if !File.directory?(parent_dir)
             exec_cmd("mkdir -p \"#{parent_dir}\"",
-                     :as_sudo => !existing_dir(parent_dir))
+                     :as_su => !existing_dir(parent_dir))
+            if elem.has_key?('perms') && (l_ex_dir_path != f_noex_dir_path)
+              exec_cmd("chmod -R \"#{elem['perms']}\" \"#{f_noex_dir_path}\"",
+                       :as_su => !File.owned?(f_noex_dir_path))
+            end
           end
         },
         lambda { |elem| # create link
-          cmd = "ln -s \"#{elem['src_path']}\" \"#{elem['dst']}\""
-          if File.file?(elem['dst'])
-            exec_cmd(cmd, :as_sudo => !File.writable?(elem['dst']))
+          cmd = "ln -s \"#{elem['src_path']}\" \"#{elem['dst_path']}\""
+          if File.file?(elem['dst_path'])
+            say "skipping '#{elem['dst_path']}': already exists", :yellow
           else
-            exec_cmd(cmd, :as_sudo => !existing_dir(File.dirname(elem['dst'])))
-          end
-        },
-        lambda { |elem| # change permissions if given
-          if elem.has_key?('perms')
-            prefix = dir_path = File.dirname(elem['dst'])
-            while !File.directory?(prefix)
-              dir_path = prefix
-              prefix   = File.dirname(prefix)
-            end
-            if prefix != dir_path
-              exec_cmd("chmod -R \"#{elem['perms']}\" \"#{dir_path}\"",
-                       :as_sudo => !File.owned?(prefix))
-            end
+            exec_cmd(cmd,
+                     :as_su => !existing_dir(File.dirname(elem['dst_path'])))
           end
         }
       ]

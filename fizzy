@@ -22,6 +22,18 @@ module Fizzy
 
   module Utils # {{{
 
+    def exec_cmd(cmd, as_sudo: false)
+      system(as_sudo ? "sudo #{cmd}" : cmd)
+    end
+
+    def existing_dir(path, writable: true)
+      dir_path = path
+      while !File.directory?(dir_path)
+        dir_path = File.dirname(dir_path)
+      end
+      (writable && !File.writable?(dir_path)) ? nil : dir_path
+    end
+
     def error(msg)
       say msg, :red
       exit(-1)
@@ -96,10 +108,10 @@ module Fizzy
         say 'syncing from origin', :cyan
         status = nil
         FileUtils.cd(paths.cfg) do
-          say '-> pull', :cyan
+          say 'performing pull', :magenta
           status = system('git pull origin master')
           if status
-            say '-> push', :cyan
+            say 'performing push', :magenta
             status = system('git push origin master')
           end
         end
@@ -151,16 +163,30 @@ module Fizzy
       # -> validate meta informations
       meta = YAML.load(ERB.new(File.read(paths.meta)).result)
       error("invalid meta: 'elems' key not found") unless meta.has_key?('elems')
+      unless meta['elems'].respond_to?(:each_with_index)
+        error("invalid meta: 'elems' is not iterable")
+      end
       meta['elems'].each_with_index do |elem, idx|
-        error("elem '#{idx}' doesn't contain 'src'") unless elem.has_key('src')
-        elem_src_path = File.join(paths.inst, elem['src'])
-        error("not a file: '#{elem_src_path}'") unless File.file?(elem_src_path)
-        error("elem '#{idx}' doesn't contain 'dst'") unless elem.has_key('dst')
+        error("elem '#{idx}' isn't a hash") unless elem.is_a?(Hash)
+        unless elem.has_key?('src')
+          error("elem '#{elem['name'] || "idx=#{idx}"}' doesn't contain 'src'")
+        end
+        unless elem.has_key?('name')
+          elem['name'] = elem['src']
+        end
+        unless File.file?(elem_src_path = File.join(paths.inst, elem['src']))
+          error("elem '#{elem['name']}' source not a file: '#{elem_src_path}'")
+        end
+        unless elem.has_key?('dst')
+          error("elem '#{elem['name']}' doesn't contain 'dst'")
+        end
       end
 
       # perform install
+      say 'installing the configuration instance into the system', :cyan
       FileUtils.cd(paths.tmp) do # stay in a safe place
         meta['elems'].each do |elem|
+          say "installing elem: '#{elem['name']}'", :magenta
           elem['src_path'] = File.join(paths.inst, elem['src'])
           appliers.each { |applier| applier.call(elem) }
         end
@@ -180,19 +206,36 @@ module Fizzy
     #
     def appliers
       [ lambda { |elem| # mkdir parent directories
-          FileUtils.mkdir_p(File.dirname(elem['dst']))
+          parent_dir = File.dirname(elem['dst'])
+          if !File.directory?(parent_dir)
+            exec_cmd("mkdir -p \"#{parent_dir}\"",
+                     :as_sudo => !existing_dir(parent_dir))
+          end
         },
         lambda { |elem| # create link
-          FileUtils.ln_s(elem['src_path'], elem['dst'])
+          cmd = "cp -R \"#{elem['src_path']}\" \"#{elem['dst']}\""
+          if File.file?(elem['dst'])
+            exec_cmd(cmd, :as_sudo => !File.writable?(elem['dst']))
+          else
+            exec_cmd(cmd, :as_sudo => !existing_dir(File.dirname(elem['dst'])))
+          end
         },
-        lambda { |elem| # change owner/group if given
-          if elem.has_key?('owner') || elem.has_key?('group')
-            FileUtils.chown_R(elem['owner'], elem['group'], elem['dst'])
+        lambda { |elem| # change owner if given
+          if elem.has_key?('owner')
+            exec_cmd("chown -R \"#{elem['owner']}\" \"#{elem['dst']}\"",
+                     :as_sudo => !File.owned?(elem['dst']))
+          end
+        },
+        lambda { |elem| # change group if given
+          if elem.has_key?('group')
+            exec_cmd("chgrp -R \"#{elem['group']}\" \"#{elem['dst']}\"",
+                     :as_sudo => !File.owned?(elem['dst']))
           end
         },
         lambda { |elem| # change permissions if given
           if elem.has_key?('perms')
-            FileUtils.chmod_R(elem['perms'].to_i(8), elem['dst'])
+            exec_cmd("chmod -R \"#{elem['perms']}\" \"#{elem['dst']}\"",
+                     :as_sudo => !File.owned?(elem['dst']))
           end
         }
       ]

@@ -1,0 +1,235 @@
+#!/usr/bin/env ruby
+
+
+# requires {{{
+
+require 'fileutils'
+require 'ostruct'
+require 'yaml'
+require 'net/http'
+
+begin
+  require 'thor'
+rescue
+  puts '[error] thor is not installed'
+  exit(-1)
+end
+
+# }}}
+
+
+module Fizzy
+
+  module Utils # {{{
+
+    def error(msg)
+      say msg, :red
+      exit(-1)
+    end
+
+    def prepare_storage(root_path, valid_cfg: true, valid_inst: true)
+      # paths based on internal conventions
+      parent_path = File.dirname(root_path)
+      tmp_path  = File.join(root_path, 'tmp')
+      cfg_path  = File.join(root_path, 'cfg')
+      inst_path = File.join(root_path, 'inst')
+      meta_path = File.join(cfg_path,  'meta.yml')
+
+      # validate storage correctness
+      if ((File.directory?(root_path)  && !File.writable?(root_path)) ||
+          File.file?(root_path)                                       ||
+          (!File.directory?(root_path) && !File.writable?(parent_path)))
+        error("no write perms in fizzy storage: #{root_path}")
+      end
+      if ((File.directory?(tmp_path) && !File.writable?(tmp_path)) ||
+          File.file?(tmp_path))
+        error('tmp dir already exists but is not writable')
+      end
+      if valid_cfg
+        if !File.directory?(cfg_path) || !File.writable?(cfg_path)
+          error('config dir already exists but is not writable')
+        end
+        if !File.file?(meta_path)
+          error("config is invalid: '#{meta_path}' isn't a valid meta file")
+        end
+      end
+      if (valid_inst &&
+          (!File.directory?(inst_path) || !File.writable?(inst_path)))
+        error('instance dir already exists but is not writable')
+      end
+
+      # create non-existing internal directories
+      FileUtils.mkdir_p(root_path) unless File.directory?(root_path)
+      FileUtils.mkdir_p(tmp_path)  unless File.directory?(tmp_path)
+
+      # return the known storage paths
+      OpenStruct.new(
+        :root => root_path,
+        :tmp  => tmp_path,
+        :cfg  => cfg_path,
+        :inst => inst_path,
+        :meta => meta_path)
+    end
+
+  end # }}}
+
+
+  # subcommands {{{
+
+  class Cfg < Thor # {{{
+
+    include Thor::Actions
+    include Fizzy::Utils
+
+    option :fizzy_dir, :default => '/var/tmp/fizzy',
+           :desc => 'the root path for the directory internally used by fizzy'
+    option :url, :default => nil,
+           :desc => 'the url to the repository holding config (suppored: git)'
+    desc 'sync', 'synchronize the remote repository with the local one'
+    def sync
+      # before sync
+      paths = prepare_storage(options.fizzy_dir,
+                              :valid_cfg => false, :valid_inst => false)
+
+      # perform sync
+      sync_result = if File.directory?(paths.cfg)
+        say 'syncing from origin', :cyan
+        status = nil
+        FileUtils.cd(paths.cfg) do
+          say '-> pull', :cyan
+          status = system('git pull origin master')
+          if status
+            say '-> push', :cyan
+            status = system('git push origin master')
+          end
+        end
+        status
+      else
+        say "syncing from remote repo: #{options.url}", :cyan
+        error('invalid url option') if options.url.nil?
+        system("git clone #{options.url} #{paths.cfg}")
+      end
+
+      # after sync
+      if sync_result
+        say "synced to: #{paths.cfg}", :green
+      else
+        error('unable to sync')
+      end
+    end
+
+    option :fizzy_dir, :default => '/var/tmp/fizzy',
+           :desc => 'the root path for the directory internally used by fizzy'
+    desc 'instantiate', 'create a configuration instance in the current machine'
+    def instantiate
+      # before instantiation
+      paths = prepare_storage(options.fizzy_dir, :valid_inst => false)
+
+      # create a configuration instance
+      say "creating a configuration instance from: #{paths.cfg}", :cyan
+      directory(paths.cfg, paths.inst, :exclude_pattern => /\.git|README/)
+
+      # after instantiation
+      say "created the configuration instance in: #{paths.inst}", :green
+    end
+
+    def self.source_root; '/' end
+
+  end # }}}
+
+  class Sys < Thor # {{{
+
+    include Fizzy::Utils
+
+    option :fizzy_dir, :default => '/var/tmp/fizzy',
+           :desc => 'the root path for the directory internally used by fizzy'
+    desc 'install',
+         'install the current configuration instance in the system'
+    def install
+      # before install
+      paths = prepare_storage(options.fizzy_dir)
+      # -> validate meta informations
+      meta = YAML.load(ERB.new(File.read(paths.meta)).result)
+      error("invalid meta: 'elems' key not found") unless meta.has_key?('elems')
+      meta['elems'].each_with_index do |elem, idx|
+        error("elem '#{idx}' doesn't contain 'src'") unless elem.has_key('src')
+        elem_src_path = File.join(paths.inst, elem['src'])
+        error("not a file: '#{elem_src_path}'") unless File.file?(elem_src_path)
+        error("elem '#{idx}' doesn't contain 'dst'") unless elem.has_key('dst')
+      end
+
+      # perform install
+      FileUtils.cd(paths.tmp) do # stay in a safe place
+        meta['elems'].each do |elem|
+          elem['src_path'] = File.join(paths.inst, elem['src'])
+          appliers.each { |applier| applier.call(elem) }
+        end
+      end
+
+      # after instantiation
+      say 'the configuration instance has been intalled into the system', :green
+    end
+
+    protected
+
+    ##
+    # return a list of functions capable to apply modifications on the system
+    # based on the current configuration instance
+    #
+    # in particular, an applier work for each element installed
+    #
+    def appliers
+      [ lambda { |elem| # mkdir parent directories
+          FileUtils.mkdir_p(File.dirname(elem['dst']))
+        },
+        lambda { |elem| # create link
+          FileUtils.ln_s(elem['src_path'], elem['dst'])
+        },
+        lambda { |elem| # change owner/group if given
+          if elem.has_key?('owner') || elem.has_key?('group')
+            FileUtils.chown_R(elem['owner'], elem['group'], elem['dst'])
+          end
+        },
+        lambda { |elem| # change permissions if given
+          if elem.has_key?('perms')
+            FileUtils.chmod_R(elem['perms'].to_i(8), elem['dst'])
+          end
+        }
+      ]
+    end
+
+  end # }}}
+
+  # }}}
+
+
+  class Main < Thor # {{{
+
+    include Fizzy::Utils
+
+    desc 'cfg SUBCOMMAND ...ARGS',
+         'manage the fizzy configuration'
+    subcommand 'cfg', Cfg
+
+    desc 'sys SUBCOMMAND ...ARGS',
+         'manage the system integration with the available fizzy configuration'
+    subcommand 'sys', Sys
+
+    desc 'usage', 'show how to use fizzy'
+    def usage
+      url = 'https://raw.githubusercontent.com/alem0lars/fizzy/master/README.md'
+      res = Net::HTTP.get_response(URI(url))
+      if res.is_a?(Net::HTTPSuccess)
+        puts "\n#{res.body}\n"
+      else
+        puts "network error: cannot retrieve '#{url}'"
+      end
+    end
+
+  end # }}}
+
+end
+
+
+# entry point
+Fizzy::Main.start(ARGV)

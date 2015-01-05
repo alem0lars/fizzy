@@ -4,9 +4,11 @@
 # requires {{{
 
 require 'fileutils'
+require 'find'
 require 'ostruct'
-require 'yaml'
 require 'net/http'
+require 'pathname'
+require 'yaml'
 
 begin
   require 'thor'
@@ -177,11 +179,7 @@ module Fizzy
           error("elem '#{elem['name'] || "idx=#{idx}"}' doesn't contain 'src'")
         end
         unless elem.has_key?('name')
-          elem['name'] = elem['src']
-        end
-        elem_src_path = File.join(paths.inst, elem['src'])
-        unless File.file?(elem_src_path)
-          error("elem '#{elem['name']}' source not a file: '#{elem_src_path}'")
+          error("elem 'idx=#{idx}' doesn't contain 'name'")
         end
         unless elem.has_key?('dst')
           error("elem '#{elem['name']}' doesn't contain 'dst'")
@@ -191,7 +189,28 @@ module Fizzy
       # perform install
       say 'installing the configuration instance into the system', :blue
       FileUtils.cd(paths.tmp) do # stay in a safe place
-        meta['elems'].each do |elem|
+        elems = []
+        # -> prepare
+        Find.find(paths.inst).each do |subfile_path|
+          subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
+              Pathname.new(paths.inst)).to_s
+          meta['elems'].each do |elem|
+            if md = Regexp.new(elem['src']).match(subfile_rel_path)
+              dst = elem['dst'].gsub(/<([0-9]+)>/) do
+                idx = Integer($1)
+                unless (1..md.length) === idx
+                  error("invalid 'dst' for elem '#{elem['name']}': nothing " +
+                        "captured at index '#{idx}'")
+                else
+                  md[idx]
+                end
+              end
+              elems << elem.merge({'src' => subfile_path, 'dst' => dst})
+            end
+          end
+        end
+        # -> apply
+        elems.each do |elem|
           say "installing elem: '#{elem['name']}'", :cyan
           elem['src_path'] = File.join(paths.inst, elem['src'])
           elem['dst'] = File.expand_path(elem['dst'])

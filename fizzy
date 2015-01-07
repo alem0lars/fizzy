@@ -46,7 +46,7 @@ module Fizzy
       exit(-1)
     end
 
-    def prepare_storage(root_path, valid_cfg: true, valid_inst: true)
+    def prepare_storage(root_path, valid_cfg: true, cur_inst_name: nil)
       # paths based on internal conventions
       parent_path = File.expand_path(File.dirname(root_path))
       tmp_path    = File.join(root_path, 'tmp')
@@ -72,22 +72,24 @@ module Fizzy
           error("config is invalid: '#{meta_path}' isn't a valid meta file")
         end
       end
-      if (valid_inst &&
-          (!File.directory?(inst_path) || !File.writable?(inst_path)))
+      if ((File.directory?(inst_path) && !File.writable?(inst_path)) ||
+          File.file?(inst_path))
         error('instance dir already exists but is not writable')
       end
 
       # create non-existing internal directories
       FileUtils.mkdir_p(root_path) unless File.directory?(root_path)
       FileUtils.mkdir_p(tmp_path)  unless File.directory?(tmp_path)
+      FileUtils.mkdir_p(inst_path) unless File.directory?(inst_path)
 
       # return the known storage paths
       OpenStruct.new(
-        :root => root_path,
-        :tmp  => tmp_path,
-        :cfg  => cfg_path,
-        :inst => inst_path,
-        :meta => meta_path)
+        :root     => root_path,
+        :tmp      => tmp_path,
+        :cfg      => cfg_path,
+        :inst     => inst_path,
+        :meta     => meta_path,
+        :cur_inst => cur_inst_name ? File.join(inst_path, cur_inst_name) : nil)
     end
 
   end # }}}
@@ -107,8 +109,7 @@ module Fizzy
     desc 'sync', 'synchronize the remote repository with the local one'
     def sync
       # before sync
-      paths = prepare_storage(options.fizzy_dir,
-                              :valid_cfg => false, :valid_inst => false)
+      paths = prepare_storage(options.fizzy_dir, :valid_cfg => false)
 
       # perform sync
       sync_result = if File.directory?(paths.cfg)
@@ -137,19 +138,24 @@ module Fizzy
       end
     end
 
+    option :inst_name, :required => true,
+           :desc => 'the name for the new configuration instance'
     option :fizzy_dir, :default => '/var/tmp/fizzy',
            :desc => 'the root path for the directory internally used by fizzy'
     desc 'instantiate', 'create a configuration instance in the current machine'
     def instantiate
       # before instantiation
-      paths = prepare_storage(options.fizzy_dir, :valid_inst => false)
+      paths = prepare_storage(options.fizzy_dir,
+                              :valid_inst => false,
+                              :cur_inst_name => options.inst_name)
 
       # create a configuration instance
-      say "creating a configuration instance from: #{paths.cfg}", :blue
-      directory(paths.cfg, paths.inst, :exclude_pattern => /\.git|README/)
+      say "creating a configuration instance named '#{options.inst_name}' " +
+          "from: #{paths.cfg}", :blue
+      directory(paths.cfg, paths.cur_inst, :exclude_pattern => /\.git|README/)
 
       # after instantiation
-      say "created the configuration instance in: #{paths.inst}", :green
+      say "created the configuration instance in: #{paths.cur_inst}", :green
     end
 
     def self.source_root; '/' end
@@ -160,13 +166,16 @@ module Fizzy
 
     include Fizzy::Utils
 
+    option :inst_name, :required => true,
+           :desc => 'the name for the new configuration instance'
     option :fizzy_dir, :default => '/var/tmp/fizzy',
            :desc => 'the root path for the directory internally used by fizzy'
     desc 'install',
          'install the current configuration instance in the system'
     def install
       # before install
-      paths = prepare_storage(options.fizzy_dir)
+      paths = prepare_storage(options.fizzy_dir,
+                              :cur_inst_name => options.inst_name)
       # -> validate meta informations
       meta = YAML.load(ERB.new(File.read(paths.meta)).result)
       error("invalid meta: 'elems' key not found") unless meta.has_key?('elems')
@@ -189,7 +198,8 @@ module Fizzy
       meta['elems'] = normalize_elems(meta, paths)
 
       # perform install
-      say 'installing the configuration instance into the system', :blue
+      say "installing the configuration instance '#{options.inst_name}' " +
+          "into the system", :blue
       FileUtils.cd(paths.tmp) do # stay in a safe place
         meta['elems'].each do |elem|
           say "installing elem: '#{elem['name']}'", :cyan
@@ -206,9 +216,9 @@ module Fizzy
     def normalize_elems(meta, paths)
       elems = []
       FileUtils.cd(paths.tmp) do # stay in a safe place
-        Find.find(paths.inst).each do |subfile_path|
+        Find.find(paths.cur_inst).each do |subfile_path|
           subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
-              Pathname.new(paths.inst)).to_s
+              Pathname.new(paths.cur_inst)).to_s
           meta['elems'].each do |elem|
             if md = Regexp.new(elem['src']).match(subfile_rel_path)
               dst_path = elem['dst'].gsub(/<([0-9]+)>/) do

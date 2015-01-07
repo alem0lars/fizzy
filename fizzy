@@ -157,8 +157,9 @@ module Fizzy
       paths = prepare_storage(options.fizzy_dir,
                               :valid_inst => false,
                               :cur_inst_name => options.inst_name)
-      paths.def_vars_file = File.join(paths.vars, options.def_vars_name)
-      paths.vars_file     = File.join(paths.vars, options.vars_name)
+      paths.def_vars_file = File.join(paths.vars,
+                                      "#{options.def_vars_name}.yml")
+      paths.vars_file     = File.join(paths.vars, "#{options.vars_name}.yml")
 
       # create a configuration instance
       @vars = build_vars(paths)

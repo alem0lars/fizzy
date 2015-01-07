@@ -204,6 +204,10 @@ module Fizzy
         meta['elems'].each do |elem|
           say "installing elem: '#{elem['name']}'", :cyan
           appliers.each { |applier| applier.call(elem) }
+          if elem['notes']
+            say "notes for '#{elem['name']}:", :yellow
+            say elem['notes']
+          end
         end
       end
 

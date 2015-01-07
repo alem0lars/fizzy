@@ -51,6 +51,7 @@ module Fizzy
       parent_path = File.expand_path(File.dirname(root_path))
       tmp_path    = File.join(root_path, 'tmp')
       cfg_path    = File.join(root_path, 'cfg')
+      vars_path   = File.join(cfg_path,  'vars')
       inst_path   = File.join(root_path, 'inst')
       meta_path   = File.join(inst_path, 'meta.yml')
 
@@ -71,6 +72,9 @@ module Fizzy
         if !File.file?(meta_path)
           error("config is invalid: '#{meta_path}' isn't a valid meta file")
         end
+        if !File.directory?(vars_path)
+          error("invalid vars directory: '#{vars_path}' doesn't exist")
+        end
       end
       if ((File.directory?(inst_path) && !File.writable?(inst_path)) ||
           File.file?(inst_path))
@@ -87,6 +91,7 @@ module Fizzy
         :root     => root_path,
         :tmp      => tmp_path,
         :cfg      => cfg_path,
+        :vars     => vars_path,
         :inst     => inst_path,
         :meta     => meta_path,
         :cur_inst => cur_inst_name ? File.join(inst_path, cur_inst_name) : nil)
@@ -138,6 +143,10 @@ module Fizzy
       end
     end
 
+    option :def_vars_name, :default => 'generic',
+           :desc => 'the name for the default variables file'
+    option :vars_name, :required => true,
+           :desc => 'the name for the variables file to be used'
     option :inst_name, :required => true,
            :desc => 'the name for the new configuration instance'
     option :fizzy_dir, :default => '/var/tmp/fizzy',
@@ -148,8 +157,11 @@ module Fizzy
       paths = prepare_storage(options.fizzy_dir,
                               :valid_inst => false,
                               :cur_inst_name => options.inst_name)
+      paths.def_vars_file = File.join(paths.vars, options.def_vars_name)
+      paths.vars_file     = File.join(paths.vars, options.vars_name)
 
       # create a configuration instance
+      @vars = build_vars(paths)
       say "creating a configuration instance named '#{options.inst_name}' " +
           "from: #{paths.cfg}", :blue
       directory(paths.cfg, paths.cur_inst, :exclude_pattern => /\.git|README/)
@@ -159,6 +171,14 @@ module Fizzy
     end
 
     def self.source_root; '/' end
+
+    protected
+
+    def build_vars(paths)
+      def_vars = YAML.load(ERB.new(File.read(paths.def_vars_file)).result)
+      vars     = YAML.load(ERB.new(File.read(paths.vars_file)).result)
+      OpenStruct.new(def_vars.merge(vars))
+    end
 
   end # }}}
 

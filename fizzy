@@ -1,4 +1,37 @@
 #!/usr/bin/env ruby
+#
+###############################################################################
+#                                                                             #
+# File informations:                                                          #
+# - Name:    fizzy                                                            #
+# - Summary: the script for invoking fizzy commands                           #
+# - Authors:                                                                  #
+#   - Alessandro Molari <molari.alessandro@gmail.com> (alem0lars)             #
+#                                                                             #
+# Project informations:                                                       #
+#   - Homepage:        https://github.com/alem0lars/fizzy                     #
+#   - Getting started: see README.md in the project root folder               #
+#                                                                             #
+# License: Apache v2.0 (see below)                                            #
+#                                                                             #
+###############################################################################
+#                                                                             #
+# Licensed to the Apache Software Foundation (ASF) under one more contributor #
+# license agreements.  See the NOTICE file distributed with this work for     #
+# additional information regarding copyright ownership. The ASF licenses this #
+# file to you under the Apache License, Version 2.0 (the "License"); you may  #
+# not use this file except in compliance with the License.                    #
+# You may obtain a copy of the License at                                     #
+#                                                                             #
+#   http://www.apache.org/licenses/LICENSE-2.0                                #
+#                                                                             #
+# Unless required by applicable law or agreed to in writing, software         #
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT   #
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.            #
+# See the License for the specific language governing permissions and         #
+# limitations under the License.                                              #
+#                                                                             #
+###############################################################################
 
 
 # requires {{{
@@ -24,13 +57,36 @@ module Fizzy
 
   module Utils # {{{
 
-    def setup_vars(paths, def_vars_name, vars_name)
-      paths.def_vars_file = File.join(paths.vars, "#{def_vars_name}.yml")
-      paths.vars_file     = File.join(paths.vars, "#{vars_name}.yml")
-      def_vars = YAML.load(ERB.new(File.read(paths.def_vars_file)).result)
-      vars     = YAML.load(ERB.new(File.read(paths.vars_file)).result)
-      all_vars = {'features' => []}.merge(def_vars).merge(vars)
-      OpenStruct.new(all_vars)
+    def setup_vars(paths, vars_file_name)
+      vars = {}
+      dummy_names_regex = /none|nothing/i
+      inherits_regex = /#=>\s*inherits:\s*(?<inherits_name>[^\s]+)\s*<=#/i
+
+      read_vars_file = lambda do |file_name|
+        file_path = File.join(paths.vars, "#{file_name}.yml")
+        file_content = File.read(file_path)
+
+        # find the name of the file to be inherited
+        inherits_name = file_content.match(inherits_regex)[:inherits_name]
+
+        # load the file that should be inherited (if any) by calling this
+        # function recursively and merging the read variables into `vars`
+        if inherits_name && (inherits_name =~ dummy_names_regex)
+          inherits_file_path = File.join(paths.vars, "#{inherits_name}.yml")
+          unless File.file?(inherits_file_path)
+            error("inherited vars file doesn't exist: '#{inherits_name}'")
+          end
+          vars.merge!(read_vars_file(inherits_name))
+        end
+
+        # base case: read the yaml file (parsing possible erb template
+        # icecreams) and store the read variables into `vars`
+        vars.merge!(YAML.load(ERB.new(file_content).result))
+      end
+
+      read_vars_file(vars_file_name)
+
+      OpenStruct.new(vars)
     end
 
     def exec_cmd(cmd, as_su: false)
@@ -152,8 +208,6 @@ module Fizzy
       end
     end
 
-    option :def_vars_name, :default => 'generic',
-           :desc => 'the name for the default variables file'
     option :vars_name, :required => true,
            :desc => 'the name for the variables file to be used'
     option :inst_name, :required => true,
@@ -168,7 +222,7 @@ module Fizzy
                               :cur_inst_name => options.inst_name)
 
       # create a configuration instance
-      @vars = setup_vars(paths, options.def_vars_name, options.vars_name)
+      @vars = setup_vars(paths, options.vars_name)
       say "creating a configuration instance named '#{options.inst_name}' " +
           "from: #{paths.cfg}", :blue
       directory(paths.cfg, paths.cur_inst, :exclude_pattern => /\.git|README/)
@@ -185,8 +239,6 @@ module Fizzy
 
     include Fizzy::Utils
 
-    option :def_vars_name, :default => 'generic',
-           :desc => 'the name for the default variables file'
     option :vars_name, :required => true,
            :desc => 'the name for the variables file to be used'
     option :inst_name, :required => true,
@@ -226,7 +278,7 @@ module Fizzy
       # perform install
       say "installing the configuration instance '#{options.inst_name}' " +
           "into the system", :blue
-      @vars = setup_vars(paths, options.def_vars_name, options.vars_name)
+      @vars = setup_vars(paths, options.vars_name)
       FileUtils.cd(paths.tmp) do # stay in a safe place
         meta['elems'].each do |elem|
           elem_enabled = elem['only'].any? { |o| @vars.features.include?(o) }

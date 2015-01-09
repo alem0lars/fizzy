@@ -7,6 +7,12 @@
 # - Summary: the script for invoking fizzy commands                           #
 # - Authors:                                                                  #
 #   - Alessandro Molari <molari.alessandro@gmail.com> (alem0lars)             #
+#   Except:                                                                   #
+#   - Hash#deep_merge:                                                        #
+#     - From: http://www.ruby-forum.com/topic/142809                          #
+#     - Author: Stefan Rusterholz                                             #
+# - Thanks to:                                                                #
+#   - Luca Molari <molari.luca@gmail.com> (lmolr) for general support         #
 #                                                                             #
 # Project informations:                                                       #
 #   - Homepage:        https://github.com/alem0lars/fizzy                     #
@@ -53,9 +59,58 @@ end
 # }}}
 
 
+# ruby classes extensions {{{
+
+class Hash
+  def deep_merge(second)
+    merger = proc { |key,v1,v2| Hash === v1 && Hash === v2 ?
+    v1.merge(v2, &merger) : v2 }
+    self.merge(second, &merger)
+  end
+end
+
+# }}}
+
+
 module Fizzy
 
   module Utils # {{{
+
+    # git {{{
+
+    def git_info(git_root_path)
+      info = nil
+      FileUtils.cd(git_root_path) do
+        info = {
+          :local  => `git rev-parse @`.strip,
+          :remote => `git rev-parse @{u}`.strip,
+          :base   => `git merge-base @ @{u}`.strip
+        }
+      end
+      info
+    end
+
+    def git_local_changes(git_root_path)
+      `git status -uall --porcelain`.strip
+    end
+
+    def git_has_local_changes(git_root_path)
+      !git_local_changes(git_root_path).empty?
+    end
+
+    def git_should_pull(git_root_path)
+      info = git_info(git_root_path)
+      info[:remote] != info[:base]
+    end
+
+    def git_should_push(git_root_path)
+      info = git_info(git_root_path)
+      info[:local] != info[:base]
+    end
+
+    # }}}
+
+    # vars {{{
 
     def setup_vars(paths, vars_file_name)
       vars = {}
@@ -76,18 +131,22 @@ module Fizzy
           unless File.file?(inherits_file_path)
             error("inherited vars file doesn't exist: '#{inherits_name}'")
           end
-          vars.merge!(read_vars_file(inherits_name))
+          vars = vars.deep_merge(read_vars_file(inherits_name))
         end
 
         # base case: read the yaml file (parsing possible erb template
         # icecreams) and store the read variables into `vars`
-        vars.merge!(YAML.load(ERB.new(file_content).result))
+        vars = vars.deep_merge(YAML.load(ERB.new(file_content).result))
       end
 
       read_vars_file(vars_file_name)
 
       OpenStruct.new(vars)
     end
+
+    # }}}
+
+    # commands {{{
 
     def exec_cmd(cmd, as_su: false)
       if as_su
@@ -98,17 +157,16 @@ module Fizzy
       system(as_su ? "sudo #{cmd}" : cmd)
     end
 
+    # }}}
+
+    # filesystem {{{
+
     def existing_dir(path, writable: true)
       dir_path = path
       while !File.directory?(dir_path)
         dir_path = File.dirname(dir_path)
       end
       (writable && !File.writable?(dir_path)) ? nil : dir_path
-    end
-
-    def error(msg)
-      say msg, :red
-      exit(-1)
     end
 
     def prepare_storage(root_path, valid_cfg: true, cur_inst_name: nil)
@@ -162,6 +220,41 @@ module Fizzy
         :cur_inst => cur_inst_name ? File.join(inst_path, cur_inst_name) : nil)
     end
 
+    # }}}
+
+    # I/O & error handling {{{
+
+    def quiz(question, type: :bool)
+      answer = ask "#{question.strip}? ", :magenta
+      case type
+      when :bool
+        if answer =~ /y|ye|yes|yeah|ofc/i
+          true
+        elsif answer =~ /n|no|fuck|fuck\s+you|fuck\s+off/i
+          false
+        else
+          say 'answer misunderstood', :yellow
+          quiz(question, :type => type)
+        end
+      when :string
+        if answer.empty?
+          say 'empty answer', :yellow
+          quiz(question, :type => type)
+        else
+          answer
+        end
+      else
+        error("unhandled question type: '#{type}'")
+      end
+    end
+
+    def error(msg)
+      say msg, :red
+      exit(-1)
+    end
+
+    # }}}
+
   end # }}}
 
 
@@ -171,6 +264,45 @@ module Fizzy
 
     include Thor::Actions
     include Fizzy::Utils
+
+    desc 'add', 'add a new configuration'
+    def add
+
+    end
+
+    option :fizzy_dir, :default => '/var/tmp/fizzy',
+           :desc => 'the root path for the directory internally used by fizzy'
+    desc 'edit CFG_NAME', 'find the files relative to CFG_NAME and edit them'
+    def edit(cfg_name)
+      # before edit
+      paths = prepare_storage(options.fizzy_dir)
+      find_path = File.join(paths.cfg, cfg_name)
+      cfg_files_arg = (File.exist?(find_path) ?
+          find_path :
+          Dir.glob("#{find_path}*", File::FNM_DOTMATCH).to_a.delete_if { |elem|
+            elem =~ /\.git/
+          }.join(' ')
+      ).strip
+      editor = ENV['EDITOR'] || 'vim'
+
+      # perform edit
+      if cfg_files_arg.empty?
+        say "no files matching '#{cfg_name}' have been found", :yellow
+        status = nil
+      else
+        say "editing: '#{cfg_files_arg}'", :cyan
+        status = system("#{editor} \"#{cfg_files_arg}\"")
+      end
+
+      # after edit
+      if status
+        say "successfully edited: '#{cfg_files_arg}'", :green
+      elsif status.nil?
+        say 'editing skipped', :yellow
+      else
+        say "failed to edit: '#{cfg_files_arg}'", :red
+      end
+    end
 
     option :fizzy_dir, :default => '/var/tmp/fizzy',
            :desc => 'the root path for the directory internally used by fizzy'
@@ -186,9 +318,29 @@ module Fizzy
         say 'syncing from origin', :blue
         status = nil
         FileUtils.cd(paths.cfg) do
-          say 'performing pull', :cyan
-          status = system('git pull origin master')
-          if status
+          # fetch
+          say 'fetching informations from origin', :cyan
+          status = system('git fetch origin')
+          # (optional) commit
+          if status && git_has_local_changes(paths.cfg)
+            say 'the configuration has the following local changes:', :cyan
+            say git_local_changes(paths.cfg)
+            should_commit = quiz 'do you want to commit them'
+            if should_commit
+              commit_msg = quiz 'commit message', :type => :string
+              status = system('git add -A')
+              status &&= system("git commit -am \"#{commit_msg}\"")
+            else
+              status = false
+            end
+          end
+          # (optional) pull
+          if status && git_should_pull(paths.cfg)
+            say 'performing pull', :cyan
+            status = system('git pull origin master')
+          end
+          # (optional) push
+          if status && git_should_push(paths.cfg)
             say 'performing push', :cyan
             status = system('git push origin master')
           end

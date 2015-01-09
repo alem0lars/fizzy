@@ -291,7 +291,7 @@ module Fizzy
         status = nil
       else
         say "editing: '#{cfg_files_arg}'", :cyan
-        status = system("#{editor} \"#{cfg_files_arg}\"")
+        status = system("#{editor} #{cfg_files_arg}")
       end
 
       # after edit

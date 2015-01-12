@@ -111,6 +111,34 @@ module Fizzy
 
     # }}}
 
+    # meta {{{
+
+    def get_meta(meta_path)
+      meta = YAML.load(ERB.new(File.read(meta_path)).result)
+      error("invalid meta: 'elems' key not found") unless meta.has_key?('elems')
+      unless meta['elems'].respond_to?(:each_with_index)
+        error("invalid meta: 'elems' is not iterable")
+      end
+      meta['elems'].each_with_index do |elem, idx|
+        error("elem '#{idx}' isn't a hash") unless elem.is_a?(Hash)
+        unless elem.has_key?('src')
+          error("elem '#{elem['name'] || "idx=#{idx}"}' doesn't contain 'src'")
+        end
+        unless elem.has_key?('name')
+          error("elem 'idx=#{idx}' doesn't contain 'name'")
+        end
+        unless elem.has_key?('dst')
+          error("elem '#{elem['name']}' doesn't contain 'dst'")
+        end
+        if elem.has_key?('only') && !elem['only'].is_a?(Array)
+          error("elem '#{elem['name']}' has invalid 'only': it's not an array")
+        end
+      end
+      meta
+    end
+
+    # }}}
+
     # elems {{{
 
     def enabled_elems(elems, features)
@@ -403,6 +431,7 @@ module Fizzy
       paths = prepare_storage(options.fizzy_dir,
                               :valid_inst    => false,
                               :cur_inst_name => options.inst_name)
+      meta = get_meta(paths.cfg_meta)
       meta['elems'] = normalize_elems(meta, paths)
 
       # create a configuration instance
@@ -441,28 +470,7 @@ module Fizzy
       # before install
       paths = prepare_storage(options.fizzy_dir,
                               :cur_inst_name => options.inst_name)
-      # -> validate meta informations
-      meta = YAML.load(ERB.new(File.read(paths.inst_meta)).result)
-      error("invalid meta: 'elems' key not found") unless meta.has_key?('elems')
-      unless meta['elems'].respond_to?(:each_with_index)
-        error("invalid meta: 'elems' is not iterable")
-      end
-      meta['elems'].each_with_index do |elem, idx|
-        error("elem '#{idx}' isn't a hash") unless elem.is_a?(Hash)
-        unless elem.has_key?('src')
-          error("elem '#{elem['name'] || "idx=#{idx}"}' doesn't contain 'src'")
-        end
-        unless elem.has_key?('name')
-          error("elem 'idx=#{idx}' doesn't contain 'name'")
-        end
-        unless elem.has_key?('dst')
-          error("elem '#{elem['name']}' doesn't contain 'dst'")
-        end
-        if elem.has_key?('only') && !elem['only'].is_a?(Array)
-          error("elem '#{elem['name']}' has invalid 'only': it's not an array")
-        end
-      end
-      # -> prepare install
+      meta = get_meta(paths.inst_meta)
       meta['elems'] = normalize_elems(meta, paths)
 
       # perform install

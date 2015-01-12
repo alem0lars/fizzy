@@ -142,11 +142,11 @@ module Fizzy
     # elems {{{
 
     def enabled_elems(elems, features)
-      elems.select { |elem| enabled_elem?(elems, features) }
+      elems.select { |elem| enabled_elem?(elem, features) }
     end
 
     def excluded_elems(elems, features)
-      elems.reject { |elem| enabled_elem?(elems, features) }
+      elems.reject { |elem| enabled_elem?(elem, features) }
     end
 
     def enabled_elem?(elem, features)

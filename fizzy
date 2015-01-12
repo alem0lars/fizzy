@@ -201,7 +201,7 @@ module Fizzy
 
         # load the file that should be inherited (if any) by calling this
         # function recursively and merging the read variables into `vars`
-        if inherits_name && (inherits_name =~ dummy_names_regex)
+        if inherits_name && !(inherits_name =~ dummy_names_regex)
           inherits_file_path = File.join(vars_path, "#{inherits_name}.yml")
           unless File.file?(inherits_file_path)
             error("inherited vars file doesn't exist: '#{inherits_name}'")

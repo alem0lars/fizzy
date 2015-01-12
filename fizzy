@@ -112,13 +112,13 @@ module Fizzy
 
     # vars {{{
 
-    def setup_vars(paths, vars_file_name)
+    def setup_vars(vars_path, vars_file_name)
       vars = {}
       dummy_names_regex = /none|nothing/i
       inherits_regex = /#=>\s*inherits:\s*(?<inherits_name>[^\s]+)\s*<=#/i
 
       read_vars_file = lambda do |file_name|
-        file_path = File.join(paths.vars, "#{file_name}.yml")
+        file_path = File.join(vars_path, "#{file_name}.yml")
         file_content = File.read(file_path)
 
         # find the name of the file to be inherited
@@ -127,7 +127,7 @@ module Fizzy
         # load the file that should be inherited (if any) by calling this
         # function recursively and merging the read variables into `vars`
         if inherits_name && (inherits_name =~ dummy_names_regex)
-          inherits_file_path = File.join(paths.vars, "#{inherits_name}.yml")
+          inherits_file_path = File.join(vars_path, "#{inherits_name}.yml")
           unless File.file?(inherits_file_path)
             error("inherited vars file doesn't exist: '#{inherits_name}'")
           end
@@ -171,12 +171,14 @@ module Fizzy
 
     def prepare_storage(root_path, valid_cfg: true, cur_inst_name: nil)
       # paths based on internal conventions
-      parent_path = File.expand_path(File.dirname(root_path))
-      tmp_path    = File.join(root_path, 'tmp')
-      cfg_path    = File.join(root_path, 'cfg')
-      vars_path   = File.join(cfg_path,  'vars')
-      inst_path   = File.join(root_path, 'inst')
-      meta_path   = File.join(inst_path, 'meta.yml')
+      parent_path    = File.expand_path(File.dirname(root_path))
+      tmp_path       = File.join(root_path, 'tmp')
+      cfg_path       = File.join(root_path, 'cfg')
+      inst_path      = File.join(root_path, 'inst')
+      inst_vars_path = File.join(inst_path, 'vars')
+      inst_meta_path = File.join(inst_path, 'meta.yml')
+      cfg_vars_path  = File.join(cfg_path, 'vars')
+      cfg_meta_path  = File.join(cfg_path, 'meta.yml')
 
       # validate storage correctness
       if ((File.directory?(root_path)  && !File.writable?(root_path)) ||
@@ -192,16 +194,23 @@ module Fizzy
         if !File.directory?(cfg_path) || !File.writable?(cfg_path)
           error('config dir already exists but is not writable')
         end
-        if !File.file?(meta_path)
-          error("config is invalid: '#{meta_path}' isn't a valid meta file")
+        if !File.file?(cfg_meta_path)
+          error("config is invalid: '#{cfg_meta_path}' isn't a valid meta file")
         end
-        if !File.directory?(vars_path)
-          error("invalid vars directory: '#{vars_path}' doesn't exist")
+        if !File.directory?(cfg_vars_path)
+          error("invalid vars directory: '#{cfg_vars_path}' doesn't exist")
         end
       end
       if ((File.directory?(inst_path) && !File.writable?(inst_path)) ||
           File.file?(inst_path))
         error('instance dir already exists but is not writable')
+      elsif File.directory?(inst_path) # if the inst directory exist, check is correct
+        if !File.file?(inst_meta_path)
+          error("config is invalid: '#{inst_meta_path}' isn't a valid meta file")
+        end
+        if !File.directory?(inst_vars_path)
+          error("invalid vars directory: '#{inst_vars_path}' doesn't exist")
+        end
       end
 
       # create non-existing internal directories
@@ -211,13 +220,15 @@ module Fizzy
 
       # return the known storage paths
       OpenStruct.new(
-        :root     => root_path,
-        :tmp      => tmp_path,
-        :cfg      => cfg_path,
-        :vars     => vars_path,
-        :inst     => inst_path,
-        :meta     => meta_path,
-        :cur_inst => cur_inst_name ? File.join(inst_path, cur_inst_name) : nil)
+        :root      => root_path,
+        :tmp       => tmp_path,
+        :cfg       => cfg_path,
+        :cfg_vars  => cfg_vars_path,
+        :cfg_meta  => cfg_meta_path,
+        :inst      => inst_path,
+        :inst_vars => inst_vars_path,
+        :inst_meta => inst_meta_path,
+        :cur_inst  => cur_inst_name ? File.join(inst_path, cur_inst_name) : nil)
     end
 
     # }}}
@@ -373,7 +384,7 @@ module Fizzy
                               :cur_inst_name => options.inst_name)
 
       # create a configuration instance
-      @vars = setup_vars(paths, options.vars_name)
+      @vars = setup_vars(paths.cfg_vars, options.vars_name)
       say "creating a configuration instance named '#{options.inst_name}' " +
           "from: #{paths.cfg}", :blue
       directory(paths.cfg, paths.cur_inst, :exclude_pattern => /\.git|README/)
@@ -403,7 +414,7 @@ module Fizzy
       paths = prepare_storage(options.fizzy_dir,
                               :cur_inst_name => options.inst_name)
       # -> validate meta informations
-      meta = YAML.load(ERB.new(File.read(paths.meta)).result)
+      meta = YAML.load(ERB.new(File.read(paths.inst_meta)).result)
       error("invalid meta: 'elems' key not found") unless meta.has_key?('elems')
       unless meta['elems'].respond_to?(:each_with_index)
         error("invalid meta: 'elems' is not iterable")
@@ -429,7 +440,7 @@ module Fizzy
       # perform install
       say "installing the configuration instance '#{options.inst_name}' " +
           "into the system", :blue
-      @vars = setup_vars(paths, options.vars_name)
+      @vars = setup_vars(paths.inst_vars, options.vars_name)
       FileUtils.cd(paths.tmp) do # stay in a safe place
         meta['elems'].each do |elem|
           elem_enabled = elem['only'].any? { |o| @vars.features.include?(o) }
@@ -445,7 +456,7 @@ module Fizzy
       end
 
       # after instantiation
-      say 'the configuration instance has been intalled into the system', :green
+      say 'the configuration instance has been installed into the system', :green
     end
 
     protected

@@ -113,6 +113,8 @@ module Fizzy
 
     # vars {{{
 
+    attr_reader :vars
+
     def setup_vars(vars_path, vars_file_name)
       vars = {}
       dummy_names_regex = /none|nothing/i
@@ -142,7 +144,7 @@ module Fizzy
 
       read_vars_file.call(vars_file_name)
 
-      OpenStruct.new(vars)
+      @vars = OpenStruct.new(vars)
     end
 
     # }}}
@@ -387,7 +389,7 @@ module Fizzy
                               :cur_inst_name => options.inst_name)
 
       # create a configuration instance
-      @vars = setup_vars(paths.cfg_vars, options.vars_name)
+      setup_vars(paths.cfg_vars, options.vars_name)
       say "creating a configuration instance named '#{options.inst_name}' " +
           "from: #{paths.cfg}", :blue
       directory(paths.cfg, paths.cur_inst, :exclude_pattern => /\.git|README/)
@@ -443,7 +445,7 @@ module Fizzy
       # perform install
       say "installing the configuration instance '#{options.inst_name}' " +
           "into the system", :blue
-      @vars = setup_vars(paths.inst_vars, options.vars_name)
+      setup_vars(paths.inst_vars, options.vars_name)
       FileUtils.cd(paths.tmp) do # stay in a safe place
         meta['elems'].each do |elem|
           elem_enabled = elem['only'].any? { |o| @vars.features.include?(o) }

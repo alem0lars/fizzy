@@ -169,16 +169,16 @@ module Fizzy
       (writable && !File.writable?(dir_path)) ? nil : dir_path
     end
 
-    def prepare_storage(root_path, valid_cfg: true, cur_inst_name: nil)
+    def prepare_storage(root_path, valid_cfg: true, valid_inst: true, cur_inst_name: nil)
       # paths based on internal conventions
       parent_path    = File.expand_path(File.dirname(root_path))
       tmp_path       = File.join(root_path, 'tmp')
       cfg_path       = File.join(root_path, 'cfg')
+      cfg_vars_path  = File.join(cfg_path,  'vars')
+      cfg_meta_path  = File.join(cfg_path,  'meta.yml')
       inst_path      = File.join(root_path, 'inst')
       inst_vars_path = File.join(inst_path, 'vars')
       inst_meta_path = File.join(inst_path, 'meta.yml')
-      cfg_vars_path  = File.join(cfg_path, 'vars')
-      cfg_meta_path  = File.join(cfg_path, 'meta.yml')
 
       # validate storage correctness
       if ((File.directory?(root_path)  && !File.writable?(root_path)) ||
@@ -201,12 +201,12 @@ module Fizzy
           error("invalid vars directory: '#{cfg_vars_path}' doesn't exist")
         end
       end
-      if ((File.directory?(inst_path) && !File.writable?(inst_path)) ||
-          File.file?(inst_path))
-        error('instance dir already exists but is not writable')
-      elsif File.directory?(inst_path) # if the inst directory exist, check is correct
+      if valid_inst
+        if !File.directory?(inst_path) || !File.writable?(inst_path)
+          error('instance dir already exists but is not writable')
+        end
         if !File.file?(inst_meta_path)
-          error("config is invalid: '#{inst_meta_path}' isn't a valid meta file")
+          error("instance is invalid: '#{inst_meta_path}' isn't a valid meta file")
         end
         if !File.directory?(inst_vars_path)
           error("invalid vars directory: '#{inst_vars_path}' doesn't exist")
@@ -286,7 +286,7 @@ module Fizzy
     desc 'edit CFG_NAME', 'find the files relative to CFG_NAME and edit them'
     def edit(cfg_name)
       # before edit
-      paths = prepare_storage(options.fizzy_dir)
+      paths = prepare_storage(options.fizzy_dir, :valid_inst => false)
       find_path = File.join(paths.cfg, cfg_name)
       cfg_files_arg = (File.exist?(find_path) ?
           find_path :
@@ -322,7 +322,8 @@ module Fizzy
     desc 'sync', 'synchronize the remote repository with the local one'
     def sync
       # before sync
-      paths = prepare_storage(options.fizzy_dir, :valid_cfg => false)
+      paths = prepare_storage(options.fizzy_dir,
+                              :valid_cfg => false, :valid_inst => false)
 
       # perform sync
       sync_result = if File.directory?(paths.cfg)
@@ -381,6 +382,7 @@ module Fizzy
     def instantiate
       # before instantiation
       paths = prepare_storage(options.fizzy_dir,
+                              :valid_inst    => false,
                               :cur_inst_name => options.inst_name)
 
       # create a configuration instance

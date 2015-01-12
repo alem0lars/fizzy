@@ -403,6 +403,7 @@ module Fizzy
       paths = prepare_storage(options.fizzy_dir,
                               :valid_inst    => false,
                               :cur_inst_name => options.inst_name)
+      meta['elems'] = normalize_elems(meta, paths)
 
       # create a configuration instance
       setup_vars(paths.cfg_vars, options.vars_name)

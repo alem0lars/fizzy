@@ -131,7 +131,7 @@ module Fizzy
           unless File.file?(inherits_file_path)
             error("inherited vars file doesn't exist: '#{inherits_name}'")
           end
-          vars = vars.deep_merge(read_vars_file(inherits_name))
+          vars = vars.deep_merge(read_vars_file.call(inherits_name))
         end
 
         # base case: read the yaml file (parsing possible erb template
@@ -139,7 +139,7 @@ module Fizzy
         vars = vars.deep_merge(YAML.load(ERB.new(file_content).result))
       end
 
-      read_vars_file(vars_file_name)
+      read_vars_file.call(vars_file_name)
 
       OpenStruct.new(vars)
     end

@@ -7,6 +7,18 @@ The hassle free configuration manager
 
 ## Installation
 
+### MacOSX
+
+If you already haven't tapped the alem0lars HomeBrew repository, tap it:
+```ShellSession
+$ brew tap alem0lars/homebrew-repo
+```
+
+Install Fizzy via HomeBrew:
+```ShellSession
+$ brew install fizzy
+```
+
 ### One-liner
 
 The destination can be everywhere, I suggest `/usr/local/bin` in GNU/Linux based systems because it's almost always in the `PATH` environment variable, so you can run `fizzy` from everywhere.

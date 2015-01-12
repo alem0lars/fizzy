@@ -469,7 +469,7 @@ module Fizzy
 
       exclude_pattern = /\.git|README/
       excluded_elems(meta['elems'], @vars.features).each do |excluded_elem|
-        exclude_pattern = /#{exclude_pattern}|#{excluded_elem}/
+        exclude_pattern = /#{exclude_pattern}|#{excluded_elem['src']}/
       end
 
       directory(paths.cfg, paths.cur_inst, :exclude_pattern => exclude_pattern)

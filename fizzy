@@ -266,6 +266,9 @@ module Fizzy
         error('tmp dir already exists but is not writable')
       end
       if valid_cfg
+        if !File.directory?(root_path)
+          error("fizzy root directory doesn't exist (maybe you need to run: `fizzy cfg sync`)")
+        end
         if !File.directory?(cfg_path) || !File.writable?(cfg_path)
           error('config dir already exists but is not writable')
         end
@@ -277,6 +280,9 @@ module Fizzy
         end
       end
       if valid_inst
+        if !File.directory?(root_path)
+          error("fizzy root directory doesn't exist (maybe you need to run: `fizzy cfg sync`)")
+        end
         if !File.directory?(inst_path) || !File.writable?(inst_path)
           error('instance dir already exists but is not writable')
         end

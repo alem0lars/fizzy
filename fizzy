@@ -111,6 +111,22 @@ module Fizzy
 
     # }}}
 
+    # elems {{{
+
+    def enabled_elems(elems, features)
+      elems.select { |elem| enabled_elem?(elems, features) }
+    end
+
+    def excluded_elems(elems, features)
+      elems.reject { |elem| enabled_elem?(elems, features) }
+    end
+
+    def enabled_elem?(elem, features)
+      !elem.has_key?('only') || elem['only'].any? { |o| features.include?(o) }
+    end
+
+    # }}}
+
     # vars {{{
 
     attr_reader :vars
@@ -392,7 +408,13 @@ module Fizzy
       setup_vars(paths.cfg_vars, options.vars_name)
       say "creating a configuration instance named '#{options.inst_name}' " +
           "from: #{paths.cfg}", :blue
-      directory(paths.cfg, paths.cur_inst, :exclude_pattern => /\.git|README/)
+
+      exclude_pattern = /\.git|README/
+      excluded_elems(meta['elems'], @vars.features).each do |excluded_elem|
+        exclude_pattern = /#{exclude_pattern}|#{excluded_elem}/
+      end
+
+      directory(paths.cfg, paths.cur_inst, :exclude_pattern => exclude_pattern)
 
       # after instantiation
       say "created the configuration instance in: #{paths.cur_inst}", :green
@@ -447,15 +469,12 @@ module Fizzy
           "into the system", :blue
       setup_vars(paths.inst_vars, options.vars_name)
       FileUtils.cd(paths.tmp) do # stay in a safe place
-        meta['elems'].each do |elem|
-          elem_enabled = elem['only'].any? { |o| @vars.features.include?(o) }
-          if !elem.has_key?('only') || elem_enabled
-            say "installing elem: '#{elem['name']}'", :cyan
-            appliers.each { |applier| applier.call(elem) }
-            if elem['notes']
-              say "notes for '#{elem['name']}:", :yellow
-              say elem['notes']
-            end
+        enabled_elems(meta['elems'], @vars.features).each do |elem|
+          say "installing elem: '#{elem['name']}'", :cyan
+          appliers.each { |applier| applier.call(elem) }
+          if elem['notes']
+            say "notes for '#{elem['name']}:", :yellow
+            say elem['notes']
           end
         end
       end

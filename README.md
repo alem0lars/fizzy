@@ -1,59 +1,56 @@
-fizzy
+Fizzy
 =====
 
-the hassle free configuration manager
+The hassle free configuration manager
 
 ![Status](http://img.shields.io/badge/status-WIP-yellow.svg)
 
-## available commands
+## Available commands
 
-### sync
+### Sync
 
-sync with the remote configuration repository.
+Sync with the remote configuration repository.
 
-this command can be run as a unprivileged user or as root: it makes no
-difference.
+This command can be run as a unprivileged user or as root: it makes no difference.
 
-#### usage example
+#### Usage example
 
-* *first sync*
+* *First sync*
 
   ```ShellSession
   $ fizzy sync --url url_to_config
   ```
 
-* *other syncs* (there is no need to pass the url for syncing)
+* *Other syncs* (there is no need to pass the URL for syncing)
 
   ```ShellSession
   $ fizzy sync
   ```
 
-### instantiate
+### Instantiate
 
-create configuration instances.
+Create configuration instances.
 
-#### usage example
+#### Usage example
 
-* *create an instance for each user*
+* *Create an instance for each user*
 
-  here is where the configuration is evaluated and templates are expanded,
-  so we need to be sure that we run the command using the right user.
+  Here is where the configuration is evaluated and templates are expanded, so we need to be sure that we run the command using the right user.
 
   ```ShellSession
   $ sudo -u usera fizzy instantiate --inst-name usera
   $ sudo -u userb fizzy instantiate --inst-name userb
   ```
 
-### install
+### Install
 
-install a previously created configuration instance into the system.
+Install a previously created configuration instance into the system.
 
-#### usage example
+#### Usage example
 
-* *install an instance for each user*
+* *Install an instance for each user*
 
-  here some setup could be performed as well (e.g. creating intermediate dirs),
-  so we need to be sure that we run the command using the right user.
+  Here some setup could be performed as well (e.g. creating intermediate dirs), so we need to be sure that we run the command using the right user.
 
   ```ShellSession
   $ sudo -u usera fizzy install --inst-name usera

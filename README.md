@@ -33,7 +33,7 @@ You can provide integration with an existing package system.
 
 What it needs is just Ruby and Thor installed; then you can drop [fizzy](./fizzy) everywhere (possibly in the system path) and make it executable.
 
-Contributions are really welcome!
+**Contributions are really welcome!**
 
 ## Available commands
 

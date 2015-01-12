@@ -63,8 +63,9 @@ end
 
 class Hash
   def deep_merge(second)
-    merger = proc { |key,v1,v2| Hash === v1 && Hash === v2 ?
-    v1.merge(v2, &merger) : v2 }
+    merger = proc do |key,v1,v2|
+      Hash === v1 && Hash === v2 ? v1.merge(v2, &merger) : v2
+    end
     self.merge(second, &merger)
   end
 end
@@ -136,7 +137,7 @@ module Fizzy
 
         # base case: read the yaml file (parsing possible erb template
         # icecreams) and store the read variables into `vars`
-        vars = vars.deep_merge(YAML.load(ERB.new(file_content).result))
+        vars = vars.deep_merge(YAML.load(ERB.new(file_content).result) || {})
       end
 
       read_vars_file.call(vars_file_name)

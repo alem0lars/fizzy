@@ -31,7 +31,10 @@ $ curl https://raw.githubusercontent.com/alem0lars/fizzy/master/fizzy | sudo tee
 
 You can provide integration with an existing package system.
 
-What it needs is just Ruby and Thor installed; then you can drop [fizzy](./fizzy) everywhere (possibly in the system path) and make it executable.
+The dependencies are:
+* Ruby
+* Thor
+then you can drop [fizzy](./fizzy) everywhere (possibly in the system path) and make it executable.
 
 **Contributions are really welcome!**
 

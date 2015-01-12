@@ -14,7 +14,7 @@ If you already haven't tapped the alem0lars HomeBrew repository, tap it:
 $ brew tap alem0lars/homebrew-repo
 ```
 
-Install Fizzy via HomeBrew (use `--HEAD` since there isn't a version already released yet):
+Install via HomeBrew (use `--HEAD` since there isn't a version already released yet):
 ```ShellSession
 $ brew install --HEAD fizzy
 ```

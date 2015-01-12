@@ -3,6 +3,7 @@ fizzy
 
 the hassle free configuration manager
 
+![Status](http://img.shields.io/badge/status-WIP-yellow.svg)
 
 ## available commands
 

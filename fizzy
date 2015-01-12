@@ -370,7 +370,6 @@ module Fizzy
     def instantiate
       # before instantiation
       paths = prepare_storage(options.fizzy_dir,
-                              :valid_inst => false,
                               :cur_inst_name => options.inst_name)
 
       # create a configuration instance

@@ -153,6 +153,34 @@ module Fizzy
       !elem.has_key?('only') || elem['only'].any? { |o| features.include?(o) }
     end
 
+    def normalize_elems(elems, paths)
+      normalized_elems = []
+      FileUtils.cd(paths.tmp) do # stay in a safe place
+        Find.find(paths.cur_inst).each do |subfile_path|
+          subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
+              Pathname.new(paths.cur_inst)).to_s
+          elems.each do |elem|
+            if md = Regexp.new(elem['src']).match(subfile_rel_path)
+              dst_path = elem['dst'].gsub(/<([0-9]+)>/) do
+                idx = Integer($1)
+                unless (1..md.length) === idx
+                  error("invalid 'dst' for elem '#{elem['name']}': nothing " +
+                        "captured at index '#{idx}'")
+                else
+                  md[idx]
+                end
+              end
+              normalized_elems << elem.merge({
+                'src_path' => subfile_path,
+                'dst_path' => dst_path
+              })
+            end
+          end
+        end
+      end
+      normalized_elems
+    end
+
     # }}}
 
     # vars {{{
@@ -432,7 +460,7 @@ module Fizzy
                               :valid_inst    => false,
                               :cur_inst_name => options.inst_name)
       meta = get_meta(paths.cfg_meta)
-      meta['elems'] = normalize_elems(meta, paths)
+      meta['elems'] = normalize_elems(meta['elems'], paths)
 
       # create a configuration instance
       setup_vars(paths.cfg_vars, options.vars_name)
@@ -471,7 +499,7 @@ module Fizzy
       paths = prepare_storage(options.fizzy_dir,
                               :cur_inst_name => options.inst_name)
       meta = get_meta(paths.inst_meta)
-      meta['elems'] = normalize_elems(meta, paths)
+      meta['elems'] = normalize_elems(meta['elems'], paths)
 
       # perform install
       say "installing the configuration instance '#{options.inst_name}' " +
@@ -493,34 +521,6 @@ module Fizzy
     end
 
     protected
-
-    def normalize_elems(meta, paths)
-      elems = []
-      FileUtils.cd(paths.tmp) do # stay in a safe place
-        Find.find(paths.cur_inst).each do |subfile_path|
-          subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
-              Pathname.new(paths.cur_inst)).to_s
-          meta['elems'].each do |elem|
-            if md = Regexp.new(elem['src']).match(subfile_rel_path)
-              dst_path = elem['dst'].gsub(/<([0-9]+)>/) do
-                idx = Integer($1)
-                unless (1..md.length) === idx
-                  error("invalid 'dst' for elem '#{elem['name']}': nothing " +
-                        "captured at index '#{idx}'")
-                else
-                  md[idx]
-                end
-              end
-              elems << elem.merge({
-                'src_path' => subfile_path,
-                'dst_path' => dst_path
-              })
-            end
-          end
-        end
-      end
-      elems
-    end
 
     ##
     # return a list of functions capable to apply modifications on the system

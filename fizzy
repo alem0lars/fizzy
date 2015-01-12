@@ -125,7 +125,7 @@ module Fizzy
           error("elem '#{elem['name'] || "idx=#{idx}"}' doesn't contain 'src'")
         end
         unless elem.has_key?('name')
-          error("elem 'idx=#{idx}' doesn't contain 'name'")
+          elem['name'] = elem['src']
         end
         unless elem.has_key?('dst')
           error("elem '#{elem['name']}' doesn't contain 'dst'")

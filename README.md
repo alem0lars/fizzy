@@ -5,6 +5,24 @@ The hassle free configuration manager
 
 ![Status](http://img.shields.io/badge/status-WIP-yellow.svg)
 
+## Installation
+
+### One-liner
+
+The destination can be everywhere, I suggest `/usr/local/bin` in GNU/Linux based systems because it's almost always in the `PATH` environment variable, so you can run `fizzy` from everywhere.
+
+```ShellSession
+$ curl https://raw.githubusercontent.com/alem0lars/fizzy/master/fizzy | sudo tee /usr/local/bin/fizzy > /dev/null
+```
+
+### Others
+
+You can provide integration with an existing package system.
+
+What it needs is just Ruby and Thor installed; then you can drop [fizzy](./fizzy) everywhere (possibly in the system path) and make it executable.
+
+Contributions are really welcome!
+
 ## Available commands
 
 ### Sync

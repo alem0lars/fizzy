@@ -219,6 +219,21 @@ module Fizzy
       @vars = OpenStruct.new(vars)
     end
 
+    def get_var(var_name)
+      dot_split_regexp = /(.*)(?:\.|$)/
+      var_name.to_s.scan(dot_split_regexp).inject(vars) do |cur_obj, name|
+        unless cur_obj.respond_to?(name)
+          cur_obj.send(name)
+        else
+          break nil
+        end
+      end
+    end
+
+    def get_var!(var_name)
+      get_var(var_name) or raise "undefined or `nil` variable: '#{var_name}'"
+    end
+
     # }}}
 
     # commands {{{

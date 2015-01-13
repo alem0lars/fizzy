@@ -113,8 +113,9 @@ module Fizzy
 
     # meta {{{
 
+    ## Make sure you call setup_vars before calling this method.
     def get_meta(meta_path)
-      meta = YAML.load(ERB.new(File.read(meta_path)).result)
+      meta = YAML.load(ERB.new(File.read(meta_path)).result(binding))
       error("invalid meta: 'elems' key not found") unless meta.has_key?('elems')
       unless meta['elems'].respond_to?(:each_with_index)
         error("invalid meta: 'elems' is not iterable")
@@ -220,9 +221,10 @@ module Fizzy
     end
 
     def get_var(var_name)
-      dot_split_regexp = /(.*)(?:\.|$)/
-      var_name.to_s.scan(dot_split_regexp).inject(vars) do |cur_obj, name|
-        unless cur_obj.respond_to?(name)
+      dot_split_regexp = /.*(?:\.|$)/
+      var_name.to_s.scan(dot_split_regexp).map(&:to_sym)
+          .inject(vars) do |cur_obj, name|
+        if cur_obj.respond_to?(name)
           cur_obj.send(name)
         else
           break nil
@@ -480,11 +482,12 @@ module Fizzy
       paths = prepare_storage(options.fizzy_dir,
                               :valid_inst    => false,
                               :cur_inst_name => options.inst_name)
+      setup_vars(paths.cfg_vars, options.vars_name)
+
       meta = get_meta(paths.cfg_meta)
       meta['elems'] = normalize_elems(meta['elems'], paths)
 
       # create a configuration instance
-      setup_vars(paths.cfg_vars, options.vars_name)
       say "creating a configuration instance named '#{options.inst_name}' " +
           "from: #{paths.cfg}", :blue
 
@@ -519,13 +522,14 @@ module Fizzy
       # before install
       paths = prepare_storage(options.fizzy_dir,
                               :cur_inst_name => options.inst_name)
+      setup_vars(paths.inst_vars, options.vars_name)
+
       meta = get_meta(paths.inst_meta)
       meta['elems'] = normalize_elems(meta['elems'], paths)
 
       # perform install
       say "installing the configuration instance '#{options.inst_name}' " +
           "into the system", :blue
-      setup_vars(paths.inst_vars, options.vars_name)
       FileUtils.cd(paths.tmp) do # stay in a safe place
         enabled_elems(meta['elems'], @vars.features).each do |elem|
           say "installing elem: '#{elem['name']}'", :cyan

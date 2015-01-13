@@ -232,8 +232,6 @@ module Fizzy
         else
           nil
         end
-
-        puts "cur_obj: '#{cur_obj}', name_component: '#{name_component}', nxt_obj: '#{nxt_obj}'"
         nxt_obj or break nil
       end
     end

@@ -266,12 +266,22 @@ module Fizzy
     # commands {{{
 
     def exec_cmd(cmd, as_su: false)
-      if as_su
-        say "[sudo] #{cmd}", :magenta
+      full_cmd = as_su ? "sudo #{cmd}" : cmd
+
+      really_run = if @paranoid
+        quiz("Do you want to run: '#{full_cmd}'")
       else
-        say cmd, :magenta
+        true
       end
-      system(as_su ? "sudo #{cmd}" : cmd)
+
+      if really_run
+        if as_su
+          say "[sudo] #{cmd}", :magenta
+        else
+          say cmd, :magenta
+        end
+        system(full_cmd)
+      end
     end
 
     # }}}
@@ -288,14 +298,17 @@ module Fizzy
 
     def prepare_storage(root_path, valid_cfg: true, valid_inst: true, cur_inst_name: nil)
       # paths based on internal conventions
-      parent_path    = File.expand_path(File.dirname(root_path))
-      tmp_path       = File.join(root_path, 'tmp')
-      cfg_path       = File.join(root_path, 'cfg')
-      cfg_vars_path  = File.join(cfg_path,  'vars')
-      cfg_meta_path  = File.join(cfg_path,  'meta.yml')
-      inst_path      = File.join(root_path, 'inst')
-      inst_vars_path = File.join(inst_path, 'vars')
-      inst_meta_path = File.join(inst_path, 'meta.yml')
+      parent_path        = File.expand_path(File.dirname(root_path))
+      tmp_path           = File.join(root_path, 'tmp')
+
+      cfg_path           = File.join(root_path, 'cfg')
+      cfg_vars_path      = File.join(cfg_path,  'vars')
+      cfg_meta_path      = File.join(cfg_path,  'meta.yml')
+
+      inst_path          = File.join(root_path, 'inst')
+      cur_inst_path      = cur_inst_name && File.join(inst_path, cur_inst_name)
+      cur_inst_vars_path = cur_inst_path && File.join(cur_inst_path, 'vars')
+      cur_inst_meta_path = cur_inst_path && File.join(cur_inst_path, 'meta.yml')
 
       # validate storage correctness
       if ((File.directory?(root_path)  && !File.writable?(root_path)) ||
@@ -325,14 +338,14 @@ module Fizzy
         if !File.directory?(root_path)
           error("fizzy root directory doesn't exist (maybe you need to run: `fizzy cfg sync`)")
         end
-        if !File.directory?(inst_path) || !File.writable?(inst_path)
+        if !File.directory?(cur_inst_path) || !File.writable?(cur_inst_path)
           error('instance dir already exists but is not writable')
         end
-        if !File.file?(inst_meta_path)
-          error("instance is invalid: '#{inst_meta_path}' isn't a valid meta file")
+        if !File.file?(cur_inst_meta_path)
+          error("instance is invalid: '#{cur_inst_meta_path}' isn't a valid meta file")
         end
-        if !File.directory?(inst_vars_path)
-          error("invalid vars directory: '#{inst_vars_path}' doesn't exist")
+        if !File.directory?(cur_inst_vars_path)
+          error("invalid vars directory: '#{cur_inst_vars_path}' doesn't exist")
         end
       end
 
@@ -340,18 +353,19 @@ module Fizzy
       FileUtils.mkdir_p(root_path) unless File.directory?(root_path)
       FileUtils.mkdir_p(tmp_path)  unless File.directory?(tmp_path)
       FileUtils.mkdir_p(inst_path) unless File.directory?(inst_path)
+      FileUtils.mkdir_p(cur_inst_path) if cur_inst_path && !File.directory?(cur_inst_path)
 
       # return the known storage paths
       OpenStruct.new(
-        :root      => root_path,
-        :tmp       => tmp_path,
-        :cfg       => cfg_path,
-        :cfg_vars  => cfg_vars_path,
-        :cfg_meta  => cfg_meta_path,
-        :inst      => inst_path,
-        :inst_vars => inst_vars_path,
-        :inst_meta => inst_meta_path,
-        :cur_inst  => cur_inst_name ? File.join(inst_path, cur_inst_name) : nil)
+        :root          => root_path,
+        :tmp           => tmp_path,
+        :cfg           => cfg_path,
+        :cfg_vars      => cfg_vars_path,
+        :cfg_meta      => cfg_meta_path,
+        :inst          => inst_path,
+        :cur_inst      => cur_inst_path,
+        :cur_inst_vars => cur_inst_vars_path,
+        :cur_inst_meta => cur_inst_meta_path)
     end
 
     # }}}
@@ -541,22 +555,26 @@ module Fizzy
            :desc => 'the name for the new configuration instance'
     option :fizzy_dir, :default => '/var/tmp/fizzy',
            :desc => 'the root path for the directory internally used by fizzy'
+    option :paranoid, :default => false, :type => :boolean,
+           :desc => 'ask confirmation for each filesystem operation'
     desc 'install',
          'install the current configuration instance in the system'
     def install
+      @paranoid = options.paranoid
+
       # before install
       paths = prepare_storage(options.fizzy_dir,
                               :cur_inst_name => options.inst_name)
-      setup_vars(paths.inst_vars, options.vars_name)
+      setup_vars(paths.cur_inst_vars, options.vars_name)
 
-      meta = get_meta(paths.inst_meta)
+      meta = get_meta(paths.cur_inst_meta)
       meta['elems'] = normalize_elems(meta['elems'], paths.tmp, paths.cur_inst)
 
       # perform install
       say "installing the configuration instance '#{options.inst_name}' " +
           "into the system", :blue
       FileUtils.cd(paths.tmp) do # stay in a safe place
-        enabled_elems(meta['elems'], @vars.features).each do |elem|
+        enabled_elems(meta['elems'], get_var!('features')).each do |elem|
           say "installing elem: '#{elem['name']}'", :cyan
           appliers.each { |applier| applier.call(elem) }
           if elem['notes']
@@ -594,7 +612,7 @@ module Fizzy
             exec_cmd("mkdir -p \"#{parent_dir}\"",
                      :as_su => !existing_dir(parent_dir))
             if elem.has_key?('perms') && (l_ex_dir_path != f_noex_dir_path)
-              exec_cmd("chmod -R \"#{elem['perms']}\" \"#{f_noex_dir_path}\"",
+              ask_exec_cmd("chmod -R \"#{elem['perms']}\" \"#{f_noex_dir_path}\"",
                        :as_su => !File.owned?(f_noex_dir_path))
             end
           end

@@ -242,6 +242,17 @@ module Fizzy
 
     # }}}
 
+    # env / host system {{{
+
+    def get_env(envvar_name)
+      ENV[envvar_name.to_s]
+    end
+
+    def get_env!(envvar_name)
+      get_env(envvar_name) or
+        raise "undefined environment variable: '#{envvar_name}'"
+    end
+
     def is_osx?
       RUBY_PLATFORM =~ /darwin$/
     end
@@ -249,6 +260,8 @@ module Fizzy
     def is_linux?
       RUBY_PLATFORM =~ /-linux$/
     end
+
+    # }}}
 
     # commands {{{
 

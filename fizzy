@@ -268,18 +268,26 @@ module Fizzy
     def exec_cmd(cmd, as_su: false)
       full_cmd = as_su ? "sudo #{cmd}" : cmd
 
-      really_run = if @paranoid
-        quiz("Do you want to run: '#{full_cmd}'")
-      else
-        true
-      end
+      really_run = case @run_mode
+                   when :normal
+                     true
+                   when :paranoid
+                     quiz("Do you want to run: '#{full_cmd}'")
+                   when :dry
+                     false
+                   else
+                     true
+                   end
 
-      if really_run
+      if really_run || @run_mode == :dry
         if as_su
           say "[sudo] #{cmd}", :magenta
         else
           say cmd, :magenta
         end
+      end
+
+      if really_run
         system(full_cmd)
       end
     end
@@ -555,12 +563,13 @@ module Fizzy
            :desc => 'the name for the new configuration instance'
     option :fizzy_dir, :default => '/var/tmp/fizzy',
            :desc => 'the root path for the directory internally used by fizzy'
-    option :paranoid, :default => false, :type => :boolean,
+    option :run_mode, :default => 'normal',
+           :enum => ['normal', 'paranoid', 'dry'],
            :desc => 'ask confirmation for each filesystem operation'
     desc 'install',
          'install the current configuration instance in the system'
     def install
-      @paranoid = options.paranoid
+      @run_mode = options.run_mode.to_sym
 
       # before install
       paths = prepare_storage(options.fizzy_dir,

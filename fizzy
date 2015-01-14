@@ -154,12 +154,12 @@ module Fizzy
       !elem.has_key?('only') || elem['only'].any? { |o| features.include?(o) }
     end
 
-    def normalize_elems(elems, paths)
+    def normalize_elems(elems, tmp_path, elems_base_path)
       normalized_elems = []
-      FileUtils.cd(paths.tmp) do # stay in a safe place
-        Find.find(paths.cur_inst).each do |subfile_path|
+      FileUtils.cd(tmp_path) do # stay in a safe place
+        Find.find(elems_base_path).each do |subfile_path|
           subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
-              Pathname.new(paths.cur_inst)).to_s
+              Pathname.new(elems_base_path)).to_s
           elems.each do |elem|
             if md = Regexp.new(elem['src']).match(subfile_rel_path)
               dst_path = elem['dst'].gsub(/<([0-9]+)>/) do
@@ -497,14 +497,14 @@ module Fizzy
       setup_vars(paths.cfg_vars, options.vars_name)
 
       meta = get_meta(paths.cfg_meta)
-      meta['elems'] = normalize_elems(meta['elems'], paths)
+      meta['elems'] = normalize_elems(meta['elems'], paths.tmp, paths.cfg)
 
       # create a configuration instance
       say "creating a configuration instance named '#{options.inst_name}' " +
           "from: #{paths.cfg}", :blue
 
       exclude_pattern = /\.git|README/
-      excluded_elems(meta['elems'], @vars.features).each do |excluded_elem|
+      excluded_elems(meta['elems'], get_var!('features')).each do |excluded_elem|
         exclude_pattern = /#{exclude_pattern}|#{excluded_elem['src']}/
       end
 
@@ -537,7 +537,7 @@ module Fizzy
       setup_vars(paths.inst_vars, options.vars_name)
 
       meta = get_meta(paths.inst_meta)
-      meta['elems'] = normalize_elems(meta['elems'], paths)
+      meta['elems'] = normalize_elems(meta['elems'], paths.tmp, paths.cur_inst)
 
       # perform install
       say "installing the configuration instance '#{options.inst_name}' " +

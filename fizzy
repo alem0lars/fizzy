@@ -120,20 +120,27 @@ module Fizzy
       meta = YAML.load(File.read(meta_path))
 
       meta['elems'] = meta['elems'].each_with_index.collect do |elem, idx|
-        elem_identifier = elem['name'] || "idx=#{idx}"
+        elem_identifier = elem['name'] || "src:'#{elem['src']}'"
 
         # 1: validate 'only' and determine if the element is selected.
         if elem.has_key?('only') && !elem['only'].is_a?(Hash)
           error("elem '#{elem_identifier}' has invalid 'only': it's not an hash")
         end
-        selected = unless elem.has_key?('only')
-          true
+        unless elem.has_key?('only')
+          selected = true
+          #say "elem '#{elem_identifier}' selected (no 'only')."
         else
           only = elem['only']
-          ((only.has_key?('features') &&
-            only['features'].any? { |f| has_feature? f }) ||
-           (only.has_key?('vars') &&
-            only['vars'].any? { |v| get_var v }))
+          wants_features = only.has_key?('features')
+          wants_vars = only.has_key?('vars')
+          selected = !wants_features && !wants_vars
+          selected ||= wants_features &&
+                        only['features'].any? { |f| has_feature? f }
+          selected ||= wants_vars &&
+                       only['vars'].any? { |v| get_var v }
+          if selected
+            #say "elem '#{elem_identifier} selected (by 'only')."
+          end
         end
 
         # 2: pre-process strings with ERB
@@ -184,11 +191,14 @@ module Fizzy
     def normalize_elems(elems, tmp_path, elems_base_path)
       normalized_elems = []
       FileUtils.cd(tmp_path) do # stay in a safe place
-        Find.find(elems_base_path).each do |subfile_path|
-          subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
+
+        elems.each do |elem|
+          found = false
+          Find.find(elems_base_path).each do |subfile_path|
+            subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
               Pathname.new(elems_base_path)).to_s
-          elems.each do |elem|
             if md = Regexp.new(elem['src']).match(subfile_rel_path)
+              found = true
               dst_path = elem['dst'].gsub(/<([0-9]+)>/) do
                 idx = Integer($1)
                 unless (1..md.length) === idx
@@ -204,7 +214,13 @@ module Fizzy
               })
             end
           end
+
+          unless found
+            warning "inconsistency found for elem '#{elem['name']}': no file matches src: '#{elem['src']}'."
+          end
+
         end
+
       end
       normalized_elems
     end
@@ -433,6 +449,11 @@ module Fizzy
       else
         error("unhandled question type: '#{type}'")
       end
+    end
+
+    def warning(msg)
+      say msg, :yellow
+      exit(-1) unless quiz("continue?")
     end
 
     def error(msg)

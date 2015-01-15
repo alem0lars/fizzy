@@ -115,26 +115,54 @@ module Fizzy
 
     ## Make sure you call setup_vars before calling this method.
     def get_meta(meta_path)
-      meta = YAML.load(ERB.new(File.read(meta_path)).result(binding))
-      error("invalid meta: 'elems' key not found") unless meta.has_key?('elems')
-      unless meta['elems'].respond_to?(:each_with_index)
-        error("invalid meta: 'elems' is not iterable")
+      erb_excluded_fields = ['only']
+      puts File.readlines(meta_path)[132]
+      puts File.readlines(meta_path)[133]
+      puts File.readlines(meta_path)[134]
+      meta = YAML.load(File.read(meta_path))
+
+      meta = meta['elems'].each_with_index.select do |elem, idx|
+        elem_identifier = elem['name'] || "idx=#{idx}"
+
+        # 1: validate 'only' and determine if the element is selected.
+        if elem.has_key?('only') && !elem['only'].is_a?(Hash)
+          error("elem '#{elem_identifier}' has invalid 'only': it's not an hash")
+        end
+        selected = unless elem.has_key?('only')
+          true
+        else
+          only = elem['only']
+          ((only.has_key?('features') &&
+            only['features'].any? { |f| has_feature? f }) ||
+           (only.has_key?('vars') &&
+            only['vars'].any? { |v| get_var v }))
+        end
+
+        # 2: pre-process strings with ERB
+        if selected
+          elem.each do |k, v|
+            unless erb_excluded_fields.include? k
+              elem[k] = ERB.new(v).result(binding)
+            end
+          end
+        end
+
+        # 3: validate and normalize 'name', 'src', 'dst'
+        if selected
+          unless elem.has_key?('src')
+            error("elem '#{elem_identifier}' doesn't contain 'src'")
+          end
+          unless elem.has_key?('name')
+            elem['name'] = elem['src']
+          end
+          unless elem.has_key?('dst')
+            error("elem '#{elem_identifier}' doesn't contain 'dst'")
+          end
+        end
+
+        selected
       end
-      meta['elems'].each_with_index do |elem, idx|
-        error("elem '#{idx}' isn't a hash") unless elem.is_a?(Hash)
-        unless elem.has_key?('src')
-          error("elem '#{elem['name'] || "idx=#{idx}"}' doesn't contain 'src'")
-        end
-        unless elem.has_key?('name')
-          elem['name'] = elem['src']
-        end
-        unless elem.has_key?('dst')
-          error("elem '#{elem['name']}' doesn't contain 'dst'")
-        end
-        if elem.has_key?('only') && !elem['only'].is_a?(Array)
-          error("elem '#{elem['name']}' has invalid 'only': it's not an array")
-        end
-      end
+
       meta
     end
 
@@ -238,6 +266,10 @@ module Fizzy
 
     def get_var!(var_name)
       get_var(var_name) or raise "undefined or `nil` variable: '#{var_name}'"
+    end
+
+    def has_feature?(feature_name)
+      get_var!('features').include? feature_name.to_s
     end
 
     # }}}

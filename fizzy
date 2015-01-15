@@ -116,12 +116,10 @@ module Fizzy
     ## Make sure you call setup_vars before calling this method.
     def get_meta(meta_path)
       erb_excluded_fields = ['only']
-      puts File.readlines(meta_path)[132]
-      puts File.readlines(meta_path)[133]
-      puts File.readlines(meta_path)[134]
+
       meta = YAML.load(File.read(meta_path))
 
-      meta = meta['elems'].each_with_index.select do |elem, idx|
+      meta['elems'] = meta['elems'].each_with_index.collect do |elem, idx|
         elem_identifier = elem['name'] || "idx=#{idx}"
 
         # 1: validate 'only' and determine if the element is selected.
@@ -160,8 +158,9 @@ module Fizzy
           end
         end
 
-        selected
-      end
+        next unless selected
+        elem
+      end.compact!
 
       meta
     end

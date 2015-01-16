@@ -66,6 +66,17 @@ end
 
 # ruby classes extensions {{{
 
+# monkey-patch to retrieve the template currently processed.
+class Thor
+  module Actions
+    old_template = instance_method(:template)
+    define_method :template, ->(source, *args, &blk) do
+      $FIZZY_CURRENT_TEMPLATE = source
+      old_template.bind(self).(source, *args, &blk)
+    end
+  end
+end
+
 class Hash
   def deep_merge(second)
     merger = proc do |key, v1, v2|
@@ -621,7 +632,11 @@ module Fizzy
         exclude_pattern = /#{exclude_pattern}|#{excluded_file}/
       end
 
-      directory(paths.cfg, paths.cur_inst, :exclude_pattern => exclude_pattern)
+      begin
+        directory(paths.cfg, paths.cur_inst, :exclude_pattern => exclude_pattern)
+      rescue SyntaxError
+        error "error while processing the template: #{$FIZZY_CURRENT_TEMPLATE}"
+      end
 
       # after instantiation
       say "created the configuration instance in: #{paths.cur_inst}", :green

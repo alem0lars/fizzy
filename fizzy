@@ -136,7 +136,7 @@ module Fizzy
     # meta {{{
 
     ## Make sure you call setup_vars before calling this method.
-    def get_meta(meta_path, tmp_path, elems_base_path)
+    def get_meta(meta_path, tmp_path, elems_base_path, verbose)
       say 'getting meta', :blue
       erb_excluded_fields = ['only']
 
@@ -145,15 +145,15 @@ module Fizzy
 
       meta['elems'] = meta['elems'].each_with_index.collect do |elem, idx|
         elem_identifier = elem['name'] || "src:'#{elem['src']}'"
-        info "\nelem: ", elem_identifier
+        info("\nelem: ", elem_identifier) if verbose
 
-        # 1: validate 'only' and determine if the element is selected.
+        # 1: Validate 'only' and determine if the element is selected.
         if elem.has_key?('only') && !elem['only'].is_a?(Hash)
           error("elem '#{elem_identifier}' has invalid 'only': it's not an hash")
         end
         unless elem.has_key?('only')
           selected = true
-          info ' ↳ ', "selected ('only' is empty)"
+          info(' ↳ ', "selected ('only' is #{set_color('empty', :green)})") if verbose
         else
           only = elem['only']
           wants_features = only.has_key?('features')
@@ -166,14 +166,14 @@ module Fizzy
           selected = !wants_features && !wants_vars
           selected ||= (feat_ok && vars_ok)
 
-          if selected
+          if selected && verbose
             info ' ↳ ', "#{set_color('selected', :green)} ('only' is #{set_color('satisfied', :green)})"
           end
         end
 
-        info(' ↳ ', "#{set_color('not selected', :red)}") unless selected
+        info(' ↳ ', "#{set_color('not selected', :red)}") if !selected && verbose
 
-        # 2: pre-process strings with ERB
+        # 2: Pre-process strings with ERB.
         if selected
           elem.each do |k, v|
             unless erb_excluded_fields.include? k
@@ -182,7 +182,7 @@ module Fizzy
           end
         end
 
-        # 3: validate and normalize 'name', 'src', 'dst'
+        # 3: Validate and normalize 'name', 'src', 'dst'.
         if selected
           unless elem.has_key?('src')
             error("elem '#{elem_identifier}' doesn't contain 'src'")
@@ -201,9 +201,9 @@ module Fizzy
       say ''
       info 'meta: ', "#{set_color(meta['elems'].count, :green)}/#{all_elems_count} elem(s) selected."
 
-      FileUtils.cd(tmp_path) do # stay in a safe place
+      FileUtils.cd(tmp_path) do # Stay in a safe place.
 
-        # for each active elem, match the 'src' field  against the filesystem
+        # For each active elem, match the `src` field  against the filesystem
         # and determine src / dst paths.
         meta['elems'].each do |elem|
           found = false
@@ -608,24 +608,27 @@ module Fizzy
     end
 
     option :vars_name, :required => true,
-           :desc => 'the name for the variables file to be used'
+           :desc => 'The name for the variables file to be used'
     option :inst_name, :required => true,
-           :desc => 'the name for the new configuration instance'
+           :desc => 'The name for the new configuration instance'
     option :fizzy_dir, :default => '/var/tmp/fizzy',
-           :desc => 'the root path for the directory internally used by fizzy'
-    desc 'instantiate', 'create a configuration instance in the current machine'
+           :desc => 'The root path for the directory internally used by fizzy.'
+    option :verbose, :type => :boolean, :default => false,
+           :desc => 'If the output should be verbose.'
+    desc 'instantiate',
+         'Create a configuration instance in the current machine.'
     def instantiate
-      # before instantiation
+      # Before instantiation.
       paths = prepare_storage(options.fizzy_dir,
                               :valid_inst    => false,
                               :cur_inst_name => options.inst_name)
       setup_vars(paths.cfg_vars, options.vars_name)
 
-      meta = get_meta(paths.cfg_meta, paths.tmp, paths.cfg)
+      meta = get_meta(paths.cfg_meta, paths.tmp, paths.cfg, options.verbose)
 
-      # create a configuration instance
-      say "creating a configuration instance named '#{options.inst_name}' " +
-          "from: #{paths.cfg}", :blue
+      # Create a configuration instance.
+      say "Creating a configuration instance named `#{options.inst_name}` " +
+          "from: `#{paths.cfg}`.", :blue
 
       exclude_pattern = /\.git|README/
       meta['excluded_files'].each do |excluded_file|
@@ -635,11 +638,11 @@ module Fizzy
       begin
         directory(paths.cfg, paths.cur_inst, :exclude_pattern => exclude_pattern)
       rescue SyntaxError
-        error "error while processing the template: #{$FIZZY_CURRENT_TEMPLATE}"
+        error "Error while processing the template: `#{$FIZZY_CURRENT_TEMPLATE}`."
       end
 
-      # after instantiation
-      say "created the configuration instance in: #{paths.cur_inst}", :green
+      # After instantiation.
+      say "Created the configuration instance in: `#{paths.cur_inst}`.", :green
     end
 
     def self.source_root; '/' end
@@ -651,16 +654,18 @@ module Fizzy
     include Fizzy::Utils
 
     option :vars_name, :required => true,
-           :desc => 'the name for the variables file to be used'
+           :desc => 'The name for the variables file to be used.'
     option :inst_name, :required => true,
-           :desc => 'the name for the new configuration instance'
+           :desc => 'The name for the new configuration instance.'
     option :fizzy_dir, :default => '/var/tmp/fizzy',
-           :desc => 'the root path for the directory internally used by fizzy'
+           :desc => 'The root path for the directory internally used by fizzy.'
     option :run_mode, :default => 'normal',
            :enum => ['normal', 'paranoid', 'dry'],
-           :desc => 'ask confirmation for each filesystem operation'
+           :desc => 'Ask confirmation for each filesystem operation.'
+    option :verbose, :type => :boolean, :default => false,
+           :desc => 'If the output should be verbose.'
     desc 'install',
-         'install the current configuration instance in the system'
+         'Install the current configuration instance in the system.'
     def install
       @run_mode = options.run_mode.to_sym
 
@@ -669,7 +674,7 @@ module Fizzy
                               :cur_inst_name => options.inst_name)
       setup_vars(paths.cur_inst_vars, options.vars_name)
 
-      meta = get_meta(paths.cur_inst_meta, paths.tmp, paths.cur_inst)
+      meta = get_meta(paths.cur_inst_meta, paths.tmp, paths.cur_inst, options.verbose)
 
       # perform install
       say "installing the configuration instance '#{options.inst_name}' " +

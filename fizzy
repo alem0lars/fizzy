@@ -541,6 +541,8 @@ module Fizzy
           if status && git_should_pull(paths.cfg)
             say 'performing pull', :cyan
             status = system('git pull origin master')
+            status &&= system('git submodule foreach git checkout master')
+            status &&= system('git submodule foreach git merge origin/master')
           end
           # (optional) push
           if status && git_should_push(paths.cfg)
@@ -552,7 +554,7 @@ module Fizzy
       else
         say "syncing from remote repo: '#{options.url}'", :blue
         error('invalid url option') if options.url.nil?
-        system("git clone #{options.url} #{paths.cfg}")
+        system("git clone --recursive #{options.url} #{paths.cfg}")
       end
 
       # after sync

@@ -51,6 +51,7 @@ require 'pathname'
 require 'yaml'
 # TMP (debug) {{{
 require 'ap'
+require 'pry'
 # }}}
 
 begin
@@ -67,8 +68,14 @@ end
 
 class Hash
   def deep_merge(second)
-    merger = proc do |key,v1,v2|
-      Hash === v1 && Hash === v2 ? v1.merge(v2, &merger) : v2
+    merger = proc do |key, v1, v2|
+      if Hash === v1 && Hash === v2
+        v1.merge(v2, &merger)
+      elsif Array === v1 && Array === v2
+        (Set.new(v1) + Set.new(v2)).to_a
+      else
+        v2
+      end
     end
     self.merge(second, &merger)
   end
@@ -119,6 +126,7 @@ module Fizzy
 
     ## Make sure you call setup_vars before calling this method.
     def get_meta(meta_path, tmp_path, elems_base_path)
+      say 'getting meta', :blue
       erb_excluded_fields = ['only']
 
       meta = YAML.load(File.read(meta_path))
@@ -126,6 +134,7 @@ module Fizzy
 
       meta['elems'] = meta['elems'].each_with_index.collect do |elem, idx|
         elem_identifier = elem['name'] || "src:'#{elem['src']}'"
+        info "\nelem: ", elem_identifier
 
         # 1: validate 'only' and determine if the element is selected.
         if elem.has_key?('only') && !elem['only'].is_a?(Hash)
@@ -133,20 +142,25 @@ module Fizzy
         end
         unless elem.has_key?('only')
           selected = true
-          #say "elem '#{elem_identifier}' selected (no 'only')."
+          info ' ↳ ', "selected ('only' is empty)"
         else
           only = elem['only']
           wants_features = only.has_key?('features')
           wants_vars = only.has_key?('vars')
+          feat_ok = wants_features ?
+                      only['features'].any? { |f| has_feature? f } : true
+          vars_ok = wants_vars ?
+                    only['vars'].any? { |v| !get_var(v).nil? } : true
+
           selected = !wants_features && !wants_vars
-          selected ||= wants_features &&
-                        only['features'].any? { |f| has_feature? f }
-          selected ||= wants_vars &&
-                       only['vars'].any? { |v| get_var v }
+          selected ||= (feat_ok && vars_ok)
+
           if selected
-            #say "elem '#{elem_identifier} selected (by 'only')."
+            info ' ↳ ', "#{set_color('selected', :green)} ('only' is #{set_color('satisfied', :green)})"
           end
         end
+
+        info(' ↳ ', "#{set_color('not selected', :red)}") unless selected
 
         # 2: pre-process strings with ERB
         if selected
@@ -173,7 +187,8 @@ module Fizzy
         next unless selected
         elem
       end.compact!
-      info 'meta: ', "#{set_color(meta['elems'].count, :green)}/#{all_elems_count} elem(s) enabled."
+      say ''
+      info 'meta: ', "#{set_color(meta['elems'].count, :green)}/#{all_elems_count} elem(s) selected."
 
       FileUtils.cd(tmp_path) do # stay in a safe place
 
@@ -215,6 +230,7 @@ module Fizzy
         meta['excluded_files'] = all_files - src_paths
         #ap meta['excluded_files']
         info 'meta: ', "#{set_color(meta['excluded_files'].count, :red)}/#{all_files.count} file(s) excluded."
+        say
       end
 
       #ap meta['elems']
@@ -228,6 +244,7 @@ module Fizzy
     attr_reader :vars
 
     def setup_vars(vars_path, vars_file_name)
+      say 'setting up vars', :blue
       vars = {}
       dummy_names_regex = /none|nothing/i
       inherits_regex = /#=>\s*inherits:\s*(?<inherits_name>[^\s]+)\s*<=#/i
@@ -263,6 +280,8 @@ module Fizzy
       read_vars_file.call(vars_file_name)
 
       @vars = vars
+
+      say ''
     end
 
     def get_var(var_name)

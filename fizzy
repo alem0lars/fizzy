@@ -136,7 +136,7 @@ module Fizzy
     # meta {{{
 
     ## Make sure you call setup_vars before calling this method.
-    def get_meta(meta_path, tmp_path, elems_base_path, verbose)
+    def get_meta(meta_path, vars_path, tmp_path, elems_base_path, verbose)
       say 'getting meta', :blue
       erb_excluded_fields = ['only']
 
@@ -238,7 +238,9 @@ module Fizzy
         # build the list of excluded files (needed by thor's `directory()`)
         all_files = Set.new(Find.find(elems_base_path).select { |f| File.file? f})
         src_paths = Set.new(meta['elems'].collect { |elem| elem['src_path'] })
-        meta['excluded_files'] = all_files - src_paths
+        vars_files = Dir.glob(File.join(vars_path, '*'), File::FNM_DOTMATCH)
+        meta['system_files'] = Set.new(vars_files << meta_path)
+        meta['excluded_files'] = all_files - src_paths - meta['system_files']
         #ap meta['excluded_files']
         info 'meta: ', "#{set_color(meta['excluded_files'].count, :red)}/#{all_files.count} file(s) excluded."
         say
@@ -624,7 +626,8 @@ module Fizzy
                               :cur_inst_name => options.inst_name)
       setup_vars(paths.cfg_vars, options.vars_name)
 
-      meta = get_meta(paths.cfg_meta, paths.tmp, paths.cfg, options.verbose)
+      meta = get_meta(
+        paths.cfg_meta, paths.cfg_vars, paths.tmp, paths.cfg, options.verbose)
 
       # Create a configuration instance.
       say "Creating a configuration instance named `#{options.inst_name}` " +
@@ -674,7 +677,9 @@ module Fizzy
                               :cur_inst_name => options.inst_name)
       setup_vars(paths.cur_inst_vars, options.vars_name)
 
-      meta = get_meta(paths.cur_inst_meta, paths.tmp, paths.cur_inst, options.verbose)
+      meta = get_meta(
+        paths.cur_inst_meta, paths.cur_inst_vars,
+        paths.tmp, paths.cur_inst, options.verbose)
 
       # perform install
       say "installing the configuration instance '#{options.inst_name}' " +

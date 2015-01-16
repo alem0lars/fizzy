@@ -141,7 +141,7 @@ module Fizzy
       erb_excluded_fields = ['only']
 
       meta = YAML.load(File.read(meta_path))
-      all_elems_count = meta['elems'].count
+      meta["all_elems_count"] = meta['elems'].count
 
       meta['elems'] = meta['elems'].each_with_index.collect do |elem, idx|
         elem_identifier = elem['name'] || "src:'#{elem['src']}'"
@@ -198,8 +198,6 @@ module Fizzy
         next unless selected
         elem
       end.compact!
-      say ''
-      info 'meta: ', "#{set_color(meta['elems'].count, :green)}/#{all_elems_count} elem(s) selected."
 
       FileUtils.cd(tmp_path) do # Stay in a safe place.
 
@@ -241,9 +239,8 @@ module Fizzy
         vars_files = Dir.glob(File.join(vars_path, '*'), File::FNM_DOTMATCH)
         meta['system_files'] = Set.new(vars_files << meta_path)
         meta['excluded_files'] = all_files - src_paths - meta['system_files']
+        meta['all_files_count'] = all_files.count
         #ap meta['excluded_files']
-        info 'meta: ', "#{set_color(meta['excluded_files'].count, :red)}/#{all_files.count} file(s) excluded."
-        say
       end
 
       #ap meta['elems']
@@ -629,6 +626,10 @@ module Fizzy
       meta = get_meta(
         paths.cfg_meta, paths.cfg_vars, paths.tmp, paths.cfg, options.verbose)
 
+      info 'meta: ', "#{set_color(meta['elems'].count, :green)}/#{meta['all_elems_count']} elem(s) selected."
+      info 'meta: ', "#{set_color(meta['excluded_files'].count, :red)}/#{meta['all_files.count']} file(s) excluded."
+      say
+
       # Create a configuration instance.
       say "Creating a configuration instance named `#{options.inst_name}` " +
           "from: `#{paths.cfg}`.", :blue
@@ -685,12 +686,14 @@ module Fizzy
       say "installing the configuration instance '#{options.inst_name}' " +
           "into the system", :blue
       FileUtils.cd(paths.tmp) do # stay in a safe place
-        enabled_elems(meta['elems'], get_var!('features')).each do |elem|
+        meta['elems'].each do |elem|
           say "installing elem: '#{elem['name']}'", :cyan
           appliers.each { |applier| applier.call(elem) }
           if elem['notes']
             say "notes for '#{elem['name']}:", :yellow
-            say elem['notes']
+            say elem['notes'].split("\n").collect { |s|
+              "  #{s}"
+            }.join("\n")
           end
         end
       end

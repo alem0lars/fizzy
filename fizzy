@@ -121,7 +121,7 @@ module Fizzy
       erb_excluded_fields = ['only']
 
       meta = YAML.load(File.read(meta_path))
-      say "meta: processing #{meta['elems'].count} elem(s)."
+      all_elems_count = meta['elems'].count
 
       meta['elems'] = meta['elems'].each_with_index.collect do |elem, idx|
         elem_identifier = elem['name'] || "src:'#{elem['src']}'"
@@ -172,7 +172,7 @@ module Fizzy
         next unless selected
         elem
       end.compact!
-      say "meta: #{meta['elems'].count} elem(s) enabled."
+      say "meta: #{meta['elems'].count}/#{all_elems_count} elem(s) enabled."
 
       FileUtils.cd(tmp_path) do # stay in a safe place
 
@@ -209,10 +209,11 @@ module Fizzy
         end
 
         # build the list of excluded files (needed by thor's `directory()`)
+        all_files = Set.new(Find.find(elems_base_path).select { |f| File.file? f})
         src_paths = Set.new(meta['elems'].collect { |elem| elem['src_path'] })
-        all_paths = Set.new(Find.find(elems_base_path))
-        meta['excluded_files'] = all_paths - src_paths
-        say "meta: #{meta['excluded_files'].count} file(s) excluded."
+        meta['excluded_files'] = all_files - src_paths
+        #ap meta['excluded_files']
+        say "meta: #{meta['excluded_files'].count}/#{all_files.count} file(s) excluded."
       end
 
       #ap meta['elems']

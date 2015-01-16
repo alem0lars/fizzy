@@ -48,6 +48,9 @@ require 'ostruct'
 require 'net/http'
 require 'pathname'
 require 'yaml'
+# TMP (debug) {{{
+require 'ap'
+# }}}
 
 begin
   require 'thor'
@@ -114,10 +117,11 @@ module Fizzy
     # meta {{{
 
     ## Make sure you call setup_vars before calling this method.
-    def get_meta(meta_path)
+    def get_meta(meta_path, tmp_path, elems_base_path)
       erb_excluded_fields = ['only']
 
       meta = YAML.load(File.read(meta_path))
+      say "meta: processing #{meta['elems'].count} elem(s)."
 
       meta['elems'] = meta['elems'].each_with_index.collect do |elem, idx|
         elem_identifier = elem['name'] || "src:'#{elem['src']}'"
@@ -168,32 +172,15 @@ module Fizzy
         next unless selected
         elem
       end.compact!
+      say "meta: #{meta['elems'].count} elem(s) enabled."
 
-      meta
-    end
-
-    # }}}
-
-    # elems {{{
-
-    def enabled_elems(elems, features)
-      elems.select { |elem| enabled_elem?(elem, features) }
-    end
-
-    def excluded_elems(elems, features)
-      elems.reject { |elem| enabled_elem?(elem, features) }
-    end
-
-    def enabled_elem?(elem, features)
-      !elem.has_key?('only') || elem['only'].any? { |o| features.include?(o) }
-    end
-
-    def normalize_elems(elems, tmp_path, elems_base_path)
-      normalized_elems = []
       FileUtils.cd(tmp_path) do # stay in a safe place
 
-        elems.each do |elem|
+        # for each active elem, match the 'src' field  against the filesystem
+        # and determine src / dst paths.
+        meta['elems'].each do |elem|
           found = false
+
           Find.find(elems_base_path).each do |subfile_path|
             subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
               Pathname.new(elems_base_path)).to_s
@@ -208,7 +195,7 @@ module Fizzy
                   md[idx]
                 end
               end
-              normalized_elems << elem.merge({
+              elem.merge!({
                 'src_path' => subfile_path,
                 'dst_path' => dst_path
               })
@@ -221,8 +208,15 @@ module Fizzy
 
         end
 
+        # build the list of excluded files (needed by thor's `directory()`)
+        src_paths = Set.new(meta['elems'].collect { |elem| elem['src_path'] })
+        all_paths = Set.new(Find.find(elems_base_path))
+        meta['excluded_files'] = all_paths - src_paths
+        say "meta: #{meta['excluded_files'].count} file(s) excluded."
       end
-      normalized_elems
+
+      #ap meta['elems']
+      meta
     end
 
     # }}}
@@ -453,7 +447,7 @@ module Fizzy
 
     def warning(msg)
       say msg, :yellow
-      exit(-1) unless quiz("continue?")
+      exit(-1) unless quiz('continue')
     end
 
     def error(msg)
@@ -583,16 +577,15 @@ module Fizzy
                               :cur_inst_name => options.inst_name)
       setup_vars(paths.cfg_vars, options.vars_name)
 
-      meta = get_meta(paths.cfg_meta)
-      meta['elems'] = normalize_elems(meta['elems'], paths.tmp, paths.cfg)
+      meta = get_meta(paths.cfg_meta, paths.tmp, paths.cfg)
 
       # create a configuration instance
       say "creating a configuration instance named '#{options.inst_name}' " +
           "from: #{paths.cfg}", :blue
 
       exclude_pattern = /\.git|README/
-      excluded_elems(meta['elems'], get_var!('features')).each do |excluded_elem|
-        exclude_pattern = /#{exclude_pattern}|#{excluded_elem['src']}/
+      meta['excluded_files'].each do |excluded_file|
+        exclude_pattern = /#{exclude_pattern}|#{excluded_file}/
       end
 
       directory(paths.cfg, paths.cur_inst, :exclude_pattern => exclude_pattern)
@@ -628,8 +621,7 @@ module Fizzy
                               :cur_inst_name => options.inst_name)
       setup_vars(paths.cur_inst_vars, options.vars_name)
 
-      meta = get_meta(paths.cur_inst_meta)
-      meta['elems'] = normalize_elems(meta['elems'], paths.tmp, paths.cur_inst)
+      meta = get_meta(paths.cur_inst_meta, paths.tmp, paths.cur_inst)
 
       # perform install
       say "installing the configuration instance '#{options.inst_name}' " +

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# coding: utf-8
 #
 ###############################################################################
 #                                                                             #
@@ -172,7 +173,7 @@ module Fizzy
         next unless selected
         elem
       end.compact!
-      say "meta: #{meta['elems'].count}/#{all_elems_count} elem(s) enabled."
+      info 'meta: ', "#{set_color(meta['elems'].count, :green)}/#{all_elems_count} elem(s) enabled."
 
       FileUtils.cd(tmp_path) do # stay in a safe place
 
@@ -213,7 +214,7 @@ module Fizzy
         src_paths = Set.new(meta['elems'].collect { |elem| elem['src_path'] })
         meta['excluded_files'] = all_files - src_paths
         #ap meta['excluded_files']
-        say "meta: #{meta['excluded_files'].count}/#{all_files.count} file(s) excluded."
+        info 'meta: ', "#{set_color(meta['excluded_files'].count, :red)}/#{all_files.count} file(s) excluded."
       end
 
       #ap meta['elems']
@@ -230,8 +231,13 @@ module Fizzy
       vars = {}
       dummy_names_regex = /none|nothing/i
       inherits_regex = /#=>\s*inherits:\s*(?<inherits_name>[^\s]+)\s*<=#/i
+      nesting = 0
 
       read_vars_file = lambda do |file_name|
+        inherit_str = nesting == 0 ?
+                        'vars tree: ' :
+                        ' ' * (11 + (nesting - 1) * 2) + '↳ '
+        info inherit_str, file_name
         file_path = File.join(vars_path, "#{file_name}.yml")
         file_content = File.read(file_path)
 
@@ -245,6 +251,7 @@ module Fizzy
           unless File.file?(inherits_file_path)
             error("inherited vars file doesn't exist: '#{inherits_name}'")
           end
+          nesting += 1
           vars = vars.deep_merge(read_vars_file.call(inherits_name))
         end
 
@@ -444,6 +451,10 @@ module Fizzy
       else
         error("unhandled question type: '#{type}'")
       end
+    end
+
+    def info(prefix, msg)
+      say("#{set_color(prefix, :cyan)}#{set_color(msg, :white)}")
     end
 
     def warning(msg)

@@ -8,12 +8,12 @@
 # - Summary: the script for invoking fizzy commands                           #
 # - Authors:                                                                  #
 #   - Alessandro Molari <molari.alessandro@gmail.com> (alem0lars)             #
+# - Contributors:                                                             #
+#   - Luca Molari <molari.luca@gmail.com> (lmolr)                             #
 #   Except:                                                                   #
 #   - Hash#deep_merge:                                                        #
 #     - From: http://www.ruby-forum.com/topic/142809                          #
 #     - Author: Stefan Rusterholz                                             #
-# - Thanks to:                                                                #
-#   - Luca Molari <molari.luca@gmail.com> (lmolr) for general support         #
 #                                                                             #
 # Project informations:                                                       #
 #   - Homepage:        https://github.com/alem0lars/fizzy                     #

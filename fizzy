@@ -49,10 +49,6 @@ require 'ostruct'
 require 'net/http'
 require 'pathname'
 require 'yaml'
-# TMP (debug) {{{
-require 'ap'
-require 'pry'
-# }}}
 
 begin
   require 'thor'
@@ -245,10 +241,8 @@ module Fizzy
         meta['system_files'] = Set.new(vars_files << meta_path)
         meta['excluded_files'] = all_files - src_paths - meta['system_files']
         meta['all_files_count'] = all_files.count
-        #ap meta['excluded_files']
       end
 
-      ap meta['elems']
       meta
     end
 

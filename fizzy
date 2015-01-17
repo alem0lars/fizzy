@@ -365,7 +365,9 @@ module Fizzy
       end
 
       if really_run
-        system(full_cmd)
+        status = system(full_cmd)
+        warning "Command `#{full_cmd}` exited with status: `#{status}`"
+        status
       end
     end
 
@@ -726,8 +728,8 @@ module Fizzy
               exec_cmd("mkdir -p \"#{parent_dir}\"",
                        :as_su => !existing_dir(parent_dir))
               if elem.has_key?('perms') && (l_ex_dir_path != f_noex_dir_path)
-                ask_exec_cmd("chmod -R \"#{elem['perms']}\" \"#{f_noex_dir_path}\"",
-                             :as_su => !File.owned?(f_noex_dir_path))
+                exec_cmd("chmod -R \"#{elem['perms']}\" \"#{f_noex_dir_path}\"",
+                         :as_su => !File.owned?(f_noex_dir_path))
               end
             end
           end

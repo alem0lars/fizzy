@@ -555,11 +555,6 @@ module Fizzy
       error('WIP, check later!')
     end
 
-    desc 'add', 'Add a new configuration.'
-    def add
-      error('WIP, check later!')
-    end
-
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
     desc 'edit CFG_NAME', 'Find the files relative to CFG_NAME and edit them.'

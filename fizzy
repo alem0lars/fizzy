@@ -565,10 +565,10 @@ module Fizzy
       paths = prepare_storage(options.fizzy_dir, :valid_inst => false)
       find_path = File.join(paths.cfg, cfg_name)
       cfg_files_arg = (File.exist?(find_path) ?
-          find_path :
-          Dir.glob("#{find_path}*", File::FNM_DOTMATCH).to_a.delete_if { |elem|
-            elem =~ /\.git/
-          }.collect { |elem| "\"#{elem}\"" }.join(' ')
+          "\"#{find_path}\"" :
+          Dir.glob("#{find_path}*", File::FNM_DOTMATCH).to_a.delete_if { |cfg_file_path|
+            cfg_file_path =~ /\.git/
+          }.collect { |cfg_file_path| "\"#{cfg_file_path}\"" }.join(' ')
       ).strip
       editor = ENV['EDITOR'] || 'vim'
 

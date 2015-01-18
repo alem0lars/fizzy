@@ -59,6 +59,11 @@ end
 
 # }}}
 
+# {{{ configuration
+
+$DEF_FIZZY_DIR = ENV['FIZZY_DIR'] || '/var/tmp/fizzy'
+
+# }}}
 
 # ruby classes extensions {{{
 
@@ -67,7 +72,7 @@ class Thor
   module Actions
     old_template = instance_method(:template)
     define_method :template, ->(source, *args, &blk) do
-      $FIZZY_CURRENT_TEMPLATE = source
+      $fizzy_cur_template = source
       old_template.bind(self).(source, *args, &blk)
     end
   end
@@ -366,7 +371,7 @@ module Fizzy
 
       if really_run
         status = system(full_cmd)
-        warning "Command `#{full_cmd}` exited with status: `#{status}`"
+        warning "Command `#{full_cmd}` failed." unless status
         status
       end
     end
@@ -514,7 +519,7 @@ module Fizzy
 
     end
 
-    option :fizzy_dir, :default => '/var/tmp/fizzy',
+    option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'the root path for the directory internally used by fizzy'
     desc 'edit CFG_NAME', 'find the files relative to CFG_NAME and edit them'
     def edit(cfg_name)
@@ -548,7 +553,7 @@ module Fizzy
       end
     end
 
-    option :fizzy_dir, :default => '/var/tmp/fizzy',
+    option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'the root path for the directory internally used by fizzy'
     option :url, :default => nil,
            :desc => 'the url to the repository holding config (suppored: git)'
@@ -611,7 +616,7 @@ module Fizzy
            :desc => 'The name for the variables file to be used'
     option :inst_name, :required => true,
            :desc => 'The name for the new configuration instance'
-    option :fizzy_dir, :default => '/var/tmp/fizzy',
+    option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by fizzy.'
     option :verbose, :type => :boolean, :default => false,
            :desc => 'If the output should be verbose.'
@@ -643,7 +648,7 @@ module Fizzy
       begin
         directory(paths.cfg, paths.cur_inst, :exclude_pattern => exclude_pattern)
       rescue SyntaxError
-        error "Error while processing the template: `#{$FIZZY_CURRENT_TEMPLATE}`."
+        error "Error while processing the template: `#{$fizzy_cur_template}`."
       end
 
       # After instantiation.
@@ -662,7 +667,7 @@ module Fizzy
            :desc => 'The name for the variables file to be used.'
     option :inst_name, :required => true,
            :desc => 'The name for the new configuration instance.'
-    option :fizzy_dir, :default => '/var/tmp/fizzy',
+    option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by fizzy.'
     option :run_mode, :default => 'normal',
            :enum => ['normal', 'paranoid', 'dry'],
@@ -724,6 +729,11 @@ module Fizzy
             else
               l_ex_dir_path = f_noex_dir_path = nil
             end
+            # From here, we have the following variable set:
+            # - `l_ex_dir_path`: longest path prefix which points to an
+            #                    existing dir;
+            # - `f_noex_dir_path`: path of the first directory after the
+            #                      prefix which points to an existing dir.
             if !File.directory?(parent_dir)
               exec_cmd("mkdir -p \"#{parent_dir}\"",
                        :as_su => !existing_dir(parent_dir))
@@ -738,7 +748,7 @@ module Fizzy
           elem['fs_maps'].each do |m|
             cmd = "ln -s \"#{m['src_path']}\" \"#{m['dst_path']}\""
             if File.file?(m['dst_path'])
-              say "skipping '#{m['dst_path']}': already exists", :yellow
+              warn "skipping '#{m['dst_path']}': already exists"
             else
               exec_cmd(cmd,
                        :as_su => !existing_dir(File.dirname(m['dst_path'])))

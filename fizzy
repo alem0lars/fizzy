@@ -75,6 +75,7 @@ if RUBY_PLATFORM_IS_LINUX
 elsif RUBY_PLATFORM_IS_OSX
   $DEF_FIZZY_DIR ||= '~/Library/Application Support/Fizzy'
 end
+$DEF_FIZZY_DIR = File.expand_path($DEF_FIZZY_DIR)
 
 # }}}
 
@@ -396,7 +397,7 @@ module Fizzy
 
     def prepare_storage(root_path, valid_cfg: true, valid_inst: true, cur_inst_name: nil)
       # paths based on internal conventions
-      parent_path        = File.expand_path(File.dirname(root_path))
+      parent_path        = File.dirname(File.expand_path(root_path))
       tmp_path           = File.join(root_path, 'tmp')
 
       cfg_path           = File.join(root_path, 'cfg')

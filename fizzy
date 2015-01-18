@@ -568,7 +568,7 @@ module Fizzy
           find_path :
           Dir.glob("#{find_path}*", File::FNM_DOTMATCH).to_a.delete_if { |elem|
             elem =~ /\.git/
-          }.join(' ')
+          }.collect { |elem| "\"#{elem}\"" }.join(' ')
       ).strip
       editor = ENV['EDITOR'] || 'vim'
 

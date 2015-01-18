@@ -60,7 +60,7 @@ end
 # }}}
 
 # global constants {{{
-  
+
 RUBY_PLATFORM_IS_OSX   = RUBY_PLATFORM =~ /darwin/
 RUBY_PLATFORM_IS_LINUX = RUBY_PLATFORM =~ /linux/
 
@@ -529,14 +529,14 @@ module Fizzy
       # Prepare paths for cleanup.
       paths = prepare_storage(options.fizzy_dir,
                               :valid_cfg => false, :valid_inst => false)
-      
+
       # Perform cleanup.
       status = if quiz "Do you want to remove the Fizzy root directory `#{paths.root}`"
         exec_cmd("rm -Rf \"#{paths.root}\"")
       else
         nil
       end
-      
+
       # Inform user about the cleanup status.
       if status
         say "Successfully cleaned: `#{paths.root}`.", :green
@@ -546,7 +546,7 @@ module Fizzy
         error "Failed to cleanup: `#{paths.root}`.", :red
       end
     end
-    
+
     desc 'import', 'Import an existing configuration.'
     def import
       error('WIP, check later!')
@@ -783,7 +783,8 @@ module Fizzy
           elem['fs_maps'].each do |m|
             cmd = "ln -s \"#{m['src_path']}\" \"#{m['dst_path']}\""
             if File.file?(m['dst_path'])
-              warning "Skipping `#{m['dst_path']}`: already exists."
+              warning "Skipping `#{m['dst_path']}`: already exists.",
+                      :ask_continue => (@run_mode == :paranoid)
             else
               exec_cmd(cmd,
                        :as_su => !existing_dir(File.dirname(m['dst_path'])))

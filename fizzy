@@ -53,7 +53,7 @@ require 'yaml'
 begin
   require 'thor'
 rescue
-  puts '[error] thor is not installed'
+  puts '☠ thor is not installed'
   exit(-1)
 end
 
@@ -163,7 +163,7 @@ module Fizzy
 
         # 1: Validate 'only' and determine if the element is selected.
         if elem.has_key?('only') && !elem['only'].is_a?(Hash)
-          error("The configuration element `#{elem_identifier}` has invalid `only`: it's not a `Hash`.")
+          error "The configuration element `#{elem_identifier}` has invalid `only`: it's not a `Hash`."
         end
         unless elem.has_key?('only')
           selected = true
@@ -197,13 +197,13 @@ module Fizzy
         # 3: Validate and normalize 'name', 'src', 'dst', 'fs_maps'.
         if selected
           unless elem.has_key?('src')
-            error("Element `#{elem_identifier}` doesn't contain `src`.")
+            error "Element `#{elem_identifier}` doesn't contain `src`."
           end
           unless elem.has_key?('name')
             elem['name'] = elem['src']
           end
           unless elem.has_key?('dst')
-            error("Element `#{elem_identifier}` doesn't contain `dst`.")
+            error "Element `#{elem_identifier}` doesn't contain `dst`."
           end
           elem['fs_maps'] = []
         end
@@ -227,8 +227,8 @@ module Fizzy
               dst_path = elem['dst'].gsub(/<([0-9]+)>/) do
                 idx = Integer($1)
                 unless (1..md.length) === idx
-                  error("Invalid 'dst' for element `#{elem['name']}`: nothing " +
-                        "captured at index `#{idx}`.")
+                  error "Invalid 'dst' for element `#{elem['name']}`: nothing " +
+                        "captured at index `#{idx}`."
                 else
                   md[idx]
                 end
@@ -291,7 +291,7 @@ module Fizzy
         if inherits_name && !(inherits_name =~ dummy_names_regex)
           inherits_file_path = File.join(vars_path, "#{inherits_name}.yml")
           unless File.file?(inherits_file_path)
-            error("Inherited variables file doesn't exist: `#{inherits_name}`")
+            error "Inherited variables file doesn't exist: `#{inherits_name}`"
           end
           nesting += 1
           vars = vars.deep_merge(read_vars_file.call(inherits_name))
@@ -412,38 +412,38 @@ module Fizzy
       if ((File.directory?(root_path)  && !File.writable?(root_path)) ||
           File.file?(root_path)                                       ||
           (!File.directory?(root_path) && !File.writable?(parent_path)))
-        error("No write permissions in Fizzy storage at path `#{root_path}`.")
+        error "No write permissions in Fizzy storage at path `#{root_path}`."
       end
       if ((File.directory?(tmp_path) && !File.writable?(tmp_path)) ||
           File.file?(tmp_path))
-        error('The temporary directory `#{tmp_path}` already exists but is not writable.')
+        error 'The temporary directory `#{tmp_path}` already exists but is not writable.'
       end
       if valid_cfg
         if !File.directory?(root_path)
-          error("The Fizzy root directory `#{root_path}` doesn't exist (maybe you need to run: `fizzy cfg sync`).")
+          error "The Fizzy root directory `#{root_path}` doesn't exist (maybe you need to run: `fizzy cfg sync`)."
         end
         if !File.directory?(cfg_path) || !File.writable?(cfg_path)
-          error('The configuration directory `#{cfg_path}` already exists but is not writable.')
+          error 'The configuration directory `#{cfg_path}` already exists but is not writable.'
         end
         if !File.file?(cfg_meta_path)
-          error("The configuration directory `#{cfg_meta_path}` is invalid: not a valid meta file.")
+          error "The configuration directory `#{cfg_meta_path}` is invalid: not a valid meta file."
         end
         if !File.directory?(cfg_vars_path)
-          error("The variables directory `#{cfg_vars_path}` is invalid: doesn't exist.")
+          error "The variables directory `#{cfg_vars_path}` is invalid: doesn't exist."
         end
       end
       if valid_inst
         if !File.directory?(root_path)
-          error("The Fizzy root directory `#{root_path}` doesn't exist (maybe you need to run: `fizzy cfg sync`).")
+          error "The Fizzy root directory `#{root_path}` doesn't exist (maybe you need to run: `fizzy cfg sync`)."
         end
         if !File.directory?(cur_inst_path) || !File.writable?(cur_inst_path)
-          error('The current instance `#{cur_inst_name}` is stored in an invalid path (`#{cur_inst_path}`): already exists but is not writable.')
+          error 'The current instance `#{cur_inst_name}` is stored in an invalid path (`#{cur_inst_path}`): already exists but is not writable.'
         end
         if !File.file?(cur_inst_meta_path)
-          error("The meta file path (`cur_inst_meta_path`) for the current instance `#{cur_inst_name}` is invalid: doesn't exist or isn't a regular file.")
+          error "The meta file path (`cur_inst_meta_path`) for the current instance `#{cur_inst_name}` is invalid: doesn't exist or isn't a regular file."
         end
         if !File.directory?(cur_inst_vars_path)
-          error("The variables directory (`#{cur_inst_vars_path}`) for the current instance `#{cur_inst_name}` is invalid: doesn't exist or isn't a directory")
+          error "The variables directory (`#{cur_inst_vars_path}`) for the current instance `#{cur_inst_name}` is invalid: doesn't exist or isn't a directory"
         end
       end
 
@@ -495,16 +495,16 @@ module Fizzy
     end
 
     def info(prefix, msg)
-      say("#{set_color(prefix, :cyan)}#{set_color(msg, :white)}")
+      say("☞ #{set_color(prefix, :cyan)}#{set_color(msg, :white)}")
     end
 
     def warning(msg, ask_continue: true)
-      say msg, :yellow
+      say "⚠ #{msg}", :yellow
       exit(-1) if ask_continue && !quiz('continue')
     end
 
     def error(msg)
-      say msg, :red
+      say "☠ #{msg}", :red
       exit(-1)
     end
 

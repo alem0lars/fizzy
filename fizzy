@@ -73,7 +73,7 @@ $DEF_FIZZY_DIR = ENV['FIZZY_DIR']
 if RUBY_PLATFORM_IS_LINUX
   $DEF_FIZZY_DIR ||= '/var/tmp/fizzy'
 elsif RUBY_PLATFORM_IS_OSX
-  $DEF_FIZZY_DIR ||= '/Library/Application Support/Fizzy'
+  $DEF_FIZZY_DIR ||= '~/Library/Application Support/Fizzy'
 end
 
 # }}}

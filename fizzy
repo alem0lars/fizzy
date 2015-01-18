@@ -5,7 +5,7 @@
 #                                                                             #
 # File informations:                                                          #
 # - Name:    fizzy                                                            #
-# - Summary: the script for invoking fizzy commands                           #
+# - Summary: The script for invoking Fizzy commands                           #
 # - Authors:                                                                  #
 #   - Alessandro Molari <molari.alessandro@gmail.com> (alem0lars)             #
 # - Contributors:                                                             #
@@ -68,7 +68,7 @@ RUBY_PLATFORM_IS_LINUX = RUBY_PLATFORM =~ /-linux$/
 
 # configuration {{{
 
-# Configure the default fizzy root directory.
+# Configure the default Fizzy root directory.
 $DEF_FIZZY_DIR = ENV['FIZZY_DIR']
 if RUBY_PLATFORM_IS_LINUX
   $DEF_FIZZY_DIR ||= '/var/tmp/fizzy'
@@ -151,7 +151,7 @@ module Fizzy
 
     ## Make sure you call setup_vars before calling this method.
     def get_meta(meta_path, vars_path, tmp_path, elems_base_path, verbose)
-      say 'getting meta', :blue
+      say 'Getting meta informations.', :blue
       erb_excluded_fields = ['only']
 
       meta = YAML.load(File.read(meta_path))
@@ -159,33 +159,31 @@ module Fizzy
 
       meta['elems'] = meta['elems'].each_with_index.collect do |elem, idx|
         elem_identifier = elem['name'] || "src:'#{elem['src']}'"
-        info("\nelem: ", elem_identifier) if verbose
+        info("\nElement: ", elem_identifier) if verbose
 
         # 1: Validate 'only' and determine if the element is selected.
         if elem.has_key?('only') && !elem['only'].is_a?(Hash)
-          error("elem '#{elem_identifier}' has invalid 'only': it's not an hash")
+          error("The configuration element `#{elem_identifier}` has invalid `only`: it's not a `Hash`.")
         end
         unless elem.has_key?('only')
           selected = true
-          info(' ↳ ', "selected ('only' is #{set_color('empty', :green)})") if verbose
+          info(' ↳ ', "#{set_color('✔', :green)} (`only` is empty).") if verbose
         else
           only = elem['only']
           wants_features = only.has_key?('features')
           wants_vars = only.has_key?('vars')
-          feat_ok = wants_features ?
-                      only['features'].any? { |f| has_feature? f } : true
-          vars_ok = wants_vars ?
-                    only['vars'].any? { |v| !get_var(v).nil? } : true
+          feat_ok = wants_features ? only['features'].any? { |f| has_feature? f } : true
+          vars_ok = wants_vars ? only['vars'].any? { |v| !get_var(v).nil? } : true
 
           selected = !wants_features && !wants_vars
           selected ||= (feat_ok && vars_ok)
 
           if selected && verbose
-            info ' ↳ ', "#{set_color('selected', :green)} ('only' is #{set_color('satisfied', :green)})"
+            info ' ↳ ', "#{set_color('✔', :green)} (`only` is present and satisfied)."
           end
         end
 
-        info(' ↳ ', "#{set_color('not selected', :red)}") if !selected && verbose
+        info(' ↳ ', "#{set_color('✘', :red)} (`only` is present and didn't match).") if !selected && verbose
 
         # 2: Pre-process strings with ERB.
         if selected
@@ -199,13 +197,13 @@ module Fizzy
         # 3: Validate and normalize 'name', 'src', 'dst', 'fs_maps'.
         if selected
           unless elem.has_key?('src')
-            error("elem '#{elem_identifier}' doesn't contain 'src'")
+            error("Element `#{elem_identifier}` doesn't contain `src`.")
           end
           unless elem.has_key?('name')
             elem['name'] = elem['src']
           end
           unless elem.has_key?('dst')
-            error("elem '#{elem_identifier}' doesn't contain 'dst'")
+            error("Element `#{elem_identifier}` doesn't contain `dst`.")
           end
           elem['fs_maps'] = []
         end
@@ -229,8 +227,8 @@ module Fizzy
               dst_path = elem['dst'].gsub(/<([0-9]+)>/) do
                 idx = Integer($1)
                 unless (1..md.length) === idx
-                  error("invalid 'dst' for elem '#{elem['name']}': nothing " +
-                        "captured at index '#{idx}'")
+                  error("Invalid 'dst' for element `#{elem['name']}`: nothing " +
+                        "captured at index `#{idx}`.")
                 else
                   md[idx]
                 end
@@ -243,7 +241,7 @@ module Fizzy
           end
 
           unless found
-            warning "inconsistency found for elem '#{elem['name']}': no file matches src: '#{elem['src']}'."
+            warning "Inconsistency found for elem `#{elem['name']}`: no file matches src: `#{elem['src']}`."
           end
 
         end
@@ -285,22 +283,22 @@ module Fizzy
         file_path = File.join(vars_path, "#{file_name}.yml")
         file_content = File.read(file_path)
 
-        # find the name of the file to be inherited
+        # Find the name of the file to be inherited.
         inherits_name = file_content.match(inherits_regex)[:inherits_name]
 
-        # load the file that should be inherited (if any) by calling this
-        # function recursively and merging the read variables into `vars`
+        # Load the file that should be inherited (if any) by calling this
+        # function recursively and merging the read variables into `vars`.
         if inherits_name && !(inherits_name =~ dummy_names_regex)
           inherits_file_path = File.join(vars_path, "#{inherits_name}.yml")
           unless File.file?(inherits_file_path)
-            error("inherited vars file doesn't exist: '#{inherits_name}'")
+            error("Inherited variables file doesn't exist: `#{inherits_name}`")
           end
           nesting += 1
           vars = vars.deep_merge(read_vars_file.call(inherits_name))
         end
 
-        # base case: read the yaml file (parsing possible erb template
-        # icecreams) and store the read variables into `vars`
+        # Base case: read the yaml file (parsing possible erb template
+        # icecreams) and store the read variables into `vars`.
         vars = vars.deep_merge(YAML.load(ERB.new(file_content).result) || {})
       end
 
@@ -328,7 +326,7 @@ module Fizzy
     end
 
     def get_var!(var_name)
-      get_var(var_name) or raise "undefined or `nil` variable: '#{var_name}'"
+      get_var(var_name) or raise "Undefined or `nil` variable: `#{var_name}`."
     end
 
     def has_feature?(feature_name)
@@ -345,7 +343,7 @@ module Fizzy
 
     def get_env!(envvar_name)
       get_env(envvar_name) or
-        raise "undefined environment variable: '#{envvar_name}'"
+        raise "Undefined environment variable: `#{envvar_name}`"
     end
 
     def is_osx?;   RUBY_PLATFORM_IS_OSX   end
@@ -362,7 +360,7 @@ module Fizzy
                    when :normal
                      true
                    when :paranoid
-                     quiz("Do you want to run: '#{full_cmd}'")
+                     quiz("Do you want to run the command `#{full_cmd}`")
                    when :dry
                      false
                    else
@@ -414,45 +412,45 @@ module Fizzy
       if ((File.directory?(root_path)  && !File.writable?(root_path)) ||
           File.file?(root_path)                                       ||
           (!File.directory?(root_path) && !File.writable?(parent_path)))
-        error("no write perms in fizzy storage: #{root_path}")
+        error("No write permissions in Fizzy storage at path `#{root_path}`.")
       end
       if ((File.directory?(tmp_path) && !File.writable?(tmp_path)) ||
           File.file?(tmp_path))
-        error('tmp dir already exists but is not writable')
+        error('The temporary directory `#{tmp_path}` already exists but is not writable.')
       end
       if valid_cfg
         if !File.directory?(root_path)
-          error("fizzy root directory doesn't exist (maybe you need to run: `fizzy cfg sync`)")
+          error("The Fizzy root directory `#{root_path}` doesn't exist (maybe you need to run: `fizzy cfg sync`).")
         end
         if !File.directory?(cfg_path) || !File.writable?(cfg_path)
-          error('config dir already exists but is not writable')
+          error('The configuration directory `#{cfg_path}` already exists but is not writable.')
         end
         if !File.file?(cfg_meta_path)
-          error("config is invalid: '#{cfg_meta_path}' isn't a valid meta file")
+          error("The configuration directory `#{cfg_meta_path}` is invalid: not a valid meta file.")
         end
         if !File.directory?(cfg_vars_path)
-          error("invalid vars directory: '#{cfg_vars_path}' doesn't exist")
+          error("The variables directory `#{cfg_vars_path}` is invalid: doesn't exist.")
         end
       end
       if valid_inst
         if !File.directory?(root_path)
-          error("fizzy root directory doesn't exist (maybe you need to run: `fizzy cfg sync`)")
+          error("The Fizzy root directory `#{root_path}` doesn't exist (maybe you need to run: `fizzy cfg sync`).")
         end
         if !File.directory?(cur_inst_path) || !File.writable?(cur_inst_path)
-          error('instance dir already exists but is not writable')
+          error('The current instance `#{cur_inst_name}` is stored in an invalid path (`#{cur_inst_path}`): already exists but is not writable.')
         end
         if !File.file?(cur_inst_meta_path)
-          error("instance is invalid: '#{cur_inst_meta_path}' isn't a valid meta file")
+          error("The meta file path (`cur_inst_meta_path`) for the current instance `#{cur_inst_name}` is invalid: doesn't exist or isn't a regular file.")
         end
         if !File.directory?(cur_inst_vars_path)
-          error("invalid vars directory: '#{cur_inst_vars_path}' doesn't exist")
+          error("The variables directory (`#{cur_inst_vars_path}`) for the current instance `#{cur_inst_name}` is invalid: doesn't exist or isn't a directory")
         end
       end
 
       # create non-existing internal directories
-      FileUtils.mkdir_p(root_path) unless File.directory?(root_path)
-      FileUtils.mkdir_p(tmp_path)  unless File.directory?(tmp_path)
-      FileUtils.mkdir_p(inst_path) unless File.directory?(inst_path)
+      FileUtils.mkdir_p(root_path)     unless File.directory?(root_path)
+      FileUtils.mkdir_p(tmp_path)      unless File.directory?(tmp_path)
+      FileUtils.mkdir_p(inst_path)     unless File.directory?(inst_path)
       FileUtils.mkdir_p(cur_inst_path) if cur_inst_path && !File.directory?(cur_inst_path)
 
       # return the known storage paths
@@ -470,7 +468,7 @@ module Fizzy
 
     # }}}
 
-    # I/O & error handling {{{
+    # i/o & error handling {{{
 
     def quiz(question, type: :bool)
       answer = ask "#{question.strip}? ", :magenta
@@ -481,18 +479,18 @@ module Fizzy
         elsif answer =~ /n|no|fuck|fuck\s+you|fuck\s+off/i
           false
         else
-          say 'answer misunderstood', :yellow
+          say 'Answer misunderstood', :yellow
           quiz(question, :type => type)
         end
       when :string
         if answer.empty?
-          say 'empty answer', :yellow
+          warning 'Empty answer', :ask_continue => false
           quiz(question, :type => type)
         else
           answer
         end
       else
-        error("unhandled question type: '#{type}'")
+        error "Unhandled question type: `#{type}`."
       end
     end
 
@@ -500,9 +498,9 @@ module Fizzy
       say("#{set_color(prefix, :cyan)}#{set_color(msg, :white)}")
     end
 
-    def warning(msg)
+    def warning(msg, ask_continue: true)
       say msg, :yellow
-      exit(-1) unless quiz('continue')
+      exit(-1) if ask_continue && !quiz('continue')
     end
 
     def error(msg)
@@ -522,16 +520,21 @@ module Fizzy
     include Thor::Actions
     include Fizzy::Utils
 
-    desc 'add', 'add a new configuration'
+    desc 'add', 'Import an existing configuration.'
     def add
+      error('WIP, check later!')
+    end
 
+    desc 'add', 'Add a new configuration.'
+    def add
+      error('WIP, check later!')
     end
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
-           :desc => 'the root path for the directory internally used by fizzy'
-    desc 'edit CFG_NAME', 'find the files relative to CFG_NAME and edit them'
+           :desc => 'The root path for the directory internally used by Fizzy.'
+    desc 'edit CFG_NAME', 'Find the files relative to CFG_NAME and edit them.'
     def edit(cfg_name)
-      # before edit
+      # Prepare stuff for editing.
       paths = prepare_storage(options.fizzy_dir, :valid_inst => false)
       find_path = File.join(paths.cfg, cfg_name)
       cfg_files_arg = (File.exist?(find_path) ?
@@ -542,92 +545,92 @@ module Fizzy
       ).strip
       editor = ENV['EDITOR'] || 'vim'
 
-      # perform edit
+      # Perform edit
       if cfg_files_arg.empty?
-        say "no files matching '#{cfg_name}' have been found", :yellow
+        warning "No files matching `#{cfg_name}` have been found.", :ask_continue => false
         status = nil
       else
-        say "editing: '#{cfg_files_arg}'", :cyan
+        say "Editing configuration file(s): `#{cfg_files_arg}`.", :cyan
         status = system("#{editor} #{cfg_files_arg}")
       end
 
-      # after edit
+      # Inform user about the editing status.
       if status
-        say "successfully edited: '#{cfg_files_arg}'", :green
+        say "Successfully edited: `#{cfg_files_arg}`.", :green
       elsif status.nil?
-        say 'editing skipped', :yellow
+        warning 'Editing skipped.', :ask_continue => false
       else
-        say "failed to edit: '#{cfg_files_arg}'", :red
+        error "Failed to edit: `#{cfg_files_arg}`", :red
       end
     end
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
-           :desc => 'the root path for the directory internally used by fizzy'
+           :desc => 'The root path for the directory internally used by Fizzy.'
     option :url, :default => nil,
-           :desc => 'the url to the repository holding config (suppored: git)'
-    desc 'sync', 'synchronize the remote repository with the local one'
+           :desc => 'The url to the repository holding config (currently supported: `git`)'
+    desc 'sync', 'Synchronize the remote repository with the local one.'
     def sync
-      # before sync
+      # Prepare stuff for syncing.
       paths = prepare_storage(options.fizzy_dir,
                               :valid_cfg => false, :valid_inst => false)
 
-      # perform sync
+      # Perform sync.
       sync_result = if File.directory?(paths.cfg)
-        say 'syncing from origin', :blue
+        say 'Syncing from origin', :blue
         status = nil
         FileUtils.cd(paths.cfg) do
-          # fetch
-          say 'fetching informations from origin', :cyan
+          # Perform fetch, because we need to know if there are remote changes, so we need to know the updated remote commit hash.
+          say 'Fetching informations from origin', :cyan
           status = system('git fetch origin')
-          # (optional) commit
+          # (Optional) Perform commit.
           if status && git_has_local_changes(paths.cfg)
-            say 'the configuration has the following local changes:', :cyan
-            say git_local_changes(paths.cfg)
-            should_commit = quiz 'do you want to commit them'
+            say "The configuration has the following local changes:\n#{set_color(git_local_changes(paths.cfg), :white)}", :cyan
+            should_commit = quiz 'Do you want to commit them all'
             if should_commit
-              commit_msg = quiz 'commit message', :type => :string
-              status = system('git add -A')
+              commit_msg = quiz 'Type the commit message', :type => :string
+              say 'Performing commit.', :cyan
+              status   = system('git add -A')
               status &&= system("git commit -am \"#{commit_msg}\"")
             else
               status = false
             end
           end
-          # (optional) pull
+          # (Optional) Perform pull.
           if status && git_should_pull(paths.cfg)
-            say 'performing pull', :cyan
-            status = system('git pull origin master')
+            say 'Performing pull.', :cyan
+            status   = system('git pull origin master')
             status &&= system('git submodule foreach git checkout master')
             status &&= system('git submodule foreach git merge origin/master')
           end
-          # (optional) push
+          # (Optional) Perform push.
           if status && git_should_push(paths.cfg)
-            say 'performing push', :cyan
+            say 'Performing push.', :cyan
             status = system('git push origin master')
           end
         end
         status
       else
-        say "syncing from remote repo: '#{options.url}'", :blue
-        error('invalid url option') if options.url.nil?
+        say "Syncing from remote repo: `#{options.url}`.", :blue
+        error('Invalid url option.') if options.url.nil?
         system("git clone --recursive #{options.url} #{paths.cfg}")
       end
 
-      # after sync
+      # Inform user about sync status.
       if sync_result
-        say "synced to: #{paths.cfg}", :green
+        say "Synced to: `#{paths.cfg}`.", :green
       else
-        error('unable to sync')
+        error 'Unable to sync.'
       end
     end
 
     option :vars_name, :required => true,
-           :desc => 'The name for the variables file to be used'
+           :desc => 'The name for the variables file to be used.'
     option :inst_name, :required => true,
-           :desc => 'The name for the new configuration instance'
+           :desc => 'The name for the new configuration instance.'
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
-           :desc => 'The root path for the directory internally used by fizzy.'
+           :desc => 'The root path for the directory internally used by Fizzy.'
     option :verbose, :type => :boolean, :default => false,
-           :desc => 'If the output should be verbose.'
+           :desc => 'Whether the output should be verbose.'
     desc 'instantiate',
          'Create a configuration instance in the current machine.'
     def instantiate
@@ -676,7 +679,7 @@ module Fizzy
     option :inst_name, :required => true,
            :desc => 'The name for the new configuration instance.'
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
-           :desc => 'The root path for the directory internally used by fizzy.'
+           :desc => 'The root path for the directory internally used by Fizzy.'
     option :run_mode, :default => 'normal',
            :enum => ['normal', 'paranoid', 'dry'],
            :desc => 'Ask confirmation for each filesystem operation.'
@@ -685,9 +688,8 @@ module Fizzy
     desc 'install',
          'Install the current configuration instance in the system.'
     def install
+      # Prepare stuff for performing install.
       @run_mode = options.run_mode.to_sym
-
-      # before install
       paths = prepare_storage(options.fizzy_dir,
                               :cur_inst_name => options.inst_name)
       setup_vars(paths.cur_inst_vars, options.vars_name)
@@ -696,15 +698,15 @@ module Fizzy
         paths.cur_inst_meta, paths.cur_inst_vars,
         paths.tmp, paths.cur_inst, options.verbose)
 
-      # perform install
-      say "installing the configuration instance '#{options.inst_name}' " +
-          "into the system", :blue
+      # Install the instance into the system.
+      say "Installing the configuration instance `#{options.inst_name}` " +
+          "into the system.", :blue
       FileUtils.cd(paths.tmp) do # stay in a safe place
         meta['elems'].each do |elem|
-          say "installing elem: '#{elem['name']}'", :cyan
+          say "Installing element: `#{elem['name']}`.", :cyan
           appliers.each { |applier| applier.call(elem) }
           if elem['notes']
-            say "notes for '#{elem['name']}:", :yellow
+            say "Notes for `#{elem['name']}`:", :yellow
             say elem['notes'].split("\n").collect { |s|
               "  #{s}"
             }.join("\n")
@@ -712,20 +714,20 @@ module Fizzy
         end
       end
 
-      # after instantiation
-      say 'the configuration instance has been installed into the system', :green
+      # Inform the user about installation status.
+      say "The configuration instance `#{options.inst_name}` has been installed into the system", :green
     end
 
     protected
 
     ##
-    # return a list of functions capable to apply modifications on the system
-    # based on the current configuration instance
+    # Return a list of functions capable to apply modifications on the system
+    # based on the current configuration instance.
     #
-    # in particular, an applier work for each element installed
+    # In particular, an applier work for each element installed.
     #
     def appliers
-      [ lambda { |elem| # mkdir parent directories
+      [ lambda { |elem| # Create parent directories.
           elem['fs_maps'].each do |m|
             parent_dir = File.dirname(m['dst_path'])
             if elem.has_key?('perms')
@@ -738,10 +740,8 @@ module Fizzy
               l_ex_dir_path = f_noex_dir_path = nil
             end
             # From here, we have the following variable set:
-            # - `l_ex_dir_path`: longest path prefix which points to an
-            #                    existing dir;
-            # - `f_noex_dir_path`: path of the first directory after the
-            #                      prefix which points to an existing dir.
+            # - `l_ex_dir_path`: Longest path prefix which points to an existing dir.
+            # - `f_noex_dir_path`: Path of the first directory after the prefix which points to an existing dir.
             if !File.directory?(parent_dir)
               exec_cmd("mkdir -p \"#{parent_dir}\"",
                        :as_su => !existing_dir(parent_dir))
@@ -752,11 +752,11 @@ module Fizzy
             end
           end
         },
-        lambda { |elem| # create link
+        lambda { |elem| # Create a (symbolic) link for each elements' `src_path`.
           elem['fs_maps'].each do |m|
             cmd = "ln -s \"#{m['src_path']}\" \"#{m['dst_path']}\""
             if File.file?(m['dst_path'])
-              warn "skipping '#{m['dst_path']}': already exists"
+              warning "Skipping `#{m['dst_path']}`: already exists."
             else
               exec_cmd(cmd,
                        :as_su => !existing_dir(File.dirname(m['dst_path'])))
@@ -776,21 +776,21 @@ module Fizzy
     include Fizzy::Utils
 
     desc 'cfg SUBCOMMAND ...ARGS',
-         'manage the fizzy configuration'
+         'Manage the Fizzy configuration (without modifying the host system).'
     subcommand 'cfg', Cfg
 
     desc 'sys SUBCOMMAND ...ARGS',
-         'manage the system integration with the available fizzy configuration'
+         'Manage the system integration with the available Fizzy configuration'
     subcommand 'sys', Sys
 
-    desc 'usage', 'show how to use fizzy'
+    desc 'usage', 'Show how to use Fizzy.'
     def usage
       url = 'https://raw.githubusercontent.com/alem0lars/fizzy/master/README.md'
       res = Net::HTTP.get_response(URI(url))
       if res.is_a?(Net::HTTPSuccess)
-        puts "\n#{res.body}\n"
+        say "\n#{res.body}\n"
       else
-        puts "network error: cannot retrieve '#{url}'"
+        error "Network error: cannot retrieve `#{url}`."
       end
     end
 

@@ -221,6 +221,7 @@ module Fizzy
           found = false
 
           Find.find(elems_base_path).each do |subfile_path|
+            subfile_path = File.expand_path(subfile_path)
             subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
               Pathname.new(elems_base_path)).to_s
             if md = Regexp.new(elem['src']).match(subfile_rel_path)

@@ -59,15 +59,28 @@ end
 
 # }}}
 
-# {{{ configuration
+# global constants {{{
+  
+RUBY_PLATFORM_IS_OSX   = RUBY_PLATFORM =~ /darwin$/
+RUBY_PLATFORM_IS_LINUX = RUBY_PLATFORM =~ /-linux$/
 
-$DEF_FIZZY_DIR = ENV['FIZZY_DIR'] || '/var/tmp/fizzy'
+# }}}
+
+# configuration {{{
+
+# Configure the default fizzy root directory.
+$DEF_FIZZY_DIR = ENV['FIZZY_DIR']
+if RUBY_PLATFORM_IS_LINUX
+  $DEF_FIZZY_DIR ||= '/var/tmp/fizzy'
+elsif RUBY_PLATFORM_IS_OSX
+  $DEF_FIZZY_DIR ||= '/Library/Application Support/Fizzy'
+end
 
 # }}}
 
 # ruby classes extensions {{{
 
-# monkey-patch to retrieve the template currently processed.
+# Monkey-patch to retrieve the template currently processed.
 class Thor
   module Actions
     old_template = instance_method(:template)
@@ -335,13 +348,8 @@ module Fizzy
         raise "undefined environment variable: '#{envvar_name}'"
     end
 
-    def is_osx?
-      RUBY_PLATFORM =~ /darwin$/
-    end
-
-    def is_linux?
-      RUBY_PLATFORM =~ /-linux$/
-    end
+    def is_osx?;   RUBY_PLATFORM_IS_OSX   end
+    def is_linux?; RUBY_PLATFORM_IS_LINUX end
 
     # }}}
 

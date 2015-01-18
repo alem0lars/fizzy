@@ -612,7 +612,7 @@ module Fizzy
       else
         say "Syncing from remote repo: `#{options.url}`.", :blue
         error('Invalid url option.') if options.url.nil?
-        system("git clone --recursive #{options.url} #{paths.cfg}")
+        system("git clone --recursive \"#{options.url}\" \"#{paths.cfg}\"")
       end
 
       # Inform user about sync status.

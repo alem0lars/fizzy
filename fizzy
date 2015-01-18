@@ -522,8 +522,33 @@ module Fizzy
     include Thor::Actions
     include Fizzy::Utils
 
-    desc 'add', 'Import an existing configuration.'
-    def add
+    option :fizzy_dir, :default => $DEF_FIZZY_DIR,
+           :desc => 'The root path for the directory internally used by Fizzy.'
+    desc 'cleanup', 'Cleanup the Fizzy storage (i.e. configuration, instances, tmp files).'
+    def cleanup
+      # Prepare paths for cleanup.
+      paths = prepare_storage(options.fizzy_dir,
+                              :valid_cfg => false, :valid_inst => false)
+      
+      # Perform cleanup.
+      status = if quiz "Do you want to remove the Fizzy root directory `#{paths.root}`"
+        exec_cmd("rm -Rf \"#{paths.root}\"")
+      else
+        nil
+      end
+      
+      # Inform user about the cleanup status.
+      if status
+        say "Successfully cleaned: `#{paths.root}`.", :green
+      elsif status.nil?
+        warning 'Cleanup skipped.', :ask_continue => false
+      else
+        error "Failed to cleanup: `#{paths.root}`.", :red
+      end
+    end
+    
+    desc 'import', 'Import an existing configuration.'
+    def import
       error('WIP, check later!')
     end
 
@@ -562,7 +587,7 @@ module Fizzy
       elsif status.nil?
         warning 'Editing skipped.', :ask_continue => false
       else
-        error "Failed to edit: `#{cfg_files_arg}`", :red
+        error "Failed to edit: `#{cfg_files_arg}`.", :red
       end
     end
 

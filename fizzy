@@ -61,8 +61,8 @@ end
 
 # global constants {{{
   
-RUBY_PLATFORM_IS_OSX   = RUBY_PLATFORM =~ /darwin$/
-RUBY_PLATFORM_IS_LINUX = RUBY_PLATFORM =~ /-linux$/
+RUBY_PLATFORM_IS_OSX   = RUBY_PLATFORM =~ /darwin/
+RUBY_PLATFORM_IS_LINUX = RUBY_PLATFORM =~ /linux/
 
 # }}}
 

@@ -221,7 +221,6 @@ module Fizzy
           found = false
 
           Find.find(elems_base_path).each do |subfile_path|
-            subfile_path = File.expand_path(subfile_path)
             subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
               Pathname.new(elems_base_path)).to_s
             if md = Regexp.new(elem['src']).match(subfile_rel_path)
@@ -236,8 +235,8 @@ module Fizzy
                 end
               end
               elem['fs_maps'] << {
-                'src_path' => subfile_path,
-                'dst_path' => dst_path
+                'src_path' => File.expand_path(subfile_path),
+                'dst_path' => File.expand_path(dst_path)
               }
             end
           end
@@ -397,8 +396,9 @@ module Fizzy
     end
 
     def prepare_storage(root_path, valid_cfg: true, valid_inst: true, cur_inst_name: nil)
+      root_path = File.expand_path(root_path)
       # paths based on internal conventions
-      parent_path        = File.dirname(File.expand_path(root_path))
+      parent_path        = File.dirname(root_path)
       tmp_path           = File.join(root_path, 'tmp')
 
       cfg_path           = File.join(root_path, 'cfg')
@@ -781,11 +781,21 @@ module Fizzy
         },
         lambda { |elem| # Create a (symbolic) link for each elements' `src_path`.
           elem['fs_maps'].each do |m|
-            cmd = "ln -s \"#{m['src_path']}\" \"#{m['dst_path']}\""
-            if File.file?(m['dst_path'])
-              warning "Skipping `#{m['dst_path']}`: already exists.",
-                      :ask_continue => (@run_mode == :paranoid)
+            cmd = 'ln -s'
+            should_link = if File.file?(m['dst_path'])
+              dst_real_path = Pathname.new(m['dst_path']).realpath.to_s
+              if dst_real_path != m['src_path']
+                cmd << " -f"
+                quiz "The destination file `#{m['dst_path']}` already exists. Overwrite"
+              else
+                false
+              end
             else
+              false
+            end
+
+            if should_link
+              cmd << " \"#{m['src_path']}\" \"#{m['dst_path']}\""
               exec_cmd(cmd,
                        :as_su => !existing_dir(File.dirname(m['dst_path'])))
             end

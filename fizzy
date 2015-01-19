@@ -780,7 +780,7 @@ module Fizzy
         },
         lambda { |elem| # Create a (symbolic) link for each elements' `src_path`.
           elem['fs_maps'].each do |m|
-            say "  #{m['dst_path']} -> #{m['src_path']}" if @verbose
+            say "  #{m['src_path']} ← #{m['dst_path']}" if @verbose
             cmd = 'ln -s'
             should_link = if File.file?(m['dst_path'])
               dst_real_path = Pathname.new(m['dst_path']).realpath.to_s
@@ -790,7 +790,12 @@ module Fizzy
               else
                 false
               end
-            else
+              elsif File.directory?(m['dst_path'])
+                if quiz "The destination file `#{m['dst_path']}` is a directory. Delete it"
+                  exec_cmd("rm -Rf #{m['dst_path']}",
+                           :as_su => !existing_dir(File.dirname(m['dst_path'])))
+                end
+              else
               # Link does not exist yet.
               true
             end

@@ -14,6 +14,9 @@
 #   - Hash#deep_merge:                                                        #
 #     - From: http://www.ruby-forum.com/topic/142809                          #
 #     - Author: Stefan Rusterholz                                             #
+#   Thanks to:                                                                #
+#   - Authors & contributors of the [thor](http://whatisthor.com/) gem        #
+#     (our only dependency), in particular Yehuda Katz & Erik Michaels-Ober.  #
 #                                                                             #
 # Project informations:                                                       #
 #   - Homepage:        https://github.com/alem0lars/fizzy                     #
@@ -53,7 +56,7 @@ require 'yaml'
 begin
   require 'thor'
 rescue
-  puts '☠ thor is not installed'
+  puts '\e[31m☠ The gem `thor` is not installed. To install run: `gem install thor`. Aborting.\e[0m'
   exit(-1)
 end
 
@@ -552,11 +555,6 @@ module Fizzy
       error('WIP, check later!')
     end
 
-    desc 'add', 'Add a new configuration.'
-    def add
-      error('WIP, check later!')
-    end
-
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
     desc 'edit CFG_NAME', 'Find the files relative to CFG_NAME and edit them.'
@@ -565,10 +563,10 @@ module Fizzy
       paths = prepare_storage(options.fizzy_dir, :valid_inst => false)
       find_path = File.join(paths.cfg, cfg_name)
       cfg_files_arg = (File.exist?(find_path) ?
-          find_path :
-          Dir.glob("#{find_path}*", File::FNM_DOTMATCH).to_a.delete_if { |elem|
-            elem =~ /\.git/
-          }.join(' ')
+          "\"#{find_path}\"" :
+          Dir.glob("#{find_path}*", File::FNM_DOTMATCH).to_a.delete_if { |cfg_file_path|
+            cfg_file_path =~ /\.git/
+          }.collect { |cfg_file_path| "\"#{cfg_file_path}\"" }.join(' ')
       ).strip
       editor = ENV['EDITOR'] || 'vim'
 

@@ -717,6 +717,7 @@ module Fizzy
     def install
       # Prepare stuff for performing install.
       @run_mode = options.run_mode.to_sym
+      @verbose = options.verbose
       paths = prepare_storage(options.fizzy_dir,
                               :cur_inst_name => options.inst_name)
       setup_vars(paths.cur_inst_vars, options.vars_name)
@@ -781,6 +782,7 @@ module Fizzy
         },
         lambda { |elem| # Create a (symbolic) link for each elements' `src_path`.
           elem['fs_maps'].each do |m|
+            say "  #{m['dst_path']} -> #{m['src_path']}" if @verbose
             cmd = 'ln -s'
             should_link = if File.file?(m['dst_path'])
               dst_real_path = Pathname.new(m['dst_path']).realpath.to_s
@@ -791,7 +793,8 @@ module Fizzy
                 false
               end
             else
-              false
+              # Link does not exist yet.
+              true
             end
 
             if should_link

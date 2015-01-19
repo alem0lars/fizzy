@@ -223,7 +223,8 @@ module Fizzy
         meta['elems'].each do |elem|
           found = false
 
-          Find.find(elems_base_path).each do |subfile_path|
+          Find.find(elems_base_path).select {|ebp| File.file? ebp }
+              .each do |subfile_path|
             subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
               Pathname.new(elems_base_path)).to_s
             if md = Regexp.new(elem['src']).match(subfile_rel_path)
@@ -247,7 +248,6 @@ module Fizzy
           unless found
             warning "Inconsistency found for elem `#{elem['name']}`: no file matches src: `#{elem['src']}`."
           end
-
         end
 
         # build the list of excluded files (needed by thor's `directory()`)

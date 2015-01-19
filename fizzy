@@ -183,11 +183,15 @@ module Fizzy
           selected ||= (feat_ok && vars_ok)
 
           if selected && verbose
-            info ' ↳ ', "#{set_color('✔', :green)} (`only` is present and satisfied)."
+            info ' ↳ ', "#{set_color('✔', :green)} (`only` is present and " +
+                        'satisfied).'
           end
         end
 
-        info(' ↳ ', "#{set_color('✘', :red)} (`only` is present and didn't match).") if !selected && verbose
+        if !selected && verbose
+          info ' ↳ ', "#{set_color('✘', :red)} (`only` is present and didn't " +
+                      'match).'
+        end
 
         # 2: Pre-process strings with ERB.
         if selected
@@ -198,7 +202,7 @@ module Fizzy
           end
         end
 
-        # 3: Validate and normalize 'name', 'src', 'dst', 'fs_maps'.
+        # 3: Validate and normalize 'name', 'src', 'dst', 'fs_maps', 'commands'.
         if selected
           unless elem.has_key?('src')
             error "Element `#{elem_identifier}` doesn't contain `src`."
@@ -208,6 +212,21 @@ module Fizzy
           end
           unless elem.has_key?('dst')
             error "Element `#{elem_identifier}` doesn't contain `dst`."
+          end
+          if elem.has_key?('commands') 
+            unless elem['commands'].is_a?(Hash)
+              error "Element `#{elem_identifier}` isn't a `Hash`."
+            end
+            if elem['commands'].keys.length != elem['commands'].keys.uniq.length
+              error "Commands for element `#{elem_identifier}` cannot have " +
+                    'duplicate names'
+            end
+            elem['commands'].each do |cmd_name, cmd_info|
+              unless cmd_info.has_key?('command')
+                error "Invalid command `#{cmd_name}`: doesn't specify a command."
+              end
+              cmd_info['as_su'] = false unless cmd_info.has_key?('as_su')
+            end
           end
           elem['fs_maps'] = []
         end
@@ -727,7 +746,7 @@ module Fizzy
       # Install the instance into the system.
       say "Installing the configuration instance `#{options.inst_name}` " +
           "into the system.", :blue
-      FileUtils.cd(paths.tmp) do # stay in a safe place
+      FileUtils.cd(paths.tmp) do # Stay in a safe place.
         meta['elems'].each do |elem|
           say "Installing element: `#{elem['name']}`.", :cyan
           appliers.each { |applier| applier.call(elem) }
@@ -741,7 +760,8 @@ module Fizzy
       end
 
       # Inform the user about installation status.
-      say "The configuration instance `#{options.inst_name}` has been installed into the system", :green
+      say "The configuration instance `#{options.inst_name}` has been " +
+          'installed into the system', :green
     end
 
     protected
@@ -766,8 +786,10 @@ module Fizzy
               l_ex_dir_path = f_noex_dir_path = nil
             end
             # From here, we have the following variable set:
-            # - `l_ex_dir_path`: Longest path prefix which points to an existing dir.
-            # - `f_noex_dir_path`: Path of the first directory after the prefix which points to an existing dir.
+            # - `l_ex_dir_path`: Longest path prefix which points to an existing
+            #                    directory.
+            # - `f_noex_dir_path`: Path of the first directory after the prefix
+            #                      which points to an existing dir.
             if !File.directory?(parent_dir)
               exec_cmd("mkdir -p \"#{parent_dir}\"",
                        :as_su => !existing_dir(parent_dir))
@@ -785,13 +807,15 @@ module Fizzy
             should_link = if File.file?(m['dst_path'])
               dst_real_path = Pathname.new(m['dst_path']).realpath.to_s
               if dst_real_path != m['src_path']
-                cmd << " -f"
-                quiz "The destination file `#{m['dst_path']}` already exists. Overwrite"
+                cmd << ' -f'
+                quiz "The destination file `#{m['dst_path']}` already " +
+                     'exists. Overwrite'
               else
                 false
               end
               elsif File.directory?(m['dst_path'])
-                if quiz "The destination file `#{m['dst_path']}` is a directory. Delete it"
+                if quiz "The destination file `#{m['dst_path']}` is a " +
+                        'directory. Delete it'
                   exec_cmd("rm -Rf #{m['dst_path']}",
                            :as_su => !existing_dir(File.dirname(m['dst_path'])))
                 end
@@ -804,6 +828,14 @@ module Fizzy
               cmd << " \"#{m['src_path']}\" \"#{m['dst_path']}\""
               exec_cmd(cmd,
                        :as_su => !existing_dir(File.dirname(m['dst_path'])))
+            end
+          end
+        },
+        lambda { |elem| # Execute the associated commands.
+          if elem.has_key?('commands')
+            elem['commands'].each do |cmd_name, cmd_info|
+              info ' ↳ ', "Executing command `#{cmd_name}`."
+              exec_cmd(cmd_info['command'], :as_su => cmd_info['as_su'])
             end
           end
         }

@@ -875,5 +875,5 @@ module Fizzy
 end
 
 
-# entry point
+# Entry point.
 Fizzy::Main.start(ARGV)

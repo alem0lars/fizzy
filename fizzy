@@ -231,7 +231,7 @@ module Fizzy
           error "The configuration element `#{elem_identifier}` has invalid " +
                 "`only`: it's not a `Hash`."
         end
-        selected = selected_by_only? elem['only']
+        selected = selected_by_only?(elem['only'], verbose)
 
         # Step 1.2: Pre-process strings with ERB.
         if selected
@@ -298,52 +298,53 @@ module Fizzy
 
       command_excluded_erb_fields = ['only']
 
-      meta['commands'] = meta['commands'].each_with_index.collect do |cmd, idx|
-        cmd['name'] ||= "type = #{cmd['type']}, index = #{idx}"
-        info("\nCommand: ", cmd['name']) if verbose
+      meta['commands'] = meta['commands'].each_with_index.collect do |spec, idx|
+        spec['name'] ||= "type = #{spec['type']}, index = #{idx}"
+        info("\nCommand: ", spec['name']) if verbose
 
         # Step 2.1: Validate 'only' and determine if the command is selected.
-        if cmd.has_key?('only') && !cmd['only'].is_a?(Hash)
-          error "The command `#{cmd['name']}` has invalid `only`: it's not " +
+        if spec.has_key?('only') && !spec['only'].is_a?(Hash)
+          error "The command `#{spec['name']}` has invalid `only`: it's not " +
                 'a `Hash`.'
         end
-        selected = selected_by_only? cmd['only']
+        selected = selected_by_only?(spec['only'], verbose)
 
-        # Step 2.2: Pre-process strings with ERB.
         if selected
-          cmd.each do |key, value|
+
+          # Step 2.2: Pre-process strings with ERB.
+          spec.each do |key, value|
             unless command_excluded_erb_fields.include? key
-              cmd[key] = ERB.new(value).result(binding)
+              spec[key] = ERB.new(value).result(binding)
             end
           end
-        end
 
-        # Step 2.3: Validate `type`, `validator`, `executor`.
-        if selected
-          if !cmd.has_key?('type') ||
-             !available_commands.keys.include?(cmd['type'])
-            error "The command `#{cmd['name']}` has invalid `type`: it's not " +
-                  "in `#{available_commands.keys}`."
+          # Step 2.3: Validate `type`, `validator`, `executor`.
+          if !spec.has_key?('type') ||
+             !available_commands.keys.include?(spec['type'])
+            error "The command `#{spec['name']}` has invalid `type`: it's " +
+                  "not in `#{available_commands.keys}`."
           end
-          if cmd.has_key?('validator') && !cmd['validator'].is_a?(Proc)
-            error "Invalid validator for command `#{cmd['name']}`: if " +
+          command = available_commands[spec['type']]
+          if command.has_key?('validator') && !command['validator'].is_a?(Proc)
+            error "Invalid validator for command `#{spec['name']}`: if " +
                   "provided it should be a `Proc`."
           end
-          if !cmd.has_key?('executor') || !cmd['executor'].is_a?(Proc)
-            error "Invalid executor for command `#{cmd['name']}`: it should " +
+          if !command.has_key?('executor') || !command['executor'].is_a?(Proc)
+            error "Invalid executor for command `#{spec['name']}`: it should " +
                   'be a `Proc`.'
           end
-        end
 
-        # Step 2.4: Use type-specific validator if it's defined.
-        if selected
-          if available_commands[cmd['type']].has_key?('validator') &&
-             !available_commands[cmd['type']]['validator'].call(cmd)
-            error "The validator for command `#{cmd['name']}` didn't pass."
+          # Step 2.4: Use type-specific validator if it's defined.
+          if command.has_key?('validator') && (
+               !command['validator'].is_a?(Proc) ||
+               !command['validator'].call(spec)
+             )
+            error "The validator for command `#{spec['name']}` didn't pass."
           end
+
         end
 
-        selected ? cmd : nil
+        selected ? spec : nil
       end.compact
 
       # }}}
@@ -367,7 +368,7 @@ module Fizzy
     # Return whether the provided `only` specification is evaluated as an allows
     # and not as a denies.
     #
-    def selected_by_only?(only) # {{{
+    def selected_by_only?(only, verbose) # {{{
       unless only
         selected = true
         info(' ↳ ', "#{set_color('✔', :green)} (`only` is empty).") if verbose
@@ -510,7 +511,7 @@ module Fizzy
     # been found or is `nil`.
     #
     def get_env!(name) # {{{
-      get_env(envvar_name) or error("Undefined environment variable: `#{name}`")
+      get_env(name) or error("Undefined environment variable: `#{name}`")
     end # }}}
 
     ##
@@ -753,12 +754,115 @@ module Fizzy
   end # }}}
 
 
-  # {{{ Subcommands
-
-  class Cfg < Thor # {{{
+  class FizzyCommand < Thor # {{{
 
     include Thor::Actions
     include Fizzy::Utils
+
+    protected
+
+    ##
+    # Return a list of functions capable to apply modifications on the system
+    # based on the current elements configuration instance.
+    #
+    # In particular, an applier work for each element installed.
+    #
+    def elements_appliers # {{{
+      [ lambda { |elem| # Create parent directories.
+          elem['fs_maps'].each do |m|
+            parent_dir = File.dirname(m['dst_path'])
+            if elem.has_key?('perms')
+              l_ex_dir_path = f_noex_dir_path = parent_dir
+              while !File.directory?(l_ex_dir_path)
+                f_noex_dir_path = l_ex_dir_path
+                l_ex_dir_path   = File.dirname(l_ex_dir_path)
+              end
+            else
+              l_ex_dir_path = f_noex_dir_path = nil
+            end
+            # From here, we have the following variable set:
+            # - `l_ex_dir_path`: Longest path prefix which points to an existing
+            #                    directory.
+            # - `f_noex_dir_path`: Path of the first directory after the prefix
+            #                      which points to an existing dir.
+            if !File.directory?(parent_dir)
+              exec_cmd("mkdir -p \"#{parent_dir}\"",
+                       :as_su => !existing_dir(parent_dir))
+              if elem.has_key?('perms') && (l_ex_dir_path != f_noex_dir_path)
+                exec_cmd("chmod -R \"#{elem['perms']}\" \"#{f_noex_dir_path}\"",
+                         :as_su => !File.owned?(f_noex_dir_path))
+              end
+            end
+          end
+        },
+        lambda { |elem| # Create a symlink for each elements' `src_path`.
+          elem['fs_maps'].each do |m|
+            say "  #{m['src_path']} ← #{m['dst_path']}" if @verbose
+            cmd = 'ln -s'
+            should_link = if File.file?(m['dst_path'])
+              dst_real_path = Pathname.new(m['dst_path']).realpath.to_s
+              if dst_real_path != m['src_path']
+                cmd << ' -f'
+                quiz "The destination file `#{m['dst_path']}` already " +
+                     'exists. Overwrite'
+              else
+                false
+              end
+              elsif File.directory?(m['dst_path'])
+                if quiz "The destination file `#{m['dst_path']}` is a " +
+                        'directory. Delete it'
+                  exec_cmd("rm -Rf #{m['dst_path']}",
+                           :as_su => !existing_dir(File.dirname(m['dst_path'])))
+                end
+              else
+              # Link does not exist yet.
+              true
+            end
+
+            if should_link
+              cmd << " \"#{m['src_path']}\" \"#{m['dst_path']}\""
+              exec_cmd(cmd,
+                       :as_su => !existing_dir(File.dirname(m['dst_path'])))
+            end
+          end
+        }
+      ]
+    end # }}}
+
+    ##
+    # Return a data structure containing the commands that can be specified in
+    # the meta file.
+    #
+    # The data structure defines:
+    # - The available command types (`available_commands.keys`).
+    # - (Optionally) A validator that can be used to validate type-specific
+    #   validation rules.
+    # - The command executor: A `Lambda` containing the code used for executing
+    #   that command.
+    #
+    def available_commands # {{{
+      { 'git_sync' => {
+          'validator' => lambda { |spec|
+            status   = spec.has_key?('repo')
+            status &&= spec.has_key?('dst')
+          },
+          'executor' => lambda { |spec|
+            if File.directory?(spec['dst'])
+              FileUtils.cd(spec['dst']) { git_pull }
+            else
+              git_clone(spec['repo'], spec['dst'])
+            end
+          }
+        }
+      }
+    end # }}}
+
+  end # }}}
+
+
+  # {{{ Subcommands
+
+  class Cfg < FizzyCommand # {{{
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
@@ -955,9 +1059,7 @@ module Fizzy
 
   end # }}}
 
-  class Sys < Thor # {{{
-
-    include Fizzy::Utils
+  class Sys < FizzyCommand # {{{
 
     option :vars_name, :required => true,
            :desc => 'The name for the variables file to be used.'
@@ -997,115 +1099,15 @@ module Fizzy
             }.join("\n")
           end
         end
-        meta['commands'].each do |cmd|
-          say "Executing command: `#{cmd['name']}`.", :cyan
-          available_commands['type']['executor'].call(cmd)
+        meta['commands'].each do |spec|
+          say "Executing command: `#{spec['name']}`.", :cyan
+          available_commands[spec['type']]['executor'].call(spec)
         end
       end
 
       # Inform the user about installation status.
       say "The configuration instance `#{options.inst_name}` has been " +
           'installed into the system', :green
-    end # }}}
-
-    protected
-
-    ##
-    # Return a list of functions capable to apply modifications on the system
-    # based on the current elements configuration instance.
-    #
-    # In particular, an applier work for each element installed.
-    #
-    def elements_appliers # {{{
-      [ lambda { |elem| # Create parent directories.
-          elem['fs_maps'].each do |m|
-            parent_dir = File.dirname(m['dst_path'])
-            if elem.has_key?('perms')
-              l_ex_dir_path = f_noex_dir_path = parent_dir
-              while !File.directory?(l_ex_dir_path)
-                f_noex_dir_path = l_ex_dir_path
-                l_ex_dir_path   = File.dirname(l_ex_dir_path)
-              end
-            else
-              l_ex_dir_path = f_noex_dir_path = nil
-            end
-            # From here, we have the following variable set:
-            # - `l_ex_dir_path`: Longest path prefix which points to an existing
-            #                    directory.
-            # - `f_noex_dir_path`: Path of the first directory after the prefix
-            #                      which points to an existing dir.
-            if !File.directory?(parent_dir)
-              exec_cmd("mkdir -p \"#{parent_dir}\"",
-                       :as_su => !existing_dir(parent_dir))
-              if elem.has_key?('perms') && (l_ex_dir_path != f_noex_dir_path)
-                exec_cmd("chmod -R \"#{elem['perms']}\" \"#{f_noex_dir_path}\"",
-                         :as_su => !File.owned?(f_noex_dir_path))
-              end
-            end
-          end
-        },
-        lambda { |elem| # Create a symlink for each elements' `src_path`.
-          elem['fs_maps'].each do |m|
-            say "  #{m['src_path']} ← #{m['dst_path']}" if @verbose
-            cmd = 'ln -s'
-            should_link = if File.file?(m['dst_path'])
-              dst_real_path = Pathname.new(m['dst_path']).realpath.to_s
-              if dst_real_path != m['src_path']
-                cmd << ' -f'
-                quiz "The destination file `#{m['dst_path']}` already " +
-                     'exists. Overwrite'
-              else
-                false
-              end
-              elsif File.directory?(m['dst_path'])
-                if quiz "The destination file `#{m['dst_path']}` is a " +
-                        'directory. Delete it'
-                  exec_cmd("rm -Rf #{m['dst_path']}",
-                           :as_su => !existing_dir(File.dirname(m['dst_path'])))
-                end
-              else
-              # Link does not exist yet.
-              true
-            end
-
-            if should_link
-              cmd << " \"#{m['src_path']}\" \"#{m['dst_path']}\""
-              exec_cmd(cmd,
-                       :as_su => !existing_dir(File.dirname(m['dst_path'])))
-            end
-          end
-        }
-      ]
-    end # }}}
-
-    ##
-    # Return a data structure containing the commands that can be specified in
-    # the meta file.
-    #
-    # The data structure defines:
-    # - The available command types (`available_commands.keys`).
-    # - (Optionally) A validator that can be used to validate type-specific
-    #   validation rules.
-    # - The command executor: A `Lambda` containing the code used for executing
-    #   that command.
-    #
-    def available_commands # {{{
-      { 'git_sync' => {
-          'validator' => lambda { |cmd|
-            status   = cmd.has_key?('repo')
-            status &&= cmd.has_key?('dst')
-            status &&= File.directory?(cmd['dst']) ||
-                       File.directory?(File.dirname(cmd['dst']))
-          },
-          'executor' => lambda { |cmd|
-            if File.directory?(cmd['dst'])
-              FileUtils.cd(cmd['dst']) { git_pull }
-            else
-              git_clone(cmd['repo'], cmd['dst'])
-            end
-          }
-        }
-      }
     end # }}}
 
   end # }}}

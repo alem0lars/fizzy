@@ -843,6 +843,9 @@ module Fizzy
     def available_commands # {{{
       { 'git_sync' => {
           'validator' => lambda { |spec|
+            if spec.has_key?('dst')
+              spec['dst'] = File.expand_path(spec['dst'])
+            end
             status   = spec.has_key?('repo')
             status &&= spec.has_key?('dst')
           },

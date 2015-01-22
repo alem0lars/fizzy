@@ -576,6 +576,15 @@ module Fizzy
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
+    desc 'cd', 'Change directory to the configuration directory (useful for ' +
+               'extensive filesystem manipulations).'
+    def cd
+      paths = prepare_storage(options.fizzy_dir, :valid_inst => false)
+      FileUtils.cd(paths.cfg)
+    end
+
+    option :fizzy_dir, :default => $DEF_FIZZY_DIR,
+           :desc => 'The root path for the directory internally used by Fizzy.'
     desc 'edit CFG_NAME', 'Find the files relative to CFG_NAME and edit them.'
     def edit(cfg_name)
       # Prepare stuff for editing.

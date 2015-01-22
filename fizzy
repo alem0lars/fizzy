@@ -580,7 +580,15 @@ module Fizzy
                'extensive filesystem manipulations).'
     def cd
       paths = prepare_storage(options.fizzy_dir, :valid_inst => false)
+      say "Changing directory to: `#{paths.cfg}`.", :cyan
       FileUtils.cd(paths.cfg)
+      if ENV.has_key?('SHELL')
+        system(ENV['SHELL'])
+      else
+        error 'Cannot find a valid shell. The environment variable `SHELL`' +
+              'is unset.'
+      end
+      say "CD done in: `#{paths.cfg}`.", :green
     end
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,

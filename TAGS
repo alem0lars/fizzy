@@ -1,0 +1,47 @@
+
+fizzy,2384
+class ThorThor101,4311
+  module ActionsActions102,4322
+class HashHash115,4628
+  def deep_merge(second) # {{{deep_merge123,4834
+module FizzyFizzy141,5146
+  module Utils # {{{Utils143,5160
+    def git_info(git_root_path)git_info149,5248
+    def git_local_changes(git_root_path)git_local_changes161,5537
+    def git_has_local_changes(git_root_path)git_has_local_changes165,5630
+    def git_should_pull(git_root_path)git_should_pull169,5731
+    def git_should_push(git_root_path)git_should_push174,5851
+    def git_pull(with_submodules: true)git_pull183,6029
+    def git_clone(url, dst_path, recursive: true)git_clone195,6508
+    def get_meta(meta_path, vars_path, tmp_path, elems_base_path, verbose) # {{{get_meta217,7065
+    def selected_by_only?(only, verbose) # {{{selected_by_only?373,12719
+    def setup_vars(vars_path, vars_file_name) # {{{setup_vars419,14032
+    def get_var(var_name) # {{{get_var466,15747
+    def get_var!(var_name) # {{{get_var!486,16286
+    def has_feature?(feature_name) # {{{has_feature?496,16655
+    def get_env(name) # {{{get_env507,16894
+    def get_env!(name) # {{{get_env!515,17080
+    def is_osx? # {{{is_osx?522,17269
+    def is_linux? # {{{is_linux?529,17407
+    def exec_cmd(cmd, as_su: false) # {{{exec_cmd543,17684
+    def existing_dir(path, writable: true) # {{{existing_dir572,18393
+    def prepare_storage(root_path, valid_cfg: true, valid_inst: true, cur_inst_name: nil) # {{{prepare_storage597,19334
+    def quiz(question, type: :bool) # {{{quiz700,23782
+    def info(prefix, msg) # {{{info730,24648
+    def warning(msg, ask_continue: true) # {{{warning740,24970
+    def error(msg) # {{{error749,25252
+  class FizzyCommand < Thor # {{{FizzyCommand759,25361
+    def elements_appliers # {{{elements_appliers772,25685
+    def available_commands # {{{available_commands845,28690
+  class Cfg < FizzyCommand # {{{Cfg870,29319
+    def cleanup # {{{cleanup876,29601
+    def import # {{{import900,30355
+    def cd # {{{cd908,30689
+    def edit(cfg_name) # {{{edit929,31456
+    def sync # {{{sync967,32932
+    def instantiate # {{{instantiate1028,35329
+    def self.source_root; '/' endsource_root1063,36663
+  class Sys < FizzyCommand # {{{Sys1067,36711
+    def install # {{{install1081,37452
+  class Main < Thor # {{{Main1123,38887
+    def usageusage1136,39266

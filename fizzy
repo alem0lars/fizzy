@@ -182,10 +182,13 @@ module Fizzy
 
     def git_pull(with_submodules: true)
       say 'Performing pull.', :cyan
-      status = system('git pull origin master')
+      status = exec_cmd('git pull origin master',
+                        as_su: !existing_dir(Dir.pwd))
       if with_submodules
-        status &&= system('git submodule foreach git checkout master')
-        status &&= system('git submodule foreach git merge origin/master')
+        status &&= exec_cmd('git submodule foreach git checkout master',
+                            as_su: !existing_dir(Dir.pwd))
+        status &&= exec_cmd('git submodule foreach git merge origin/master',
+                            as_su: !existing_dir(Dir.pwd))
       end
       status
     end
@@ -198,7 +201,7 @@ module Fizzy
       else
         "git clone \"#{url}\" \"#{dst_path}\""
       end
-      system(cmd)
+      exec_cmd(cmd, as_su: !existing_dir(File.dirname(dst_path)))
     end
 
     # }}}
@@ -731,7 +734,7 @@ module Fizzy
 
     ##
     # Display an informative message (`msg`) to the user.
-    # 
+    #
     # If `ask_continue` is `true`, the user can interactively choose to stop
     # the program or exit (with exit status `-1`).
     #

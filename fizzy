@@ -92,7 +92,6 @@ $DEF_EDITOR = 'vim'
 
 # }}}
 
-
 # {{{ Ruby classes extensions
 
 class Thor

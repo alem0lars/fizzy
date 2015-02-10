@@ -501,6 +501,20 @@ module Fizzy
       get_var!('features').include? feature_name.to_s
     end # }}}
 
+    ##
+    # Filter the values associated to the features, keeping only those
+    # associated to available features.
+    #
+    def data_for_features(info)
+      data = []
+      info.each do |feature_name, associated_value|
+        if has_feature?(feature_name.to_sym)
+          data << associated_value
+        end
+      end
+      data
+    end
+
     # }}}
 
     # {{{ Host environment / system

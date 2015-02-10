@@ -43,7 +43,6 @@
 #                                                                             #
 ###############################################################################
 
-
 # {{{ Requires
 
 # {{{ Core modules.
@@ -66,7 +65,6 @@ end
 
 # }}}
 
-
 # {{{ Global constants
 
 # {{{ Define platform-specific constants.
@@ -75,7 +73,6 @@ RUBY_PLATFORM_IS_LINUX = RUBY_PLATFORM =~ /linux/
 # }}}
 
 # }}}
-
 
 # {{{ Configuration
 
@@ -100,7 +97,6 @@ $DEF_EDITOR = 'vim'
 
 class Thor
   module Actions
-
     # {{{ Monkey-patch to retrieve the template currently processed.
     old_template = instance_method(:template)
     define_method :template, ->(source, *args, &blk) do
@@ -108,7 +104,6 @@ class Thor
       old_template.bind(self).(source, *args, &blk)
     end
     # }}}
-
   end
 end
 
@@ -194,10 +189,10 @@ module Fizzy
       say "Syncing from remote repo: `#{url}`.", :blue
       error("Invalid url: `#{url}`.") if url.nil?
       cmd = if recursive
-        "git clone --recursive \"#{url}\" \"#{dst_path}\""
-      else
-        "git clone \"#{url}\" \"#{dst_path}\""
-      end
+              "git clone --recursive \"#{url}\" \"#{dst_path}\""
+            else
+              "git clone \"#{url}\" \"#{dst_path}\""
+            end
       system(cmd)
     end
 
@@ -731,7 +726,7 @@ module Fizzy
 
     ##
     # Display an informative message (`msg`) to the user.
-    # 
+    #
     # If `ask_continue` is `true`, the user can interactively choose to stop
     # the program or exit (with exit status `-1`).
     #
@@ -854,6 +849,41 @@ module Fizzy
               FileUtils.cd(spec['dst']) { git_pull }
             else
               git_clone(spec['repo'], spec['dst'])
+            end
+          }
+        },
+        'register_service' => {
+          'validator' => lambda { |spec|
+            # Generic validations.
+            unless spec.key?("path")
+              error("A specification for a `register_service` should contain " \
+                    " the service `path`.")
+            end
+            unless File.exist?(spec['path'])
+              error("Service file path `#{spec['path']}` doesn't exit.")
+            end
+            # Check underlying operating system is supported.
+            unless is_osx?
+              error("Unsupported operating system for `register_service` " \
+                    "command `type`.")
+            end
+            # Perform operating-system specific validations.
+            if is_osx?
+              unless spec['path'].start_with?("/Library/LaunchAgents") ||
+                     spec['path'].start_with?("/Library/LaunchAgents")
+                error("Don't know how to handle path: `#{spec['path']}`.")
+              end
+            end
+          },
+          'executor' => lambda { |spec|
+            unless is_osx?
+              error("At the moment only OSX is supported for the " \
+                    "`register_service` command.")
+            end
+            if spec['path'].start_with?("/Library/LaunchAgents")
+              puts("launchctl load -w \"#{spec['path']}\"")
+            elsif spec['path'].start_with?("/Library/LaunchDaemons")
+              puts("sudo launchctl load -w \"#{spec['path']}\"")
             end
           }
         }

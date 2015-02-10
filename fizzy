@@ -862,9 +862,6 @@ module Fizzy
               error("A specification for a `register_service` should contain " \
                     " the service `path`.")
             end
-            unless File.exist?(spec['path'])
-              error("Service file path `#{spec['path']}` doesn't exit.")
-            end
             # Check underlying operating system is supported.
             unless is_osx?
               error("Unsupported operating system for `register_service` " \
@@ -873,15 +870,14 @@ module Fizzy
             # Perform operating-system specific validations.
             if is_osx?
               unless spec['path'].start_with?("/Library/LaunchAgents") ||
-                     spec['path'].start_with?("/Library/LaunchAgents")
+                     spec['path'].start_with?("/Library/LaunchDaemons")
                 error("Don't know how to handle path: `#{spec['path']}`.")
               end
             end
           },
           'executor' => lambda { |spec|
-            unless is_osx?
-              error("At the moment only OSX is supported for the " \
-                    "`register_service` command.")
+            unless File.exist?(spec['path'])
+              error("Service file path `#{spec['path']}` doesn't exit.")
             end
             if spec['path'].start_with?("/Library/LaunchAgents")
               puts("launchctl load -w \"#{spec['path']}\"")

@@ -374,9 +374,18 @@ module Fizzy
         wants_features = only.has_key?('features')
         wants_vars     = only.has_key?('vars')
 
-        feat_ok = wants_features ?
-            only['features'].any? { |feature| has_feature? feature } :
-            true
+        feat_ok = if wants_features
+                    only['features'].any? do |feature|
+                      case feature
+                      when Array
+                        feature.all? { |f| has_feature? feature }
+                      else
+                        has_feature? feature
+                      end
+                    end
+                  else
+                    true
+                  end
         vars_ok = wants_vars ?
             only['vars'].any? { |var| !get_var(var).nil? } :
             true

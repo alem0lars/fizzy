@@ -177,10 +177,13 @@ module Fizzy
 
     def git_pull(with_submodules: true)
       say 'Performing pull.', :cyan
-      status = system('git pull origin master')
+      status = exec_cmd('git pull origin master',
+                        as_su: !existing_dir(Dir.pwd))
       if with_submodules
-        status &&= system('git submodule foreach git checkout master')
-        status &&= system('git submodule foreach git merge origin/master')
+        status &&= exec_cmd('git submodule foreach git checkout master',
+                            as_su: !existing_dir(Dir.pwd))
+        status &&= exec_cmd('git submodule foreach git merge origin/master',
+                            as_su: !existing_dir(Dir.pwd))
       end
       status
     end
@@ -189,11 +192,11 @@ module Fizzy
       say "Syncing from remote repo: `#{url}`.", :blue
       error("Invalid url: `#{url}`.") if url.nil?
       cmd = if recursive
-              "git clone --recursive \"#{url}\" \"#{dst_path}\""
-            else
-              "git clone \"#{url}\" \"#{dst_path}\""
-            end
-      system(cmd)
+        "git clone --recursive \"#{url}\" \"#{dst_path}\""
+      else
+        "git clone \"#{url}\" \"#{dst_path}\""
+      end
+      exec_cmd(cmd, as_su: !existing_dir(File.dirname(dst_path)))
     end
 
     # }}}

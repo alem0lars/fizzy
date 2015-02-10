@@ -378,7 +378,7 @@ module Fizzy
                     only['features'].any? do |feature|
                       case feature
                       when Array
-                        feature.all? { |f| has_feature? feature }
+                        feature.all? { |f| has_feature? f }
                       else
                         has_feature? feature
                       end

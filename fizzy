@@ -876,38 +876,6 @@ module Fizzy
               git_clone(spec['repo'], spec['dst'])
             end
           }
-        },
-        'register_service' => {
-          'validator' => lambda { |spec|
-            # Generic validations.
-            unless spec.key?("path")
-              error("A specification for a `register_service` should contain " \
-                    " the service `path`.")
-            end
-            # Check underlying operating system is supported.
-            unless is_osx?
-              error("Unsupported operating system for `register_service` " \
-                    "command `type`.")
-            end
-            # Perform operating-system specific validations.
-            if is_osx?
-              if !(spec['path'].start_with?("/Library/LaunchAgents") ||
-                   spec['path'].start_with?("/Library/LaunchDaemons"))
-                error("Don't know how to handle path: `#{spec['path']}`.")
-              end
-            end
-            true
-          },
-          'executor' => lambda { |spec|
-            unless File.exist?(spec['path'])
-              error("Service file path `#{spec['path']}` doesn't exit.")
-            end
-            if spec['path'].start_with?("/Library/LaunchAgents")
-              puts("launchctl load -w \"#{spec['path']}\"")
-            elsif spec['path'].start_with?("/Library/LaunchDaemons")
-              puts("sudo launchctl load -w \"#{spec['path']}\"")
-            end
-          }
         }
       }
     end # }}}

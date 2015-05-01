@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/alem0lars/fizzy.png?label=ready&title=Ready)](https://waffle.io/alem0lars/fizzy)
 Fizzy
 =====
 

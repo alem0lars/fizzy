@@ -1,10 +1,11 @@
-[![Stories in Ready](https://badge.waffle.io/alem0lars/fizzy.png?label=ready&title=Ready)](https://waffle.io/alem0lars/fizzy)
 Fizzy
 =====
 
 The hassle free configuration manager
 
 ![Status](http://img.shields.io/badge/status-WIP-yellow.svg)
+
+[![Stories in Ready](https://badge.waffle.io/alem0lars/fizzy.png?label=ready&title=Ready)](https://waffle.io/alem0lars/fizzy)
 
 ## Installation
 

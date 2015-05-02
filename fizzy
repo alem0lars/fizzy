@@ -888,12 +888,12 @@ module Fizzy
   class Inst < FizzyCommand # {{{
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
-           :name => 'The intance name.'
-    desc 'cd', 'Change directory to the instance directory (useful for ' +
-               'extensive filesystem manipulations).'
-    def cd # {{{
+           :desc => 'The root path for the directory internally used by Fizzy.'
+    desc 'cd INST_NAME', 'Change directory to the instance directory (useful for ' +
+                         'extensive filesystem manipulations).'
+    def cd(inst_name) # {{{
       # Prepare stuff for changing directory.
-      paths = prepare_storage(options.fizzy_dir, :cur_inst_name => options.name)
+      paths = prepare_storage(options.fizzy_dir, :cur_inst_name => inst_name)
 
       # Changing directory.
       say "Changing directory to: `#{paths.cur_inst}`.", :cyan

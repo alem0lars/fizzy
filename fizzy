@@ -885,6 +885,32 @@ module Fizzy
 
   # {{{ Subcommands
 
+  class Inst < FizzyCommand # {{{
+
+    option :fizzy_dir, :default => $DEF_FIZZY_DIR,
+           :name => 'The intance name.'
+    desc 'cd', 'Change directory to the instance directory (useful for ' +
+               'extensive filesystem manipulations).'
+    def cd # {{{
+      # Prepare stuff for changing directory.
+      paths = prepare_storage(options.fizzy_dir, :cur_inst_name => options.name)
+
+      # Changing directory.
+      say "Changing directory to: `#{paths.cur_inst}`.", :cyan
+      FileUtils.cd(paths.cur_inst)
+      if ENV.has_key?('SHELL')
+        system(ENV['SHELL'])
+      else
+        error 'Cannot find a valid shell. The environment variable `SHELL`' +
+              'is unset.'
+      end
+
+      # Inform user about the changing directory status.
+      say "CD done in: `#{paths.cur_inst}`.", :green
+    end # }}}
+    
+  end # }}}
+  
   class Cfg < FizzyCommand # {{{
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
@@ -1146,6 +1172,9 @@ module Fizzy
          'Manage the Fizzy configuration (without modifying the host system).'
     subcommand 'cfg', Cfg
 
+    desc 'inst SUBCOMMAND ...ARGS', 'Manage a configuration instance'
+    subcommand 'inst', Inst
+    
     desc 'sys SUBCOMMAND ...ARGS',
          'Manage the system integration with the available Fizzy configuration'
     subcommand 'sys', Sys

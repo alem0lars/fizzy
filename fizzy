@@ -509,7 +509,11 @@ module Fizzy
       data = []
       info.each do |feature_name, associated_value|
         if has_feature?(feature_name.to_sym)
-          data << associated_value
+          if associated_value.respond_to?(:call)
+            data << associated_value.call
+          else
+            data << associated_value
+          end
         end
       end
       data

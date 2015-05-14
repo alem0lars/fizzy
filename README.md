@@ -52,13 +52,13 @@ This command can be run as a unprivileged user or as root: it makes no differenc
 * *First sync*
 
   ```ShellSession
-  $ fizzy sync --url url_to_config
+  $ fizzy cfg sync --url url_to_config
   ```
 
 * *Other syncs* (there is no need to pass the URL for syncing)
 
   ```ShellSession
-  $ fizzy sync
+  $ fizzy cfg sync
   ```
 
 ### Instantiate
@@ -69,11 +69,11 @@ Create configuration instances.
 
 * *Create an instance for each user*
 
-  Here is where the configuration is evaluated and templates are expanded, so we need to be sure that we run the command using the right user.
+  Here is where the configuration is evaluated and templates are expanded, so we need to be sure that we run the command using the right user and variables.
 
   ```ShellSession
-  $ sudo -u usera fizzy instantiate --inst-name usera
-  $ sudo -u userb fizzy instantiate --inst-name userb
+  $ sudo -u usera fizzy cfg instantiate --inst-name=user_a --vars-name=vars_a
+  $ sudo -u userb fizzy cfg instantiate --inst-name=user_b --vars-name=vars_b
   ```
 
 ### Install
@@ -87,6 +87,6 @@ Install a previously created configuration instance into the system.
   Here some setup could be performed as well (e.g. creating intermediate dirs), so we need to be sure that we run the command using the right user.
 
   ```ShellSession
-  $ sudo -u usera fizzy install --inst-name usera
-  $ sudo -u userb fizzy install --inst-name userb
+  $ sudo -u usera fizzy install --inst-name=user_a --vars-name=vars_a
+  $ sudo -u userb fizzy install --inst-name=user_b --vars-name=vars_b
   ```

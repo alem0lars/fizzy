@@ -58,7 +58,8 @@ require 'yaml'
 begin
   require 'thor'
 rescue
-  puts '\e[31m☠ The gem `thor` is not installed. To install run: `gem install thor`. Aborting.\e[0m'
+  puts '\e[31m☠ The gem `thor` is not installed. To install run: ' \
+       '`gem install thor`. Aborting.\e[0m'
   exit(-1)
 end
 # }}}
@@ -301,7 +302,7 @@ module Fizzy
 
         # Step 2.1: Validate 'only' and determine if the command is selected.
         if spec.has_key?('only') && !spec['only'].is_a?(Hash)
-          error "The command `#{spec['name']}` has invalid `only`: it's not " +
+          error "The command `#{spec['name']}` has invalid `only`: it's not " \
                 'a `Hash`.'
         end
         selected = selected_by_only?(spec['only'], verbose)
@@ -318,16 +319,16 @@ module Fizzy
           # Step 2.3: Validate `type`, `validator`, `executor`.
           if !spec.has_key?('type') ||
              !available_commands.keys.include?(spec['type'])
-            error "The command `#{spec['name']}` has invalid `type`: it's " +
+            error "The command `#{spec['name']}` has invalid `type`: it's " \
                   "not in `#{available_commands.keys}`."
           end
           command = available_commands[spec['type']]
           if command.has_key?('validator') && !command['validator'].is_a?(Proc)
-            error "Invalid validator for command `#{spec['name']}`: if " +
+            error "Invalid validator for command `#{spec['name']}`: if " \
                   "provided it should be a `Proc`."
           end
           if !command.has_key?('executor') || !command['executor'].is_a?(Proc)
-            error "Invalid executor for command `#{spec['name']}`: it should " +
+            error "Invalid executor for command `#{spec['name']}`: it should " \
                   'be a `Proc`.'
           end
 
@@ -347,7 +348,7 @@ module Fizzy
       # }}}
 
       # Build the list of excluded files (needed by Thor's `directory()`).
-      all_files = Set.new(Find.find(elems_base_path).select { |f| File.file? f})
+      all_files = Set.new Find.find(elems_base_path).select { |f| File.file? f }
       src_paths = Set.new(
         meta['elems'].collect_concat do |elem|
           elem['fs_maps'].collect { |m| m['src_path'] }
@@ -428,9 +429,11 @@ module Fizzy
       nesting = 0
 
       read_vars_file = lambda do |file_name|
-        inherit_str = nesting == 0 ?
-                        'vars tree: ' :
+        inherit_str = if nesting == 0
+                        'vars tree: '
+                      else
                         ' ' * (11 + (nesting - 1) * 2) + '↳ '
+                      end
         info inherit_str, file_name
         file_path = File.join(vars_path, "#{file_name}.yml")
         file_content = File.read(file_path)
@@ -470,9 +473,9 @@ module Fizzy
     def get_var(var_name) # {{{
       dot_split_regexp = /([^.]+)(?:\.|$)/
       var_name.to_s
-          .scan(dot_split_regexp).map { |match_group| match_group[0] }
-          .reject(&:empty?)
-          .inject(vars) do |cur_obj, name_component|
+        .scan(dot_split_regexp).map { |match_group| match_group[0] }
+        .reject(&:empty?)
+        .inject(vars) do |cur_obj, name_component|
 
         nxt_obj = if cur_obj.has_key?(name_component)
           cur_obj[name_component]
@@ -488,7 +491,7 @@ module Fizzy
     # is `nil`.
     #
     def get_var!(var_name) # {{{
-      get_var(var_name) or error("Undefined or `nil` variable: `#{var_name}`.")
+      get_var(var_name) || error("Undefined or `nil` variable: `#{var_name}`.")
     end # }}}
 
     ##
@@ -535,7 +538,7 @@ module Fizzy
     # been found or is `nil`.
     #
     def get_env!(name) # {{{
-      get_env(name) or error("Undefined environment variable: `#{name}`")
+      get_env(name) || error("Undefined environment variable: `#{name}`")
     end # }}}
 
     ##
@@ -566,14 +569,18 @@ module Fizzy
       full_cmd = as_su ? "sudo #{cmd}" : cmd
 
       really_run = case @run_mode
-        when :normal then true
-        when :paranoid then quiz("Do you want to run command `#{full_cmd}`")
-        when :dry then false
-        else true
-      end
+                   when :normal
+                     true
+                   when :paranoid
+                     quiz("Do you want to run command `#{full_cmd}`")
+                   when :dry
+                     false
+                   else
+                     true
+                   end
 
       if really_run || @run_mode == :dry
-        say (as_su ? "[sudo] #{cmd}" : cmd), :magenta
+        say as_su ? "[sudo] #{cmd}" : cmd, :magenta
       end
 
       if really_run
@@ -593,9 +600,7 @@ module Fizzy
     #
     def existing_dir(path, writable: true) # {{{
       dir_path = path
-      while !File.directory?(dir_path)
-        dir_path = File.dirname(dir_path)
-      end
+      dir_path = File.dirname(dir_path) until File.directory?(dir_path)
       (writable && !File.writable?(dir_path)) ? nil : dir_path
     end # }}}
 
@@ -616,7 +621,8 @@ module Fizzy
     #     should contain the name of the current instance (the instance that
     #     should be used).
     #
-    def prepare_storage(root_path, valid_cfg: true, valid_inst: true, cur_inst_name: nil) # {{{
+    def prepare_storage(root_path, valid_cfg: true, valid_inst: true,
+                        cur_inst_name: nil) # {{{
       root_path = File.expand_path(root_path)
 
       # Paths based on internal conventions.
@@ -633,52 +639,56 @@ module Fizzy
       cur_inst_meta_path = cur_inst_path && File.join(cur_inst_path, 'meta.yml')
 
       # Validate storage correctness.
-      if ((File.directory?(root_path)  && !File.writable?(root_path)) ||
-          File.file?(root_path)                                       ||
-          (!File.directory?(root_path) && !File.writable?(parent_path)))
+      if (File.directory?(root_path) && !File.writable?(root_path)) ||
+         File.file?(root_path) ||
+         (!File.directory?(root_path) && !File.writable?(parent_path))
         error "No write permissions in Fizzy storage at path `#{root_path}`."
       end
-      if ((File.directory?(tmp_path) && !File.writable?(tmp_path)) ||
-          File.file?(tmp_path))
-        error "The temporary directory `#{tmp_path}` already exists but is " +
+      if (File.directory?(tmp_path) && !File.writable?(tmp_path)) ||
+         File.file?(tmp_path)
+        error "The temporary directory `#{tmp_path}` already exists but is " \
               'not writable.'
       end
       if valid_cfg
-        if !File.directory?(root_path)
-          error "The Fizzy root directory `#{root_path}` doesn't exist " +
+        unless File.directory?(root_path)
+          error "The Fizzy root directory `#{root_path}` doesn't exist " \
                 '(maybe you need to run: `fizzy cfg sync`).'
         end
         if !File.directory?(cfg_path) || !File.writable?(cfg_path)
-          error "The configuration directory `#{cfg_path}` already exists " +
+          error "The configuration directory `#{cfg_path}` already exists " \
                 'but is not writable.'
         end
-        if !File.file?(cfg_meta_path)
-          error "The configuration directory `#{cfg_meta_path}` is invalid: " +
+        unless File.file?(cfg_meta_path)
+          error "The configuration directory `#{cfg_meta_path}` is invalid: " \
                 'not a valid meta file.'
         end
-        if !File.directory?(cfg_vars_path)
-          error "The variables directory `#{cfg_vars_path}` is invalid: " +
+        unless File.directory?(cfg_vars_path)
+          error "The variables directory `#{cfg_vars_path}` is invalid: " \
                 "doesn't exist."
         end
       end
       if valid_inst
-        if !File.directory?(root_path)
-          error "The Fizzy root directory `#{root_path}` doesn't exist " +
+        unless File.directory?(root_path)
+          error "The Fizzy root directory `#{root_path}` doesn't exist " \
                 '(maybe you need to run: `fizzy cfg sync`).'
         end
-        if !File.directory?(cur_inst_path) || !File.writable?(cur_inst_path)
-          error "The current instance `#{cur_inst_name}` is stored in an "  +
-                "invalid path (`#{cur_inst_path}`): already exists but is " +
+        unless File.directory?(cur_inst_path)
+          error "The current instance `#{cur_inst_name}` is invalid: it's " \
+                'not a directory.'
+        end
+        unless File.writable?(cur_inst_path)
+          error "The current instance `#{cur_inst_name}` is stored in an "  \
+                "invalid path (`#{cur_inst_path}`): already exists but is " \
                 'not writable.'
         end
-        if !File.file?(cur_inst_meta_path)
-          error "The meta file path (`#{cur_inst_meta_path}`) for the "    +
-                "current instance `#{cur_inst_name}` is invalid: doesn't " +
+        unless File.file?(cur_inst_meta_path)
+          error "The meta file path (`#{cur_inst_meta_path}`) for the "    \
+                "current instance `#{cur_inst_name}` is invalid: doesn't " \
                 "exist or isn't a regular file."
         end
-        if !File.directory?(cur_inst_vars_path)
-          error "The variables directory (`#{cur_inst_vars_path}`) for the " +
-                "current instance `#{cur_inst_name}` is invalid: doesn't "   +
+        unless File.directory?(cur_inst_vars_path)
+          error "The variables directory (`#{cur_inst_vars_path}`) for the " \
+                "current instance `#{cur_inst_name}` is invalid: doesn't "   \
                 "exist or isn't a directory."
         end
       end
@@ -912,9 +922,9 @@ module Fizzy
       # Inform user about the changing directory status.
       say "CD done in: `#{paths.cur_inst}`.", :green
     end # }}}
-    
+
   end # }}}
-  
+
   class Cfg < FizzyCommand # {{{
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
@@ -1178,7 +1188,7 @@ module Fizzy
 
     desc 'inst SUBCOMMAND ...ARGS', 'Manage a configuration instance'
     subcommand 'inst', Inst
-    
+
     desc 'sys SUBCOMMAND ...ARGS',
          'Manage the system integration with the available Fizzy configuration'
     subcommand 'sys', Sys

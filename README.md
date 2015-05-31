@@ -3,7 +3,7 @@ Fizzy
 
 The hassle free configuration manager
 
-![Status](http://img.shields.io/badge/status-Not%20released%20yet-yellow.svg) [![Stories in Ready](https://badge.waffle.io/alem0lars/fizzy.png?label=ready&title=Ready)](https://waffle.io/alem0lars/fizzy) [![Bountysource](https://img.shields.io/bountysource/team/fizzy/activity.svg)]()
+[![Stories in Ready](https://badge.waffle.io/alem0lars/fizzy.png?label=ready&title=Ready)](https://waffle.io/alem0lars/fizzy) [![Bountysource](https://img.shields.io/bountysource/team/fizzy/activity.svg)]()
 
 ## Installation
 

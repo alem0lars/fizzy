@@ -108,7 +108,6 @@ class Thor
 end
 
 class Hash
-
   ##
   # Perform recursive merge of the current `Hash` (`self`) with the provided one
   # (the `second` argument).
@@ -127,16 +126,12 @@ class Hash
     end
     self.merge(second, &merger)
   end # }}}
-
 end
 
 # }}}
 
-
 module Fizzy
-
   module Utils # {{{
-
     # {{{ Git
 
     # {{{ Functions to retrieve git informations.
@@ -638,25 +633,37 @@ module Fizzy
       cur_inst_vars_path = cur_inst_path && File.join(cur_inst_path, 'vars')
       cur_inst_meta_path = cur_inst_path && File.join(cur_inst_path, 'meta.yml')
 
-      # Validate storage correctness.
-      if (File.directory?(root_path) && !File.writable?(root_path)) ||
-         File.file?(root_path) ||
-         (!File.directory?(root_path) && !File.writable?(parent_path))
+      # {{{ Validate storage correctness.
+
+      # Validate `root_path`.
+      if !File.directory?(root_path) && !File.writable?(parent_path)
+        error "Cannot create directory: `#{root_path}`."
+      end
+      if File.file?(root_path)
+        if quiz "`#{root_path}` already exists but is a regular file. Remove?"
+          exec_cmd "rm #{root_path}", as_su: File.owned?(root_path)
+        else
+          error "File `#{root_path}` already exists but is needed as fizzy " \
+                'root directory. Aborting.'
+        end
+      end
+      if !valid_cfg && File.directory?(root_path) && !File.writable?(root_path)
         error "No write permissions in Fizzy storage at path `#{root_path}`."
       end
+
       if (File.directory?(tmp_path) && !File.writable?(tmp_path)) ||
          File.file?(tmp_path)
         error "The temporary directory `#{tmp_path}` already exists but is " \
               'not writable.'
       end
+
       if valid_cfg
         unless File.directory?(root_path)
           error "The Fizzy root directory `#{root_path}` doesn't exist " \
                 '(maybe you need to run: `fizzy cfg sync`).'
         end
-        if !File.directory?(cfg_path) || !File.writable?(cfg_path)
-          error "The configuration directory `#{cfg_path}` already exists " \
-                'but is not writable.'
+        unless File.directory?(cfg_path)
+          error "The configuration directory `#{cfg_path}` doesn't exist."
         end
         unless File.file?(cfg_meta_path)
           error "The configuration directory `#{cfg_meta_path}` is invalid: " \
@@ -667,6 +674,7 @@ module Fizzy
                 "doesn't exist."
         end
       end
+
       if valid_inst
         unless File.directory?(root_path)
           error "The Fizzy root directory `#{root_path}` doesn't exist " \
@@ -693,24 +701,33 @@ module Fizzy
         end
       end
 
+      # }}}
+
       # Create non-existing internal directories.
-      FileUtils.mkdir_p(root_path)     unless File.directory?(root_path)
-      FileUtils.mkdir_p(tmp_path)      unless File.directory?(tmp_path)
-      FileUtils.mkdir_p(inst_path)     unless File.directory?(inst_path)
-      FileUtils.mkdir_p(cur_inst_path) if cur_inst_path &&
-                                          !File.directory?(cur_inst_path)
+      FileUtils.mkdir_p(root_path) unless File.directory?(root_path)
+      unless File.directory?(tmp_path)
+        FileUtils.mkdir_p(tmp_path)
+        exec_cmd("chmod a+w #{tmp_path}", as_su: File.owned?(tmp_path))
+      end
+      unless File.directory?(inst_path)
+        FileUtils.mkdir_p(inst_path)
+        exec_cmd("chmod a+w #{inst_path}", as_su: File.owned?(inst_path))
+      end
+      if cur_inst_path && !File.directory?(cur_inst_path)
+        FileUtils.mkdir_p(cur_inst_path)
+      end
 
       # Return the known storage paths.
       OpenStruct.new(
-        :root          => root_path,
-        :tmp           => tmp_path,
-        :cfg           => cfg_path,
-        :cfg_vars      => cfg_vars_path,
-        :cfg_meta      => cfg_meta_path,
-        :inst          => inst_path,
-        :cur_inst      => cur_inst_path,
-        :cur_inst_vars => cur_inst_vars_path,
-        :cur_inst_meta => cur_inst_meta_path)
+        root:          root_path,
+        tmp:           tmp_path,
+        cfg:           cfg_path,
+        cfg_vars:      cfg_vars_path,
+        cfg_meta:      cfg_meta_path,
+        inst:          inst_path,
+        cur_inst:      cur_inst_path,
+        cur_inst_vars: cur_inst_vars_path,
+        cur_inst_meta: cur_inst_meta_path)
     end # }}}
 
     # }}}
@@ -784,9 +801,7 @@ module Fizzy
     end # }}}
 
     # }}}
-
   end # }}}
-
 
   class FizzyCommand < Thor # {{{
 
@@ -893,9 +908,7 @@ module Fizzy
         }
       }
     end # }}}
-
   end # }}}
-
 
   # {{{ Subcommands
 

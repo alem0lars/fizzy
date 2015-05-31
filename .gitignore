@@ -1,4 +1,4 @@
-# emacs {{{
+# {{{ Emacs.
 
 *~
 \#*\#
@@ -9,39 +9,61 @@ auto-save-list
 tramp
 .\#*
 
-# Org-mode
+# Org-mode.
 .org-id-locations
 *_archive
 
-# flymake-mode
+# flymake-mode.
 *_flymake.*
 
-# eshell files
+# eshell files.
 /eshell/history
 /eshell/lastdir
 
-# elpa packages
+# elpa packages.
 /elpa/
 
-# reftex files
+# reftex files.
 *.rel
 
-# AUCTeX auto folder
+# AUCTeX auto folder.
 /auto/
 
-# cask packages
+# cask packages.
 .cask/
 
 # }}}
 
 
-# vim {{{
+# {{{ Vim.
 
+# Swap files.
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]
+
 *.un~
 Session.vim
 .netrwhist
 *~
+
+# }}}
+
+
+# {{{ Sublime Text.
+
+# Cache files for sublime text.
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+
+# Workspace files are user-specific.
+*.sublime-workspace
+
+# Project files should be checked into the repository, unless a significant
+# proportion of contributors will probably not be using SublimeText
+*.sublime-project
+
+# SFTP configuration file
+sftp-config.json
 
 # }}}

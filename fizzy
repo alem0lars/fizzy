@@ -837,10 +837,6 @@ module Fizzy
             if !File.directory?(parent_dir)
               exec_cmd("mkdir -p \"#{parent_dir}\"",
                        :as_su => !existing_dir(parent_dir))
-              if elem.has_key?('perms') && (l_ex_dir_path != f_noex_dir_path)
-                exec_cmd("chmod -R \"#{elem['perms']}\" \"#{f_noex_dir_path}\"",
-                         :as_su => !File.owned?(f_noex_dir_path))
-              end
             end
           end
         },
@@ -872,6 +868,15 @@ module Fizzy
               cmd << " \"#{m['src_path']}\" \"#{m['dst_path']}\""
               exec_cmd(cmd,
                        :as_su => !existing_dir(File.dirname(m['dst_path'])))
+            end
+          end
+        },
+        lambda { |elem| # Change permissions of the instantiated files (if specified).
+          if elem.has_key?('perms')
+            elem['fs_maps'].each do |m|
+              say "Changing permissions of #{m['src_path']} to #{elem['perms']}" if @verbose
+              exec_cmd("chmod -R \"#{elem['perms']}\" \"#{m['src_path']}\"",
+                       :as_su => !File.owned?(m['src_path']))
             end
           end
         }

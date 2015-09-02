@@ -926,7 +926,7 @@ module Fizzy
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
     option :meta_name, :default => $DEF_META_NAME,
-           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
+           :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
     desc 'cd INST_NAME', 'Change directory to the instance directory (useful ' +
                          'for extensive filesystem manipulations).'
     def cd(inst_name) # {{{
@@ -955,7 +955,7 @@ module Fizzy
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
     option :meta_name, :default => $DEF_META_NAME,
-           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
+           :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
     desc 'cleanup', 'Cleanup the Fizzy storage (i.e. configuration, ' +
                     'instances, tmp files).'
     def cleanup # {{{
@@ -989,7 +989,7 @@ module Fizzy
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
     option :meta_name, :default => $DEF_META_NAME,
-           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
+           :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
     desc 'cd', 'Change directory to the configuration directory (useful for ' +
                'extensive filesystem manipulations).'
     def cd # {{{
@@ -1014,7 +1014,7 @@ module Fizzy
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
     option :meta_name, :default => $DEF_META_NAME,
-           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
+           :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
     desc 'edit CFG_NAME', 'Find the files relative to CFG_NAME and edit them.'
     def edit(cfg_name) # {{{
       # Prepare stuff for editing.
@@ -1053,7 +1053,7 @@ module Fizzy
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
     option :meta_name, :default => $DEF_META_NAME,
-           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
+           :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
     option :url, :default => nil,
            :desc => 'The url to the repository holding config (currently ' +
                     'supported: `git`)'
@@ -1116,7 +1116,7 @@ module Fizzy
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
     option :meta_name, :default => $DEF_META_NAME,
-           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
+           :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
     option :verbose, :type => :boolean, :default => false,
            :desc => 'Whether the output should be verbose.'
     desc 'instantiate',
@@ -1169,7 +1169,7 @@ module Fizzy
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
     option :meta_name, :default => $DEF_META_NAME,
-           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
+           :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
     option :run_mode, :default => 'normal',
            :enum => ['normal', 'paranoid', 'dry'],
            :desc => 'Ask confirmation for each filesystem operation.'

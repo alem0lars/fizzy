@@ -80,7 +80,7 @@ RUBY_PLATFORM_IS_LINUX = RUBY_PLATFORM =~ /linux/
 # {{{ Configure the default Fizzy root directory.
 $DEF_FIZZY_DIR = ENV['FIZZY_DIR']
 if RUBY_PLATFORM_IS_LINUX
-  $DEF_FIZZY_DIR ||= '/var/tmp/fizzy'
+  $DEF_FIZZY_DIR ||= '/usr/share/fizzy'
 elsif RUBY_PLATFORM_IS_OSX
   $DEF_FIZZY_DIR ||= '~/Library/Application Support/Fizzy'
 end
@@ -89,6 +89,10 @@ $DEF_FIZZY_DIR = File.expand_path($DEF_FIZZY_DIR)
 
 # {{{ Configure the default editor (this is the last fallback).
 $DEF_EDITOR = 'vim'
+# }}}
+
+# {{{ Configure the default meta file name.
+$DEF_META_NAME = 'meta.yml'
 # }}}
 
 # }}}
@@ -616,7 +620,7 @@ module Fizzy
     #     should contain the name of the current instance (the instance that
     #     should be used).
     #
-    def prepare_storage(root_path, valid_cfg: true, valid_inst: true,
+    def prepare_storage(root_path, meta_name, valid_cfg: true, valid_inst: true,
                         cur_inst_name: nil) # {{{
       root_path = File.expand_path(root_path)
 
@@ -626,12 +630,12 @@ module Fizzy
 
       cfg_path           = File.join(root_path, 'cfg')
       cfg_vars_path      = File.join(cfg_path,  'vars')
-      cfg_meta_path      = File.join(cfg_path,  'meta.yml')
+      cfg_meta_path      = File.join(cfg_path,  meta_name)
 
       inst_path          = File.join(root_path, 'inst')
       cur_inst_path      = cur_inst_name && File.join(inst_path, cur_inst_name)
       cur_inst_vars_path = cur_inst_path && File.join(cur_inst_path, 'vars')
-      cur_inst_meta_path = cur_inst_path && File.join(cur_inst_path, 'meta.yml')
+      cur_inst_meta_path = cur_inst_path && File.join(cur_inst_path, meta_name)
 
       # {{{ Validate storage correctness.
 
@@ -921,11 +925,14 @@ module Fizzy
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
-    desc 'cd INST_NAME', 'Change directory to the instance directory (useful for ' +
-                         'extensive filesystem manipulations).'
+    option :meta_name, :default => $DEF_META_NAME,
+           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
+    desc 'cd INST_NAME', 'Change directory to the instance directory (useful ' +
+                         'for extensive filesystem manipulations).'
     def cd(inst_name) # {{{
       # Prepare stuff for changing directory.
-      paths = prepare_storage(options.fizzy_dir, :cur_inst_name => inst_name)
+      paths = prepare_storage(options.fizzy_dir, options.meta_name,
+                              :cur_inst_name => inst_name)
 
       # Changing directory.
       say "Changing directory to: `#{paths.cur_inst}`.", :cyan
@@ -947,11 +954,13 @@ module Fizzy
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
+    option :meta_name, :default => $DEF_META_NAME,
+           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
     desc 'cleanup', 'Cleanup the Fizzy storage (i.e. configuration, ' +
                     'instances, tmp files).'
     def cleanup # {{{
       # Prepare paths for cleanup.
-      paths = prepare_storage(options.fizzy_dir,
+      paths = prepare_storage(options.fizzy_dir, options.meta_name,
                               :valid_cfg => false, :valid_inst => false)
 
       # Perform cleanup.
@@ -979,11 +988,14 @@ module Fizzy
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
+    option :meta_name, :default => $DEF_META_NAME,
+           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
     desc 'cd', 'Change directory to the configuration directory (useful for ' +
                'extensive filesystem manipulations).'
     def cd # {{{
       # Prepare stuff for changing directory.
-      paths = prepare_storage(options.fizzy_dir, :valid_inst => false)
+      paths = prepare_storage(options.fizzy_dir, options.meta_name,
+                              :valid_inst => false)
 
       # Changing directory.
       say "Changing directory to: `#{paths.cfg}`.", :cyan
@@ -1001,10 +1013,13 @@ module Fizzy
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
+    option :meta_name, :default => $DEF_META_NAME,
+           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
     desc 'edit CFG_NAME', 'Find the files relative to CFG_NAME and edit them.'
     def edit(cfg_name) # {{{
       # Prepare stuff for editing.
-      paths = prepare_storage(options.fizzy_dir, :valid_inst => false)
+      paths = prepare_storage(options.fizzy_dir, options.meta_name,
+                              :valid_inst => false)
       find_path = File.join(paths.cfg, cfg_name)
       cfg_files_arg = (File.exist?(find_path) ?
           "\"#{find_path}\"" :
@@ -1017,7 +1032,8 @@ module Fizzy
 
       # Perform edit
       if cfg_files_arg.empty?
-        warning "No files matching `#{cfg_name}` have been found.", :ask_continue => false
+        warning "No files matching `#{cfg_name}` have been found.",
+                :ask_continue => false
         status = nil
       else
         say "Editing configuration file(s): `#{cfg_files_arg}`.", :cyan
@@ -1036,13 +1052,15 @@ module Fizzy
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
+    option :meta_name, :default => $DEF_META_NAME,
+           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
     option :url, :default => nil,
            :desc => 'The url to the repository holding config (currently ' +
                     'supported: `git`)'
     desc 'sync', 'Synchronize the remote repository with the local one.'
     def sync # {{{
       # Prepare stuff for syncing.
-      paths = prepare_storage(options.fizzy_dir,
+      paths = prepare_storage(options.fizzy_dir, options.meta_name,
                               :valid_cfg => false, :valid_inst => false)
 
       # Perform sync.
@@ -1097,13 +1115,15 @@ module Fizzy
            :desc => 'The name for the new configuration instance.'
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
+    option :meta_name, :default => $DEF_META_NAME,
+           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
     option :verbose, :type => :boolean, :default => false,
            :desc => 'Whether the output should be verbose.'
     desc 'instantiate',
          'Create a configuration instance in the current machine.'
     def instantiate # {{{
       # Before instantiation.
-      paths = prepare_storage(options.fizzy_dir,
+      paths = prepare_storage(options.fizzy_dir, options.meta_name,
                               :valid_inst    => false,
                               :cur_inst_name => options.inst_name)
       setup_vars(paths.cfg_vars, options.vars_name)
@@ -1148,6 +1168,8 @@ module Fizzy
            :desc => 'The name for the new configuration instance.'
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
+    option :meta_name, :default => $DEF_META_NAME,
+           :desc => 'the name of the meta file (e.g. meta-user-alem0lars.yml)'
     option :run_mode, :default => 'normal',
            :enum => ['normal', 'paranoid', 'dry'],
            :desc => 'Ask confirmation for each filesystem operation.'
@@ -1158,7 +1180,7 @@ module Fizzy
       # Prepare stuff for performing install.
       @run_mode = options.run_mode.to_sym
       @verbose = options.verbose
-      paths = prepare_storage(options.fizzy_dir,
+      paths = prepare_storage(options.fizzy_dir, options.meta_name,
                               :cur_inst_name => options.inst_name)
       setup_vars(paths.cur_inst_vars, options.vars_name)
 
@@ -1195,7 +1217,6 @@ module Fizzy
 
   # }}}
 
-
   class Main < Thor # {{{
 
     include Fizzy::Utils
@@ -1223,7 +1244,6 @@ module Fizzy
     end
 
   end # }}}
-
 end
 
 

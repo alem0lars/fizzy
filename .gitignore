@@ -34,7 +34,6 @@ tramp
 
 # }}}
 
-
 # {{{ Vim.
 
 # Swap files.
@@ -47,7 +46,6 @@ Session.vim
 *~
 
 # }}}
-
 
 # {{{ Sublime Text.
 

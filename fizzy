@@ -620,7 +620,8 @@ module Fizzy
     #     should contain the name of the current instance (the instance that
     #     should be used).
     #
-    def prepare_storage(root_path, meta_name, valid_cfg: true, valid_inst: true,
+    def prepare_storage(root_path, meta_name: nil, valid_meta: true,
+                        valid_cfg: true, valid_inst: true,
                         cur_inst_name: nil) # {{{
       root_path = File.expand_path(root_path)
 
@@ -669,7 +670,7 @@ module Fizzy
         unless File.directory?(cfg_path)
           error "The configuration directory `#{cfg_path}` doesn't exist."
         end
-        unless File.file?(cfg_meta_path)
+        if valid_meta && !File.file?(cfg_meta_path)
           error "The configuration directory `#{cfg_meta_path}` is invalid: " \
                 'not a valid meta file.'
         end
@@ -693,7 +694,7 @@ module Fizzy
                 "invalid path (`#{cur_inst_path}`): already exists but is " \
                 'not writable.'
         end
-        unless File.file?(cur_inst_meta_path)
+        if valid_meta && !File.file?(cur_inst_meta_path)
           error "The meta file path (`#{cur_inst_meta_path}`) for the "    \
                 "current instance `#{cur_inst_name}` is invalid: doesn't " \
                 "exist or isn't a regular file."
@@ -925,13 +926,11 @@ module Fizzy
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
-    option :meta_name, :default => $DEF_META_NAME,
-           :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
     desc 'cd INST_NAME', 'Change directory to the instance directory (useful ' +
                          'for extensive filesystem manipulations).'
     def cd(inst_name) # {{{
       # Prepare stuff for changing directory.
-      paths = prepare_storage(options.fizzy_dir, options.meta_name,
+      paths = prepare_storage(options.fizzy_dir, :valid_meta => false,
                               :cur_inst_name => inst_name)
 
       # Changing directory.
@@ -954,13 +953,11 @@ module Fizzy
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
-    option :meta_name, :default => $DEF_META_NAME,
-           :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
     desc 'cleanup', 'Cleanup the Fizzy storage (i.e. configuration, ' +
                     'instances, tmp files).'
     def cleanup # {{{
       # Prepare paths for cleanup.
-      paths = prepare_storage(options.fizzy_dir, options.meta_name,
+      paths = prepare_storage(options.fizzy_dir, :valid_meta => false,
                               :valid_cfg => false, :valid_inst => false)
 
       # Perform cleanup.
@@ -988,14 +985,12 @@ module Fizzy
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
-    option :meta_name, :default => $DEF_META_NAME,
-           :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
     desc 'cd', 'Change directory to the configuration directory (useful for ' +
                'extensive filesystem manipulations).'
     def cd # {{{
       # Prepare stuff for changing directory.
-      paths = prepare_storage(options.fizzy_dir, options.meta_name,
-                              :valid_inst => false)
+      paths = prepare_storage(options.fizzy_dir,
+                              :valid_meta => false, :valid_inst => false)
 
       # Changing directory.
       say "Changing directory to: `#{paths.cfg}`.", :cyan
@@ -1013,13 +1008,11 @@ module Fizzy
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
-    option :meta_name, :default => $DEF_META_NAME,
-           :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
     desc 'edit CFG_NAME', 'Find the files relative to CFG_NAME and edit them.'
     def edit(cfg_name) # {{{
       # Prepare stuff for editing.
-      paths = prepare_storage(options.fizzy_dir, options.meta_name,
-                              :valid_inst => false)
+      paths = prepare_storage(options.fizzy_dir,
+                              :valid_meta => false, :valid_inst => false)
       find_path = File.join(paths.cfg, cfg_name)
       cfg_files_arg = (File.exist?(find_path) ?
           "\"#{find_path}\"" :
@@ -1052,15 +1045,13 @@ module Fizzy
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
-    option :meta_name, :default => $DEF_META_NAME,
-           :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
     option :url, :default => nil,
            :desc => 'The url to the repository holding config (currently ' +
                     'supported: `git`)'
     desc 'sync', 'Synchronize the remote repository with the local one.'
     def sync # {{{
       # Prepare stuff for syncing.
-      paths = prepare_storage(options.fizzy_dir, options.meta_name,
+      paths = prepare_storage(options.fizzy_dir, :valid_meta => false,
                               :valid_cfg => false, :valid_inst => false)
 
       # Perform sync.

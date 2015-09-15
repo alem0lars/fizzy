@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # coding: utf-8
 #
-###############################################################################
+# {{{ File header. ############################################################
 #                                                                             #
 # File informations:                                                          #
 # - Name:    fizzy                                                            #
@@ -41,7 +41,7 @@
 # See the License for the specific language governing permissions and         #
 # limitations under the License.                                              #
 #                                                                             #
-###############################################################################
+# }}} #########################################################################
 
 # {{{ Requires
 
@@ -626,17 +626,25 @@ module Fizzy
       root_path = File.expand_path(root_path)
 
       # Paths based on internal conventions.
-      parent_path        = File.dirname(root_path)
-      tmp_path           = File.join(root_path, 'tmp')
+      parent_path = File.dirname(root_path)
+      tmp_path = File.join(root_path, 'tmp')
 
-      cfg_path           = File.join(root_path, 'cfg')
-      cfg_vars_path      = File.join(cfg_path,  'vars')
-      cfg_meta_path      = File.join(cfg_path,  meta_name)
+      cfg_path = File.join(root_path, 'cfg')
+      cfg_vars_path = File.join(cfg_path,  'vars')
+      cfg_meta_path = meta_name ? File.join(cfg_path, meta_name) : nil
 
-      inst_path          = File.join(root_path, 'inst')
-      cur_inst_path      = cur_inst_name && File.join(inst_path, cur_inst_name)
-      cur_inst_vars_path = cur_inst_path && File.join(cur_inst_path, 'vars')
-      cur_inst_meta_path = cur_inst_path && File.join(cur_inst_path, meta_name)
+      inst_path = File.join(root_path, 'inst')
+      cur_inst_path = cur_inst_name ? File.join(inst_path, cur_inst_name) : nil
+      cur_inst_vars_path = if cur_inst_path
+                             File.join(cur_inst_path, 'vars')
+                           else
+                             nil
+                           end
+      cur_inst_meta_path = if cur_inst_path && meta_name
+                             File.join(cur_inst_path, meta_name)
+                           else
+                             nil
+                           end
 
       # {{{ Validate storage correctness.
 

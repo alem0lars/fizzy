@@ -972,6 +972,58 @@ module Fizzy
       say "CD done in: `#{paths.cur_inst}`.", :green
     end # }}}
 
+    option :vars_name, :required => true,
+           :desc => 'The name for the variables file to be used.'
+    option :inst_name, :required => true,
+           :desc => 'The name for the new configuration instance.'
+    option :fizzy_dir, :default => $DEF_FIZZY_DIR,
+           :desc => 'The root path for the directory internally used by Fizzy.'
+    option :meta_name, :default => $DEF_META_NAME,
+           :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
+    option :run_mode, :default => 'normal',
+           :enum => ['normal', 'paranoid', 'dry'],
+           :desc => 'Ask confirmation for each filesystem operation.'
+    option :verbose, :type => :boolean, :default => false,
+           :desc => 'If the output should be verbose.'
+    desc 'install', 'Install the current configuration instance in the system.'
+    def install # {{{
+      # Prepare stuff for performing install.
+      @run_mode = options.run_mode.to_sym
+      @verbose = options.verbose
+      paths = prepare_storage(options.fizzy_dir,
+                              :meta_name => options.meta_name,
+                              :cur_inst_name => options.inst_name)
+      setup_vars(paths.cur_inst_vars, options.vars_name)
+
+      meta = get_meta(
+        paths.cur_inst_meta, paths.cur_inst_vars,
+        paths.tmp, paths.cur_inst, options.verbose)
+
+      # Install the instance into the system.
+      say "Installing the configuration instance `#{options.inst_name}` " +
+          "into the system.", :blue
+      FileUtils.cd(paths.tmp) do # Stay in a safe place.
+        meta['elems'].each do |elem|
+          say "Installing element: `#{elem['name']}`.", :cyan
+          elements_appliers.each { |applier| applier.call(elem) }
+          if elem['notes']
+            say "Notes for `#{elem['name']}`:", :yellow
+            say elem['notes'].split("\n").collect { |s|
+              "  #{s}"
+            }.join("\n")
+          end
+        end
+        meta['commands'].each do |spec|
+          say "Executing command: `#{spec['name']}`.", :cyan
+          available_commands[spec['type']]['executor'].call(spec)
+        end
+      end
+
+      # Inform the user about installation status.
+      say "The configuration instance `#{options.inst_name}` has been " +
+          'installed into the system', :green
+    end # }}}
+
   end # }}}
 
   class Cfg < FizzyCommand # {{{
@@ -1177,7 +1229,29 @@ module Fizzy
 
   end # }}}
 
-  class Sys < FizzyCommand # {{{
+  # }}}
+
+  class Main < Thor # {{{
+
+    include Fizzy::Utils
+
+    desc 'cfg SUBCOMMAND ...ARGS',
+         'Manage the Fizzy configuration (without modifying the host system).'
+    subcommand 'cfg', Cfg
+
+    desc 'inst SUBCOMMAND ...ARGS', 'Manage a configuration instance'
+    subcommand 'inst', Inst
+
+    desc 'usage', 'Show how to use Fizzy.'
+    def usage
+      url = 'https://raw.githubusercontent.com/alem0lars/fizzy/master/README.md'
+      res = Net::HTTP.get_response(URI(url))
+      if res.is_a?(Net::HTTPSuccess)
+        say "\n#{res.body}\n"
+      else
+        error "Network error: cannot retrieve `#{url}`."
+      end
+    end
 
     option :vars_name, :required => true,
            :desc => 'The name for the variables file to be used.'
@@ -1192,75 +1266,17 @@ module Fizzy
            :desc => 'Ask confirmation for each filesystem operation.'
     option :verbose, :type => :boolean, :default => false,
            :desc => 'If the output should be verbose.'
-    desc 'install', 'Install the current configuration instance in the system.'
-    def install # {{{
-      # Prepare stuff for performing install.
-      @run_mode = options.run_mode.to_sym
-      @verbose = options.verbose
-      paths = prepare_storage(options.fizzy_dir,
-                              :meta_name => options.meta_name,
-                              :cur_inst_name => options.inst_name)
-      setup_vars(paths.cur_inst_vars, options.vars_name)
-
-      meta = get_meta(
-        paths.cur_inst_meta, paths.cur_inst_vars,
-        paths.tmp, paths.cur_inst, options.verbose)
-
-      # Install the instance into the system.
-      say "Installing the configuration instance `#{options.inst_name}` " +
-          "into the system.", :blue
-      FileUtils.cd(paths.tmp) do # Stay in a safe place.
-        meta['elems'].each do |elem|
-          say "Installing element: `#{elem['name']}`.", :cyan
-          elements_appliers.each { |applier| applier.call(elem) }
-          if elem['notes']
-            say "Notes for `#{elem['name']}`:", :yellow
-            say elem['notes'].split("\n").collect { |s|
-              "  #{s}"
-            }.join("\n")
-          end
-        end
-        meta['commands'].each do |spec|
-          say "Executing command: `#{spec['name']}`.", :cyan
-          available_commands[spec['type']]['executor'].call(spec)
-        end
-      end
-
-      # Inform the user about installation status.
-      say "The configuration instance `#{options.inst_name}` has been " +
-          'installed into the system', :green
-    end # }}}
-
-  end # }}}
-
-  # }}}
-
-  class Main < Thor # {{{
-
-    include Fizzy::Utils
-
-    desc 'cfg SUBCOMMAND ...ARGS',
-         'Manage the Fizzy configuration (without modifying the host system).'
-    subcommand 'cfg', Cfg
-
-    desc 'inst SUBCOMMAND ...ARGS', 'Manage a configuration instance'
-    subcommand 'inst', Inst
-
-    desc 'sys SUBCOMMAND ...ARGS',
-         'Manage the system integration with the available Fizzy configuration'
-    subcommand 'sys', Sys
-
-    desc 'usage', 'Show how to use Fizzy.'
-    def usage
-      url = 'https://raw.githubusercontent.com/alem0lars/fizzy/master/README.md'
-      res = Net::HTTP.get_response(URI(url))
-      if res.is_a?(Net::HTTPSuccess)
-        say "\n#{res.body}\n"
-      else
-        error "Network error: cannot retrieve `#{url}`."
-      end
+    desc 'quick-install', 'Quickly install a configuration.'
+    def quick_install
+      invoke 'cfg:instantiate',
+             :vars_name => options.vars_name, :inst_name => options.inst_name,
+             :fizzy_dir => options.fizzy_dir, :meta_name => options.meta_name,
+             :verbose => options.verbose
+      invoke 'inst:install',
+             :vars_name => options.vars_name, :inst_name => options.inst_name,
+             :fizzy_dir => options.fizzy_dir, :meta_name => options.meta_name,
+             :run_mode => options.run_mode, :verbose => options.verbose
     end
-
   end # }}}
 end
 

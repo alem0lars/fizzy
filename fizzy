@@ -52,6 +52,7 @@ require 'ostruct'
 require 'net/http'
 require 'pathname'
 require 'yaml'
+require 'json'
 # }}}
 
 # {{{ Try to require `thor` or raise an exception.
@@ -434,8 +435,17 @@ module Fizzy
                         ' ' * (11 + (nesting - 1) * 2) + '↳ '
                       end
         info inherit_str, file_name
-        file_path = File.join(vars_path, "#{file_name}.yml")
-        file_content = File.read(file_path)
+        file_path = find_yaml_path(File.join(vars_path, file_name))
+
+        if File.file?(file_path)
+          file_content = File.read(file_path)
+        else
+          begin
+            file_content = JSON.parse(body).to_yaml
+          rescue
+            file_content = nil
+          end
+        end
 
         # Find the name of the file to be inherited.
         inherits_name = file_content.match(inherits_regex)[:inherits_name]
@@ -443,7 +453,7 @@ module Fizzy
         # Load the file that should be inherited (if any) by calling this
         # function recursively and merging the read variables into `vars`.
         if inherits_name && !(inherits_name =~ dummy_names_regex)
-          inherits_file_path = File.join(vars_path, "#{inherits_name}.yml")
+          inherits_file_path = find_yaml_path(vars_path, inherits_name)
           unless File.file?(inherits_file_path)
             error "Inherited variables file doesn't exist: `#{inherits_name}`"
           end

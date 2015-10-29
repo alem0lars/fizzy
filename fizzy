@@ -537,7 +537,7 @@ module Fizzy
     # been found or is `nil`.
     #
     def get_env!(name) # {{{
-      get_env(name) || error("Undefined environment variable: `#{name}`")
+      get_env(name) || error("Undefined environment variable: `#{name}`.")
     end # }}}
 
     ##
@@ -592,6 +592,19 @@ module Fizzy
     # {{{ Filesystem
 
     ##
+    # Find a YAML file prefixed by `path` (guess extension name).
+    #
+    def find_yaml_path(path)
+      if File.file?(path)
+        path
+      else
+        %w(yml yaml).map do |ext|
+          "#{path}.#{ext}" if File.file? "#{path}.#{ext}"
+        end.compact.first
+      end
+    end
+
+    ##
     # Check if the provided `path` is an existing directory.
     #
     # If `writable` is true, also check if `path` points to a writable
@@ -631,7 +644,11 @@ module Fizzy
 
       cfg_path = File.join(root_path, 'cfg')
       cfg_vars_path = File.join(cfg_path,  'vars')
-      cfg_meta_path = meta_name ? File.join(cfg_path, meta_name) : nil
+      cfg_meta_path = if meta_name
+                        find_yaml_path(File.join(cfg_path, meta_name))
+                      else
+                        nil
+                      end
 
       inst_path = File.join(root_path, 'inst')
       cur_inst_path = cur_inst_name ? File.join(inst_path, cur_inst_name) : nil
@@ -641,7 +658,7 @@ module Fizzy
                              nil
                            end
       cur_inst_meta_path = if cur_inst_path && meta_name
-                             File.join(cur_inst_path, meta_name)
+                             find_yaml_path(File.join(cur_inst_path, meta_name))
                            else
                              nil
                            end

@@ -1023,6 +1023,7 @@ module Fizzy
       say "The configuration instance `#{options.inst_name}` has been " +
           'installed into the system', :green
     end # }}}
+    map :i => :install
 
   end # }}}
 
@@ -1054,11 +1055,7 @@ module Fizzy
         error "Failed to cleanup: `#{paths.root}`.", :red
       end
     end # }}}
-
-    desc 'import', 'Import an existing configuration.'
-    def import # {{{
-      error('WIP, check later!')
-    end # }}}
+    map :c => :cleanup
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
@@ -1119,6 +1116,7 @@ module Fizzy
         error "Failed to edit: `#{cfg_files_arg}`.", :red
       end
     end # }}}
+    map :e => :edit
 
     option :fizzy_dir, :default => $DEF_FIZZY_DIR,
            :desc => 'The root path for the directory internally used by Fizzy.'
@@ -1176,6 +1174,7 @@ module Fizzy
         error 'Unable to sync.'
       end
     end # }}}
+    map :s => :sync
 
     option :vars_name, :required => true,
            :desc => 'The name for the variables file to be used.'
@@ -1224,6 +1223,7 @@ module Fizzy
       # After instantiation.
       say "Created the configuration instance in: `#{paths.cur_inst}`.", :green
     end # }}}
+    map :i => :instantiate
 
     def self.source_root; '/' end
 
@@ -1252,6 +1252,7 @@ module Fizzy
         error "Network error: cannot retrieve `#{url}`."
       end
     end
+    map :u => :usage
 
     option :vars_name, :required => true,
            :desc => 'The name for the variables file to be used.'
@@ -1268,15 +1269,16 @@ module Fizzy
            :desc => 'If the output should be verbose.'
     desc 'quick-install', 'Quickly install a configuration.'
     def quick_install
-      invoke 'cfg:instantiate',
+      invoke Cfg, 'instantiate', [],
              :vars_name => options.vars_name, :inst_name => options.inst_name,
              :fizzy_dir => options.fizzy_dir, :meta_name => options.meta_name,
              :verbose => options.verbose
-      invoke 'inst:install',
+      invoke Inst, 'install', [],
              :vars_name => options.vars_name, :inst_name => options.inst_name,
              :fizzy_dir => options.fizzy_dir, :meta_name => options.meta_name,
              :run_mode => options.run_mode, :verbose => options.verbose
     end
+    map :qi => :quick_install
   end # }}}
 end
 

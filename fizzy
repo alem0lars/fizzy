@@ -519,7 +519,9 @@ module Fizzy
           end
         end
       end
-      if sep
+      if data.length == 1
+        def data.inspect() first end
+      elsif sep
         def data.inspect() join(sep) end
       end
       data

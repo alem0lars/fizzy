@@ -508,7 +508,7 @@ module Fizzy
     # Filter the values associated to the features, keeping only those
     # associated to available features.
     #
-    def data_for_features(info)
+    def data_for_features(info, sep: nil)
       data = []
       info.each do |feature_name, associated_value|
         if has_feature?(feature_name.to_sym)
@@ -518,6 +518,9 @@ module Fizzy
             data << associated_value
           end
         end
+      end
+      if sep
+        def data.inspect() join(sep) end
       end
       data
     end

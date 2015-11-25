@@ -1190,6 +1190,7 @@ module Fizzy
       # Prepare stuff for changing directory.
       paths = prepare_storage(options.fizzy_dir,
                               :valid_meta    => false,
+                              :valid_cfg     => false,
                               :valid_inst    => !options.inst_name.nil?,
                               :cur_inst_name => options.inst_name)
 

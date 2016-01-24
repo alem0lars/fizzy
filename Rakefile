@@ -87,6 +87,9 @@ task :build do
     write_bin("Content of file `#{src_file_name}`", src_file_path.read)
   end
 
+  # ☛ Set executable permissions.
+  BIN_PATH.chmod(0775)
+
   info("Build successfully completed", success: true)
 end
 

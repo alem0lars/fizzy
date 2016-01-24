@@ -1294,10 +1294,10 @@ class Fizzy::MainCommand < Thor
 
   desc 'cfg SUBCOMMAND ...ARGS',
        'Manage the Fizzy configuration (without modifying the host system).'
-  subcommand 'cfg', CfgCommand
+  subcommand 'cfg', Fizzy::CfgCommand
 
   desc 'inst SUBCOMMAND ...ARGS', 'Manage a configuration instance'
-  subcommand 'inst', InstCommand
+  subcommand 'inst', Fizzy::InstCommand
 
   desc 'usage', 'Show how to use Fizzy.'
   def usage

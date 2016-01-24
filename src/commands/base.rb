@@ -12,9 +12,9 @@ class Fizzy::BaseCommand < Thor
   #
   def elements_appliers
     [ lambda { |elem| # Create parent directories.
-        elem['fs_maps'].each do |m|
-          parent_dir = File.dirname(m['dst_path'])
-          if elem.has_key?('perms')
+        elem["fs_maps"].each do |m|
+          parent_dir = File.dirname(m["dst_path"])
+          if elem.has_key?("perms")
             l_ex_dir_path = f_noex_dir_path = parent_dir
             while !File.directory?(l_ex_dir_path)
               f_noex_dir_path = l_ex_dir_path
@@ -30,36 +30,36 @@ class Fizzy::BaseCommand < Thor
           #                      which points to an existing dir.
           if !File.directory?(parent_dir)
             exec_cmd("mkdir -p \"#{parent_dir}\"",
-                     :as_su => !existing_dir(parent_dir))
+                     as_su: !existing_dir(parent_dir))
           end
         end
       },
       lambda { |elem| # Create a symlink for each elements' `src_path`.
-        elem['fs_maps'].each do |m|
-          say "  #{m['src_path']} ← #{m['dst_path']}" if @verbose
-          cmd = 'ln -s'
-          should_link = if File.file?(m['dst_path'])
-            dst_real_path = Pathname.new(m['dst_path']).realpath.to_s
-            if dst_real_path != m['src_path']
-              cmd << ' -f'
-              quiz "The destination file `#{m['dst_path']}` already " +
-                   'exists. Overwrite'
+        elem["fs_maps"].each do |m|
+          say "  #{m["src_path"]} ← #{m["dst_path"]}" if @verbose
+          cmd = "ln -s"
+          should_link = if File.file?(m["dst_path"])
+            dst_real_path = Pathname.new(m["dst_path"]).realpath.to_s
+            if dst_real_path != m["src_path"]
+              cmd << " -f"
+              quiz "The destination file `#{m["dst_path"]}` already " +
+                   "exists. Overwrite"
             else
               false
             end
-            elsif File.directory?(m['dst_path'])
-              if quiz "The destination file `#{m['dst_path']}` is a " +
-                      'directory. Delete it'
-                exec_cmd("rm -Rf #{m['dst_path']}",
-                         :as_su => !existing_dir(File.dirname(m['dst_path'])))
-              end
-            else
+          elsif File.directory?(m["dst_path"])
+            if quiz "The destination file `#{m["dst_path"]}` is a " +
+                    "directory. Delete it"
+              exec_cmd("rm -Rf #{m["dst_path"]}",
+                       as_su: !existing_dir(File.dirname(m["dst_path"])))
+            end
+          else
             # Link does not exist yet.
             true
           end
 
           if should_link
-            cmd << " \"#{m['src_path']}\" \"#{m['dst_path']}\""
+            cmd << " \"#{m["src_path"]}\" \"#{m["dst_path"]}\""
             exec_cmd(cmd,
                      :as_su => !existing_dir(File.dirname(m['dst_path'])))
           end

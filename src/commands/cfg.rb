@@ -1,8 +1,8 @@
 class Fizzy::CfgCommand < Fizzy::BaseCommand
 
   option :fizzy_dir, :default => Fizzy::CFG.default_fizzy_dir, :aliases => :f,
-         :desc => 'The root path for the directory internally used by fizzy.'
-  desc 'cleanup', 'Cleanup the fizzy storage (i.e. configuration, instances).'
+         :desc => "The root path for the directory internally used by fizzy."
+  desc "cleanup", "Cleanup the fizzy storage (i.e. configuration, instances)."
   def cleanup
     # Prepare paths for cleanup.
     paths = prepare_storage(options.fizzy_dir, :valid_meta => false,

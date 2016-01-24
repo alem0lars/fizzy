@@ -1,8 +1,7 @@
-# Filesystem
+# Utilities to interact with the filesystem.
+#
+module Fizzy::Filesystem
 
-module Fizzy::Utils
-
-  #
   # Find a YAML file prefixed by `path` (guess extension name).
   #
   def find_yaml_path(path)
@@ -15,19 +14,17 @@ module Fizzy::Utils
     end
   end
 
-  #
   # Check if the provided `path` is an existing directory.
   #
   # If `writable` is true, also check if `path` points to a writable
   # directory.
   #
-  def existing_dir(path, writable: true) # {{{
+  def existing_dir(path, writable: true)
     dir_path = path
     dir_path = File.dirname(dir_path) until File.directory?(dir_path)
     (writable && !File.writable?(dir_path)) ? nil : dir_path
-  end # }}}
+  end
 
-  #
   # Return an object (`OpenStruct`), which contains all of the well-known
   # paths.
   #
@@ -47,20 +44,20 @@ module Fizzy::Utils
   def prepare_storage(root_path,
                       valid_meta: true, valid_cfg: true, valid_inst: true,
                       meta_name: nil, cur_cfg_name: nil, cur_inst_name: nil)
-    root_path = File.expand_path(root_path)
+    root_path = Pathname.new(root_path).expand_path
 
     # Paths based on internal conventions.
-    parent_path = File.dirname(root_path)
+    parent_path = root_path.dirname
 
-    cfg_path = File.join(root_path, 'cfg')
-    cur_cfg_path = cur_cfg_name ? File.join(cfg_path, cur_cfg_name) : nil
-    cur_cfg_vars_path = cur_cfg_path ? File.join(cur_cfg_path, 'vars') : nil
-    cur_cfg_meta_path = cur_cfg_path && meta_name ? find_yaml_path(File.join(cur_cfg_path, meta_name)) : nil
+    cfg_path = root_path.join("cfg")
+    cur_cfg_path = cfg_path.join(cur_cfg_name) if cur_cfg_name
+    cur_cfg_vars_path = cur_cfg_path.join("vars") if cur_cfg_path
+    cur_cfg_meta_path = find_yaml_path(cur_cfg_path.join(meta_name)) if cur_cfg_path && meta_name
 
-    inst_path = File.join(root_path, 'inst')
-    cur_inst_path = cur_inst_name ? File.join(inst_path, cur_inst_name) : nil
-    cur_inst_vars_path = cur_inst_path ? File.join(cur_inst_path, 'vars') : nil
-    cur_inst_meta_path = cur_inst_path && meta_name ? find_yaml_path(File.join(cur_inst_path, meta_name)) : nil
+    inst_path = root_path.join("inst")
+    cur_inst_path = inst_path.join(cur_inst_name) if cur_inst_name
+    cur_inst_vars_path = cur_inst_path.join("vars") if cur_inst_path
+    cur_inst_meta_path = find_yaml_path(cur_inst_path.join(meta_name)) if cur_inst_path && meta_name
 
     # Validate `root_path`.
     if !File.directory?(root_path) && !File.writable?(parent_path)
@@ -68,10 +65,11 @@ module Fizzy::Utils
     end
     if File.file?(root_path)
       if quiz "`#{root_path}` already exists but is a regular file. Remove?"
-        exec_cmd "rm #{root_path}", as_su: File.owned?(root_path)
+        exec_cmd "rm #{Shellwords.escape(root_path)}",
+                 as_su: File.owned?(root_path)
       else
-        error "File `#{root_path}` already exists but is needed as fizzy " \
-              'root directory. Aborting.'
+        error "File `#{root_path}` already exists but is needed as fizzy " +
+              "root directory. Aborting."
       end
     end
     if !valid_cfg && File.directory?(root_path) && !File.writable?(root_path)
@@ -80,11 +78,11 @@ module Fizzy::Utils
 
     if valid_cfg
       unless File.directory?(root_path)
-        error "The Fizzy root directory `#{root_path}` doesn't exist " \
-              '(maybe you need to run: `fizzy cfg sync`).'
+        error "The Fizzy root directory `#{root_path}` doesn't exist " +
+              "(maybe you need to run: `fizzy cfg sync`)."
       end
       if !File.directory?(cur_cfg_path) || !File.writable?(cur_cfg_path)
-        error "The current configuration `#{cur_cfg_name}` is invalid: " \
+        error "The current configuration `#{cur_cfg_name}` is invalid: " +
               "it's not a valid directory."
       end
       if valid_meta && !File.file?(cur_cfg_meta_path)
@@ -96,31 +94,32 @@ module Fizzy::Utils
     end
 
     if valid_inst
-      unless File.directory?(root_path)
-        error "The Fizzy root directory `#{root_path}` doesn't exist " \
-              '(maybe you need to run: `fizzy cfg sync`).'
+      unless root_path.directory?
+        error "The Fizzy root directory `#{root_path}` doesn't exist " +
+              "(maybe you need to run: `fizzy cfg sync`)."
       end
-      if !File.directory?(cur_inst_path) || !File.writable?(cur_inst_path)
-        error "The current instance `#{cur_inst_name}` is invalid: it's " \
-              'not a valid directory.'
+      if !cur_inst_path.directory? || !cur_inst_path.writable?
+        error "The current instance `#{cur_inst_name}` is invalid: it's " +
+              "not a valid directory."
       end
-      if valid_meta && !File.file?(cur_inst_meta_path)
+      if valid_meta && !cur_inst_meta_path.file?
         error "The meta file path `#{cur_inst_meta_path}` is invalid."
       end
-      unless File.directory?(cur_inst_vars_path)
+      unless cur_inst_vars_path.directory?
         error "The variables directory `#{cur_inst_vars_path}` is invalid."
       end
     end
 
     # Create non-existing internal directories.
-    FileUtils.mkdir_p(root_path) unless File.directory?(root_path)
+    FileUtils.mkdir_p(root_path) unless root_path.directory?
     [cfg_path, inst_path].each do |dir_path|
-      unless File.directory?(dir_path)
+      unless dir_path.directory?
         FileUtils.mkdir_p(dir_path)
-        exec_cmd("chmod a+w \"#{dir_path}\"", as_su: File.owned?(dir_path))
+        exec_cmd "chmod a+w #{Shellwords.escape(dir_path)}",
+                 as_su: File.owned?(dir_path)
       end
     end
-    if cur_inst_path && !File.directory?(cur_inst_path)
+    if cur_inst_path && !cur_inst_path.directory?
       FileUtils.mkdir_p(cur_inst_path)
     end
 

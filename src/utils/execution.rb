@@ -1,8 +1,7 @@
-# Commands execution
+# Utilities to start and manage programs execution.
+#
+module Fizzy::Execution
 
-module Fizzy::Utils
-
-  #
   # Execute the provided shell command (`cmd`).
   #
   # If `as_su` is `true` the command is executed as super user (i.e. as root,

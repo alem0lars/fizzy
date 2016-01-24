@@ -1,14 +1,16 @@
 files:
   - requires
   - configuration
-  - exts/thor
   - exts/hash
+  - exts/thor
   - utils/git
-  - utils/env
-  - utils/meta
+  - utils/environment
+  - utils/execution
+  - utils/meta_info
+  - utils/meta_elements
+  - utils/meta_commands
   - utils/vars
-  - utils/exec
-  - utils/fs
+  - utils/filesystem
   - utils/io
   - commands/base
   - commands/cfg

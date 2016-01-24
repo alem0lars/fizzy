@@ -49,6 +49,8 @@ require "net/http"
 require "pathname"
 require "yaml"
 require "json"
+require "shellwords"
+require "uri"
 
 # Try to require `thor` or raise an exception.
 begin
@@ -77,6 +79,10 @@ Fizzy::CFG.os = case RUBY_PLATFORM
                 else               :windows
                 end
 
+# Remote URL for fizzy static files.
+Fizzy::CFG.static_files_base_url =
+  URI("https://raw.githubusercontent.com/alem0lars/fizzy/master")
+
 # Default fizzy root directory (holding all of the fizzy stuff).
 Fizzy::CFG.default_fizzy_dir = Pathname.new(
   ENV["FIZZY_DIR"] ||
@@ -89,20 +95,6 @@ Fizzy::CFG.default_fizzy_dir = Pathname.new(
 
 # Default meta file name.
 Fizzy::CFG.default_meta_name = "meta.yml"
-
-# ☛ Exts → Thor ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-class Thor
-  module Actions
-    # Monkey-patch to retrieve the template currently processed ━━━━━━━━━━━━━━━━
-    old_template = instance_method(:template)
-    define_method :template, ->(source, *args, &blk) do
-      $fizzy_cur_template = source
-      old_template.bind(self).(source, *args, &blk)
-    end
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  end
-end
 
 # ☛ Exts → Hash ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -134,9 +126,23 @@ class Hash
   end
 end
 
+# ☛ Exts → Thor ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class Thor
+  module Actions
+    # Monkey-patch to retrieve the template currently processed ━━━━━━━━━━━━━━━━
+    old_template = instance_method(:template)
+    define_method :template, ->(source, *args, &blk) do
+      $fizzy_cur_template = source
+      old_template.bind(self).(source, *args, &blk)
+    end
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  end
+end
+
 # ☛ Utils → Git ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-module Fizzy::Utils
+module Fizzy::Git
 
   def git_info(git_root_path)
     info = nil
@@ -154,6 +160,14 @@ module Fizzy::Utils
     `git status -uall --porcelain`.strip
   end
 
+  def git_remotes
+    `git remote`.split(/\W+/).reject(&:empty?)
+  end
+
+  def git_branches
+    `git branch`.split(/\W+/).reject(&:empty?)
+  end
+
   def git_has_local_changes(git_root_path)
     !git_local_changes(git_root_path).empty?
   end
@@ -168,46 +182,100 @@ module Fizzy::Utils
     info[:local] != info[:base]
   end
 
-  def git_pull(with_submodules: true)
-    say 'Performing pull.', :cyan
-    status = exec_cmd('git pull origin master',
-                      as_su: !existing_dir(Dir.pwd))
-    if with_submodules
-      status &&= exec_cmd('git submodule foreach git checkout master',
-                          as_su: !existing_dir(Dir.pwd))
-      status &&= exec_cmd('git submodule foreach git merge origin/master',
-                          as_su: !existing_dir(Dir.pwd))
-    end
+  def git_pull(remote: nil, branch: nil, with_submodules: true)
+    error("Invalid remote `#{remote}`.") if remote && !git_remotes.include?(remote)
+    error("Invalid branch `#{branch}`.") if branch && !git_branches.include?(branch)
+
+    say "Performing pull.", :blue
+
+    cmd  = "git pull"
+    cmd << " #{Shellwords.escape(remote)}" unless remote.nil?
+    cmd << " #{Shellwords.escape(branch)}" unless branch.nil?
+
+    status   = exec_cmd(cmd, as_su: !existing_dir(Dir.pwd))
+    status &&= exec_cmd("git submodule update --recursive",
+                        as_su: !existing_dir(Dir.pwd)) if with_submodules
+
     status
   end
 
   def git_clone(url, dst_path, recursive: true)
     error("Invalid url: can't be empty.") if url.nil?
     say "Syncing from remote repo: `#{url}`.", :blue
-    cmd = if recursive
-            "git clone --recursive \"#{url}\" \"#{dst_path}\""
-          else
-            "git clone \"#{url}\" \"#{dst_path}\""
-          end
+
+    cmd  = "git clone"
+    cmd << " --recursive" if recursive
+    cmd << " #{Shellwords.escape(url)} #{Shellwords.escape(dst_path)}"
+
     exec_cmd(cmd, :as_su => !existing_dir(File.dirname(dst_path)))
+  end
+
+  def git_push(remote: nil, branch: nil)
+    error("Invalid remote `#{remote}`.") if remote && !git_remotes.include?(remote)
+    error("Invalid branch `#{branch}`.") if branch && !git_branches.include?(branch)
+
+    say "Pushing to remote.", :blue
+
+    cmd  = "git push"
+    cmd << " #{Shellwords.escape(remote)}" unless remote.nil?
+    cmd << " #{Shellwords.escape(branch)}" unless branch.nil?
+
+    exec_cmd(cmd, as_su: !existing_dir(Dir.pwd))
+  end
+
+  def git_fetch(remote: nil, branch: nil)
+    error("Invalid remote `#{remote}`.") if remote && !git_remotes.include?(remote)
+    error("Invalid branch `#{branch}`.") if branch && !git_branches.include?(branch)
+
+    say "Fetching from remote.", :blue
+
+    cmd  = "git fetch"
+    cmd << " #{Shellwords.escape(remote)}" unless remote.nil?
+    cmd << " #{Shellwords.escape(branch)}" unless branch.nil?
+
+    exec_cmd(cmd, as_su: !existing_dir(Dir.pwd))
+  end
+
+  def git_add(files: nil)
+    error("Invalid files `#{files}`.") unless files.nil? || files.is_a?(Array)
+
+    cmd  = "git add"
+    if files.nil?
+      cmd << " -A"
+    else
+      cmd << files.map { |f| Shellwords.escape(f) }.join(" ")
+    end
+
+    exec_cmd(cmd, as_su: !existing_dir(Dir.pwd))
+  end
+
+  def git_commit(message: nil)
+    say "Performing commit.", :blue
+
+    cmd = "git commit -a"
+    if message.nil?
+      cmd << " --allow-empty-message"
+    else
+      cmd << " -m #{Shellwords.escape(message)}"
+    end
+
+    exec_cmd(cmd, as_su: !existing_dir(Dir.pwd))
   end
 
 end
 
-# ☛ Utils → Env ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☛ Utils → Environment ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# Host environment / system
+# Utilities to retrieve informations about the host environment & system.
+#
+module Fizzy::Environment
 
-module Fizzy::Utils
-
-  #
   # Return the environment variable matching the provided `name`.
   #
-  def get_env(name)
-    ENV[name.to_s]
+  def get_env(name, default: nil)
+    ENV[name.to_s] || default
   end
 
-  #
   # Same of `get_env`, but raise an error if the environment variable hasn't
   # been found or is `nil`.
   #
@@ -215,14 +283,12 @@ module Fizzy::Utils
     get_env(name) || error("Undefined environment variable: `#{name}`.")
   end
 
-  #
   # Check if the underlying operating system is MacOSX.
   #
   def is_osx?
     Fizzy::CFG.os == :osx
   end
 
-  #
   # Check if the underlying operating system is GNU/Linux.
   #
   def is_linux?
@@ -231,11 +297,48 @@ module Fizzy::Utils
 
 end
 
-# ☛ Utils → Meta ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☛ Utils → Execution ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-module Fizzy::Utils
+# Utilities to start and manage programs execution.
+#
+module Fizzy::Execution
 
+  # Execute the provided shell command (`cmd`).
   #
+  # If `as_su` is `true` the command is executed as super user (i.e. as root,
+  # using sudo).
+  #
+  def exec_cmd(cmd, as_su: false)
+    full_cmd = as_su ? "sudo #{cmd}" : cmd
+
+    really_run = case @run_mode
+                 when :normal
+                   true
+                 when :paranoid
+                   quiz("Do you want to run command `#{full_cmd}`")
+                 when :dry
+                   false
+                 else
+                   true
+                 end
+
+    if really_run || @run_mode == :dry
+      say as_su ? "[sudo] #{cmd}" : cmd, :magenta
+    end
+
+    if really_run
+      system(full_cmd) || warning("Command `#{full_cmd}` failed.")
+    end
+  end
+
+end
+
+# ☛ Utils → Meta Info ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Access informations declared in the meta file.
+#
+module Fizzy::MetaInfo
+
   # Return the normalized and validated meta object.
   #
   # Be sure to call `setup_vars` before calling this method.
@@ -395,11 +498,10 @@ module Fizzy::Utils
     meta
   end # }}}
 
-  #
   # Return whether the provided `only` specification is evaluated as an allows
   # and not as a denies.
   #
-  def selected_by_only?(only, verbose) # {{{
+  def selected_by_only?(only, verbose)
     unless only
       selected = true
       info(' ↳ ', "#{set_color('✔', :green)} (`only` is empty).") if verbose
@@ -438,13 +540,130 @@ module Fizzy::Utils
     end
 
     selected
-  end # }}}
+  end
 
+end
+
+# ☛ Utils → Meta Elements ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Manage elements declared in the meta file.
+#
+module Fizzy::MetaElements
+
+  # Return a list of functions capable to apply modifications on the system
+  # based on the current elements configuration instance.
+  #
+  # In particular, an applier work for each element installed.
+  #
+  def elements_appliers
+    [ lambda { |elem| # Create parent directories.
+        elem["fs_maps"].each do |m|
+          parent_dir = File.dirname(m["dst_path"])
+          if elem.has_key?("perms")
+            l_ex_dir_path = f_noex_dir_path = parent_dir
+            while !File.directory?(l_ex_dir_path)
+              f_noex_dir_path = l_ex_dir_path
+              l_ex_dir_path   = File.dirname(l_ex_dir_path)
+            end
+          else
+            l_ex_dir_path = f_noex_dir_path = nil
+          end
+          # From here, we have the following variable set:
+          # - `l_ex_dir_path`: Longest path prefix which points to an existing
+          #                    directory.
+          # - `f_noex_dir_path`: Path of the first directory after the prefix
+          #                      which points to an existing dir.
+          if !File.directory?(parent_dir)
+            exec_cmd("mkdir -p #{Shellwords.escape(parent_dir)}",
+                     as_su: !existing_dir(parent_dir))
+          end
+        end
+      },
+      lambda { |elem| # Create a symlink for each elements' `src_path`.
+        elem["fs_maps"].each do |m|
+          say "  #{m["src_path"]} ← #{m["dst_path"]}" if @verbose
+          cmd = "ln -s"
+          should_link = if File.file?(m["dst_path"])
+            dst_real_path = Pathname.new(m["dst_path"]).realpath.to_s
+            if dst_real_path != m["src_path"]
+              cmd << " -f"
+              quiz "The destination file `#{m["dst_path"]}` already " +
+                   "exists. Overwrite"
+            else
+              false
+            end
+          elsif File.directory?(m["dst_path"])
+            if quiz "The destination file `#{m["dst_path"]}` is a " +
+                    "directory. Delete it"
+              exec_cmd("rm -Rf #{m["dst_path"]}",
+                       as_su: !existing_dir(File.dirname(m["dst_path"])))
+            end
+          else
+            # Link does not exist yet.
+            true
+          end
+
+          if should_link
+            cmd << " \"#{m["src_path"]}\" \"#{m["dst_path"]}\""
+            exec_cmd(cmd,
+                     :as_su => !existing_dir(File.dirname(m['dst_path'])))
+          end
+        end
+      },
+      lambda { |elem| # Change permissions of the instantiated files (if specified).
+        if elem.has_key?("perms")
+          elem["fs_maps"].each do |m|
+            say "Changing permissions of #{m['src_path']} to #{elem["perms"]}" if @verbose
+            exec_cmd("chmod -R #{Shellwords.escape(elem["perms"])} #{Shellwords.escape(m["src_path"])}",
+                     as_su: !File.owned?(m["src_path"]))
+          end
+        end
+      }
+    ]
+  end
+
+end
+
+# ☛ Utils → Meta Commands ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Manage commands declared in the meta file.
+#
+module Fizzy::MetaCommands
+
+  # Return a data structure containing the commands that can be specified in
+  # the meta file.
+  #
+  # The data structure defines:
+  # - The available command types (`available_commands.keys`).
+  # - (Optionally) A validator that can be used to validate type-specific
+  #   validation rules.
+  # - The command executor: A `Lambda` containing the code used for executing
+  #   that command.
+  #
+  def available_commands
+    { "git_sync" => {
+        "validator" => lambda { |spec|
+          if spec.has_key?("dst")
+            spec["dst"] = File.expand_path(spec["dst"])
+          end
+          status   = spec.has_key?("repo")
+          status &&= spec.has_key?("dst")
+        },
+        "executor" => lambda { |spec|
+          if File.directory?(spec["dst"])
+            FileUtils.cd(spec["dst"]) { git_pull }
+          else
+            git_clone(spec["repo"], spec["dst"])
+          end
+        }
+      }
+    }
+  end
 end
 
 # ☛ Utils → Vars ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-module Fizzy::Utils
+module Fizzy::Vars
 
   attr_reader :vars
 
@@ -619,50 +838,12 @@ module Fizzy::Utils
 
 end
 
-# ☛ Utils → Exec ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☛ Utils → Filesystem ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# Commands execution
+# Utilities to interact with the filesystem.
+#
+module Fizzy::Filesystem
 
-module Fizzy::Utils
-
-  #
-  # Execute the provided shell command (`cmd`).
-  #
-  # If `as_su` is `true` the command is executed as super user (i.e. as root,
-  # using sudo).
-  #
-  def exec_cmd(cmd, as_su: false)
-    full_cmd = as_su ? "sudo #{cmd}" : cmd
-
-    really_run = case @run_mode
-                 when :normal
-                   true
-                 when :paranoid
-                   quiz("Do you want to run command `#{full_cmd}`")
-                 when :dry
-                   false
-                 else
-                   true
-                 end
-
-    if really_run || @run_mode == :dry
-      say as_su ? "[sudo] #{cmd}" : cmd, :magenta
-    end
-
-    if really_run
-      system(full_cmd) || warning("Command `#{full_cmd}` failed.")
-    end
-  end
-
-end
-
-# ☛ Utils → Fs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-# Filesystem
-
-module Fizzy::Utils
-
-  #
   # Find a YAML file prefixed by `path` (guess extension name).
   #
   def find_yaml_path(path)
@@ -675,19 +856,17 @@ module Fizzy::Utils
     end
   end
 
-  #
   # Check if the provided `path` is an existing directory.
   #
   # If `writable` is true, also check if `path` points to a writable
   # directory.
   #
-  def existing_dir(path, writable: true) # {{{
+  def existing_dir(path, writable: true)
     dir_path = path
     dir_path = File.dirname(dir_path) until File.directory?(dir_path)
     (writable && !File.writable?(dir_path)) ? nil : dir_path
-  end # }}}
+  end
 
-  #
   # Return an object (`OpenStruct`), which contains all of the well-known
   # paths.
   #
@@ -707,20 +886,20 @@ module Fizzy::Utils
   def prepare_storage(root_path,
                       valid_meta: true, valid_cfg: true, valid_inst: true,
                       meta_name: nil, cur_cfg_name: nil, cur_inst_name: nil)
-    root_path = File.expand_path(root_path)
+    root_path = Pathname.new(root_path).expand_path
 
     # Paths based on internal conventions.
-    parent_path = File.dirname(root_path)
+    parent_path = root_path.dirname
 
-    cfg_path = File.join(root_path, 'cfg')
-    cur_cfg_path = cur_cfg_name ? File.join(cfg_path, cur_cfg_name) : nil
-    cur_cfg_vars_path = cur_cfg_path ? File.join(cur_cfg_path, 'vars') : nil
-    cur_cfg_meta_path = cur_cfg_path && meta_name ? find_yaml_path(File.join(cur_cfg_path, meta_name)) : nil
+    cfg_path = root_path.join("cfg")
+    cur_cfg_path = cfg_path.join(cur_cfg_name) if cur_cfg_name
+    cur_cfg_vars_path = cur_cfg_path.join("vars") if cur_cfg_path
+    cur_cfg_meta_path = find_yaml_path(cur_cfg_path.join(meta_name)) if cur_cfg_path && meta_name
 
-    inst_path = File.join(root_path, 'inst')
-    cur_inst_path = cur_inst_name ? File.join(inst_path, cur_inst_name) : nil
-    cur_inst_vars_path = cur_inst_path ? File.join(cur_inst_path, 'vars') : nil
-    cur_inst_meta_path = cur_inst_path && meta_name ? find_yaml_path(File.join(cur_inst_path, meta_name)) : nil
+    inst_path = root_path.join("inst")
+    cur_inst_path = inst_path.join(cur_inst_name) if cur_inst_name
+    cur_inst_vars_path = cur_inst_path.join("vars") if cur_inst_path
+    cur_inst_meta_path = find_yaml_path(cur_inst_path.join(meta_name)) if cur_inst_path && meta_name
 
     # Validate `root_path`.
     if !File.directory?(root_path) && !File.writable?(parent_path)
@@ -728,10 +907,11 @@ module Fizzy::Utils
     end
     if File.file?(root_path)
       if quiz "`#{root_path}` already exists but is a regular file. Remove?"
-        exec_cmd "rm #{root_path}", as_su: File.owned?(root_path)
+        exec_cmd "rm #{Shellwords.escape(root_path)}",
+                 as_su: File.owned?(root_path)
       else
-        error "File `#{root_path}` already exists but is needed as fizzy " \
-              'root directory. Aborting.'
+        error "File `#{root_path}` already exists but is needed as fizzy " +
+              "root directory. Aborting."
       end
     end
     if !valid_cfg && File.directory?(root_path) && !File.writable?(root_path)
@@ -740,11 +920,11 @@ module Fizzy::Utils
 
     if valid_cfg
       unless File.directory?(root_path)
-        error "The Fizzy root directory `#{root_path}` doesn't exist " \
-              '(maybe you need to run: `fizzy cfg sync`).'
+        error "The Fizzy root directory `#{root_path}` doesn't exist " +
+              "(maybe you need to run: `fizzy cfg sync`)."
       end
       if !File.directory?(cur_cfg_path) || !File.writable?(cur_cfg_path)
-        error "The current configuration `#{cur_cfg_name}` is invalid: " \
+        error "The current configuration `#{cur_cfg_name}` is invalid: " +
               "it's not a valid directory."
       end
       if valid_meta && !File.file?(cur_cfg_meta_path)
@@ -756,31 +936,32 @@ module Fizzy::Utils
     end
 
     if valid_inst
-      unless File.directory?(root_path)
-        error "The Fizzy root directory `#{root_path}` doesn't exist " \
-              '(maybe you need to run: `fizzy cfg sync`).'
+      unless root_path.directory?
+        error "The Fizzy root directory `#{root_path}` doesn't exist " +
+              "(maybe you need to run: `fizzy cfg sync`)."
       end
-      if !File.directory?(cur_inst_path) || !File.writable?(cur_inst_path)
-        error "The current instance `#{cur_inst_name}` is invalid: it's " \
-              'not a valid directory.'
+      if !cur_inst_path.directory? || !cur_inst_path.writable?
+        error "The current instance `#{cur_inst_name}` is invalid: it's " +
+              "not a valid directory."
       end
-      if valid_meta && !File.file?(cur_inst_meta_path)
+      if valid_meta && !cur_inst_meta_path.file?
         error "The meta file path `#{cur_inst_meta_path}` is invalid."
       end
-      unless File.directory?(cur_inst_vars_path)
+      unless cur_inst_vars_path.directory?
         error "The variables directory `#{cur_inst_vars_path}` is invalid."
       end
     end
 
     # Create non-existing internal directories.
-    FileUtils.mkdir_p(root_path) unless File.directory?(root_path)
+    FileUtils.mkdir_p(root_path) unless root_path.directory?
     [cfg_path, inst_path].each do |dir_path|
-      unless File.directory?(dir_path)
+      unless dir_path.directory?
         FileUtils.mkdir_p(dir_path)
-        exec_cmd("chmod a+w \"#{dir_path}\"", as_su: File.owned?(dir_path))
+        exec_cmd "chmod a+w #{Shellwords.escape(dir_path)}",
+                 as_su: File.owned?(dir_path)
       end
     end
-    if cur_inst_path && !File.directory?(cur_inst_path)
+    if cur_inst_path && !cur_inst_path.directory?
       FileUtils.mkdir_p(cur_inst_path)
     end
 
@@ -875,114 +1056,83 @@ end
 
 # ☛ Commands → Base ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+# Base class for all fizzy commands.
+#
 class Fizzy::BaseCommand < Thor
+
   include Thor::Actions
-  include Fizzy::Utils
 
-  protected
+  include Fizzy::Environment
+  include Fizzy::Execution
+  include Fizzy::Filesystem
+  include Fizzy::Git
+  include Fizzy::IO
+  include Fizzy::MetaInfo
+  include Fizzy::MetaElements
+  include Fizzy::MetaCommands
+  include Fizzy::Vars
 
+  # Common options, shared among many commands.
   #
-  # Return a list of functions capable to apply modifications on the system
-  # based on the current elements configuration instance.
-  #
-  # In particular, an applier work for each element installed.
-  #
-  def elements_appliers
-    [ lambda { |elem| # Create parent directories.
-        elem["fs_maps"].each do |m|
-          parent_dir = File.dirname(m["dst_path"])
-          if elem.has_key?("perms")
-            l_ex_dir_path = f_noex_dir_path = parent_dir
-            while !File.directory?(l_ex_dir_path)
-              f_noex_dir_path = l_ex_dir_path
-              l_ex_dir_path   = File.dirname(l_ex_dir_path)
-            end
-          else
-            l_ex_dir_path = f_noex_dir_path = nil
-          end
-          # From here, we have the following variable set:
-          # - `l_ex_dir_path`: Longest path prefix which points to an existing
-          #                    directory.
-          # - `f_noex_dir_path`: Path of the first directory after the prefix
-          #                      which points to an existing dir.
-          if !File.directory?(parent_dir)
-            exec_cmd("mkdir -p \"#{parent_dir}\"",
-                     as_su: !existing_dir(parent_dir))
-          end
-        end
-      },
-      lambda { |elem| # Create a symlink for each elements' `src_path`.
-        elem["fs_maps"].each do |m|
-          say "  #{m["src_path"]} ← #{m["dst_path"]}" if @verbose
-          cmd = "ln -s"
-          should_link = if File.file?(m["dst_path"])
-            dst_real_path = Pathname.new(m["dst_path"]).realpath.to_s
-            if dst_real_path != m["src_path"]
-              cmd << " -f"
-              quiz "The destination file `#{m["dst_path"]}` already " +
-                   "exists. Overwrite"
-            else
-              false
-            end
-          elsif File.directory?(m["dst_path"])
-            if quiz "The destination file `#{m["dst_path"]}` is a " +
-                    "directory. Delete it"
-              exec_cmd("rm -Rf #{m["dst_path"]}",
-                       as_su: !existing_dir(File.dirname(m["dst_path"])))
-            end
-          else
-            # Link does not exist yet.
-            true
-          end
-
-          if should_link
-            cmd << " \"#{m["src_path"]}\" \"#{m["dst_path"]}\""
-            exec_cmd(cmd,
-                     :as_su => !existing_dir(File.dirname(m['dst_path'])))
-          end
-        end
-      },
-      lambda { |elem| # Change permissions of the instantiated files (if specified).
-        if elem.has_key?('perms')
-          elem['fs_maps'].each do |m|
-            say "Changing permissions of #{m['src_path']} to #{elem['perms']}" if @verbose
-            exec_cmd("chmod -R \"#{elem['perms']}\" \"#{m['src_path']}\"",
-                     :as_su => !File.owned?(m['src_path']))
-          end
-        end
-      }
-    ]
-  end
-
-  #
-  # Return a data structure containing the commands that can be specified in
-  # the meta file.
-  #
-  # The data structure defines:
-  # - The available command types (`available_commands.keys`).
-  # - (Optionally) A validator that can be used to validate type-specific
-  #   validation rules.
-  # - The command executor: A `Lambda` containing the code used for executing
-  #   that command.
-  #
-  def available_commands
-    { 'git_sync' => {
-        'validator' => lambda { |spec|
-          if spec.has_key?('dst')
-            spec['dst'] = File.expand_path(spec['dst'])
-          end
-          status   = spec.has_key?('repo')
-          status &&= spec.has_key?('dst')
-        },
-        'executor' => lambda { |spec|
-          if File.directory?(spec['dst'])
-            FileUtils.cd(spec['dst']) { git_pull }
-          else
-            git_clone(spec['repo'], spec['dst'])
-          end
-        }
-      }
+  SHARED_OPTIONS = {
+    verbose: {
+      default: false,
+      type:    :boolean,
+      aliases: :verb,
+      desc:    "Whether the output should be verbose."
+    },
+    run_mode: {
+      default: "normal",
+      aliases: [:rm, :r],
+      enum:    %w(normal paranoid dry),
+      desc:    "Ask confirmation for each filesystem operation."
+    },
+    fizzy_dir: {
+      default: Fizzy::CFG.default_fizzy_dir,
+      aliases: :f,
+      desc:    "The root path for the directory internally used by fizzy."
+    },
+    cfg_url: {
+      default: nil,
+      aliases: [:cu],
+      desc: "The URL to the repository holding config."
+    },
+    cfg_name: {
+      default: nil,
+      aliases: [:cfg, :c],
+      desc:    "The name of the configuration that should be used."
+    },
+    inst_name: {
+      default: nil,
+      aliases: [:inst, :i],
+      desc:    "The name for the configuration instance to be used."
+    },
+    vars_name: {
+      default: nil,
+      aliases: [:vars, :v],
+      desc:    "The name for the variables file to be used."
+    },
+    meta_name: {
+      default: Fizzy::CFG.default_meta_name,
+      aliases: [:meta, :m],
+      desc:    "The name of the meta file."
     }
+  }
+
+  # Get a shared option.
+  #
+  def self.shared_option(name, required: false)
+    args = SHARED_OPTIONS[$1].dup
+    error("Invalid option `#{name}`: it doesn't exist.") if args.nil?
+
+    if required
+      args.delete(:default)
+      args[:required] = true
+    else
+      error("Invalid shared option `#{name}`: it doesn't have a default value.")
+    end
+
+    [$1, args]
   end
 
 end
@@ -991,36 +1141,39 @@ end
 
 class Fizzy::CfgCommand < Fizzy::BaseCommand
 
-  option :fizzy_dir, :default => Fizzy::CFG.default_fizzy_dir, :aliases => :f,
-         :desc => "The root path for the directory internally used by fizzy."
-  desc "cleanup", "Cleanup the fizzy storage (i.e. configuration, instances)."
+  def self.source_root
+    "/"
+  end
+
+  method_option(*shared_option(:fizzy_dir))
+  desc "cleanup",
+       "Cleanup the fizzy storage."
   def cleanup
     # Prepare paths for cleanup.
-    paths = prepare_storage(options.fizzy_dir, :valid_meta => false,
-                            :valid_cfg => false, :valid_inst => false)
+    paths = prepare_storage(options.fizzy_dir,
+                            valid_meta: false,
+                            valid_cfg:  false,
+                            valid_inst: false)
 
     # Perform cleanup.
-    status = if quiz "Do you want to remove the fizzy root directory `#{paths.root}`"
-      exec_cmd("rm -Rf \"#{paths.root}\"")
-    else
-      nil
-    end
+    status = exec_cmd("rm -Rf #{Shellwords.escape(paths.root)}") \
+      if quiz "Do you want to remove the fizzy root directory `#{paths.root}`"
 
     # Inform user about the cleanup status.
     if status
       say "Successfully cleaned: `#{paths.root}`.", :green
     elsif status.nil?
-      warning 'Cleanup skipped.', :ask_continue => false
+      warning "Cleanup skipped.", ask_continue: false
     else
       error "Failed to cleanup: `#{paths.root}`.", :red
     end
   end
 
-  option :cfg_name, :default => nil, :aliases => [:cfg, :c],
-         :desc => 'The name of the configuration that should be used.'
-  option :fizzy_dir, :default => Fizzy::CFG.default_fizzy_dir, :aliases => :f,
-         :desc => 'The root path for the directory internally used by Fizzy.'
-  desc 'cd', 'Change directory to the configuration directory (useful for extensive filesystem manipulations).'
+  method_option(*shared_option(:fizzy_dir))
+  method_option(*shared_option(:cfg_name))
+  desc "cd",
+       "Change directory to the configuration directory " +
+       "(useful for extensive filesystem manipulations)."
   def cd
     # Prepare stuff for changing directory.
     paths = prepare_storage(options.fizzy_dir,
@@ -1033,91 +1186,82 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     dir_path = paths.cur_cfg || paths.cfg
     say "Changing directory to: `#{dir_path}`.", :cyan
     FileUtils.cd(dir_path)
-    if ENV.has_key?('SHELL')
-      system(ENV['SHELL'])
-    else
-      error 'Cannot find a valid shell. The environment variable `SHELL` is unset.'
-    end
+    system(get_env!(:SHELL))
 
     # Inform user about the changing directory status.
     say "CD done in: `#{dir_path}`.", :green
   end
 
-  option :cfg_name, :default => nil, :aliases => [:cfg, :c],
-         :desc => 'The name of the configuration that should be used.'
-  option :fizzy_dir, :default => Fizzy::CFG.default_fizzy_dir, :aliases => :f,
-         :desc => 'The root path for the directory internally used by Fizzy.'
-  desc 'edit PATTERN', 'Find the files relative to PATTERN and edit them.'
+  method_option(*shared_option(:fizzy_dir))
+  method_option(*shared_option(:cfg_name))
+  desc "edit PATTERN",
+       "Find the files relative to PATTERN and edit them."
   def edit(pattern)
     # Prepare stuff for editing.
     paths = prepare_storage(options.fizzy_dir,
-                            :valid_meta   => false,
-                            :valid_inst   => false,
-                            :cur_cfg_name => options.cfg_name)
-    find_path = File.join(paths.cur_cfg || paths.cfg, pattern)
-    cfg_files_arg = (File.exist?(find_path) ?
-        "\"#{find_path}\"" :
-        Dir.glob("#{find_path}*", File::FNM_DOTMATCH).to_a
-            .delete_if { |path| path =~ /\.git/ }
-            .collect { |path| "\"#{path}\"" }
-            .join(' ')
-    ).strip
-    editor = Fizzy::CFG.editor
+                            valid_meta:   false,
+                            valid_inst:   false,
+                            cur_cfg_name: options.cfg_name)
+    find_path = (paths.cur_cfg || paths.cfg).join(pattern)
+    cfg_files_arg = if find_path.exist?
+                      Shellwords.escape(find_path)
+                    else
+                      Dir.glob("#{find_path}*", File::FNM_DOTMATCH).to_a.
+                        delete_if { |path| path =~ /\.git/ }.
+                        collect { |path| Shellwords.escape(path) }.
+                        join(" ")
+                    end.strip
 
     # Perform edit.
     if cfg_files_arg.empty?
       warning "No files matching `#{cfg_name}` have been found.",
-              :ask_continue => false
+              ask_continue: false
       status = nil
     else
       say "Editing configuration file(s): `#{cfg_files_arg}`.", :cyan
-      status = system("#{editor} #{cfg_files_arg}")
+      status = system("#{Fizzy::CFG.editor} #{cfg_files_arg}")
     end
 
     # Inform user about the editing status.
     if status
       say "Successfully edited: `#{cfg_files_arg}`.", :green
     elsif status.nil?
-      warning 'Editing skipped.', :ask_continue => false
+      warning "Editing skipped.", ask_continue: false
     else
       error "Failed to edit: `#{cfg_files_arg}`.", :red
     end
   end
 
-  option :cfg_name, :required => true, :aliases => [:cfg, :c],
-         :desc => 'The name of the configuration that should be used.'
-  option :url, :default => nil, :aliases => :u,
-         :desc => 'The url to the repository holding config (currently supported: `git`).'
-  option :fizzy_dir, :default => Fizzy::CFG.default_fizzy_dir, :aliases => :f,
-         :desc => 'The root path for the directory internally used by Fizzy.'
-  desc 'sync', 'Synchronize the remote repository with the local one.'
+  method_option(*shared_option(:fizzy_dir))
+  method_option(*shared_option(:cfg_name))
+  method_option(*shared_option(:cfg_url))
+  desc "sync", "Synchronize the remote repository with the local one."
   def sync
     # Prepare stuff for syncing.
     paths = prepare_storage(options.fizzy_dir,
-                            :valid_meta   => false,
-                            :valid_cfg    => false,
-                            :valid_inst   => false,
-                            :cur_cfg_name => options.cfg_name)
+                            valid_meta:   false,
+                            valid_cfg:    false,
+                            valid_inst:   false,
+                            cur_cfg_name: options.cfg_name)
 
     # Perform sync.
-    sync_result = if File.directory?(paths.cur_cfg)
-      say 'Syncing from origin', :blue
+    sync_result = if paths.cur_cfg.directory?
+      say "Syncing from origin", :blue
       status = nil
       FileUtils.cd(paths.cur_cfg) do
         # Perform fetch, because we need to know if there are remote changes,
         # so we need to know the updated remote commit hash.
-        say 'Fetching informations from origin', :cyan
-        status = system('git fetch origin')
+        say "Fetching informations from origin.", :cyan
+        status = git_fetch
         # (Optional) Perform commit.
         if status && git_has_local_changes(paths.cur_cfg)
           say "The configuration has the following local changes:\n" +
               "#{set_color(git_local_changes(paths.cur_cfg), :white)}", :cyan
-          should_commit = quiz 'Do you want to commit them all'
+          should_commit = quiz "Do you want to commit them all"
           if should_commit
-            commit_msg = quiz 'Type the commit message', :type => :string
-            say 'Performing commit.', :cyan
-            status   = system('git add -A')
-            status &&= system("git commit -am \"#{commit_msg}\"")
+            commit_msg = quiz "Type the commit message", type: :string
+            status   = git_add
+            status &&= git_commit(msg: commit_msg)
           else
             status = false
           end
@@ -1128,52 +1272,46 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
         end
         # (Optional) Perform push.
         if status && git_should_push(paths.cur_cfg)
-          say 'Performing push.', :cyan
-          status = system('git push origin master')
+          status = git_push
         end
       end
       status
     else
-      git_clone(options.url, paths.cur_cfg)
+      git_clone(options.cfg_url, paths.cur_cfg)
     end
 
     # Inform user about sync status.
     if sync_result
       say "Synced to: `#{paths.cur_cfg}`.", :green
     else
-      error 'Unable to sync.'
+      error "Unable to sync."
     end
   end
 
-  option :cfg_name, :required => true, :aliases => [:cfg, :c],
-         :desc => 'The name of the configuration that should be used.'
-  option :vars_name, :required => true, :aliases => [:vars, :v],
-         :desc => 'The name for the variables file to be used.'
-  option :inst_name, :required => true, :aliases => [:inst, :i],
-         :desc => 'The name for the new configuration instance.'
-  option :meta_name, :default => Fizzy::CFG.default_meta_name, :aliases => [:meta, :m],
-         :desc => 'Name of the meta file (e.g. meta-user-alem0lars.yml)'
-  option :fizzy_dir, :default => Fizzy::CFG.default_fizzy_dir, :aliases => :f,
-         :desc => 'The root path for the directory internally used by Fizzy.'
-  option :verbose, :type => :boolean, :default => false, :aliases => :verb,
-         :desc => 'Whether the output should be verbose.'
-  desc 'instantiate', 'Create a configuration instance in the current machine.'
+  method_option(*shared_option(:verbose))
+  method_option(*shared_option(:fizzy_dir))
+  method_option(*shared_option(:cfg_name, required: true))
+  method_option(*shared_option(:inst_name, required: true))
+  method_option(*shared_option(:vars_name, required: true))
+  method_option(*shared_option(:meta_name))
+  desc "instantiate",
+       "Create a configuration instance in the current machine."
   def instantiate
     # Before instantiation.
     paths = prepare_storage(options.fizzy_dir,
-                            :meta_name     => options.meta_name,
-                            :valid_inst    => false,
-                            :cur_cfg_name  => options.cfg_name,
-                            :cur_inst_name => options.inst_name)
+                            meta_name:     options.meta_name,
+                            valid_inst:    false,
+                            cur_cfg_name:  options.cfg_name,
+                            cur_inst_name: options.inst_name)
     setup_vars(paths.cur_cfg_vars, options.vars_name)
 
     meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg,
                     options.verbose)
 
-    info 'meta: ', "#{set_color(meta['elems'].count, :green)}/" +
-                   "#{meta['all_elems_count']} elem(s) selected."
-    info 'meta: ', "#{set_color(meta['excluded_files'].count, :red)}/" +
-                   "#{meta['all_files.count']} file(s) excluded."
+    info "meta: ", "#{set_color(meta["elems"].count, :green)}/" +
+                   "#{meta["all_elems_count"]} elem(s) selected."
+    info "meta: ", "#{set_color(meta["excluded_files"].count, :red)}/" +
+                   "#{meta["all_files.count"]} file(s) excluded."
     say
 
     # Create a configuration instance.
@@ -1181,13 +1319,12 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
         "from: `#{paths.cur_cfg}`.", :blue
 
     exclude_pattern = /\.git|README/
-    meta['excluded_files'].each do |excluded_file|
+    meta["excluded_files"].each do |excluded_file|
       exclude_pattern = /#{exclude_pattern}|#{excluded_file}/
     end
 
     begin
-      directory(paths.cur_cfg, paths.cur_inst,
-                :exclude_pattern => exclude_pattern)
+      directory(paths.cur_cfg, paths.cur_inst, exclude_pattern: exclude_pattern)
     rescue SyntaxError
       error "Error while processing the template: `#{$fizzy_cur_template}`."
     end
@@ -1196,65 +1333,51 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     say "Created the configuration instance in: `#{paths.cur_inst}`.", :green
   end
 
-  def self.source_root
-    "/"
-  end
-
 end
 
 # ☛ Commands → Inst ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class Fizzy::InstCommand < Fizzy::BaseCommand
 
-  option :inst_name, :default => nil, :aliases => [:inst, :i],
-         :desc => 'The name for the configuration instance.'
-  option :fizzy_dir, :default => Fizzy::CFG.default_fizzy_dir, :aliases => :f,
-         :desc => 'The root path for the directory internally used by fizzy.'
-  desc 'cd', 'Change directory to the instance directory (useful for extensive filesystem manipulations).'
+  method_option(*shared_option(:fizzy_dir))
+  method_option(*shared_option(:inst_name))
+  desc "cd",
+       "Change directory to the instance directory " +
+       "(useful for extensive filesystem manipulations)."
   def cd
     # Prepare stuff for changing directory.
     paths = prepare_storage(options.fizzy_dir,
-                            :valid_meta    => false,
-                            :valid_cfg     => false,
-                            :valid_inst    => !options.inst_name.nil?,
-                            :cur_inst_name => options.inst_name)
+                            valid_meta:    false,
+                            valid_cfg:     false,
+                            valid_inst:    !options.inst_name.nil?,
+                            cur_inst_name: options.inst_name)
 
     # Changing directory.
     dir_path = paths.cur_inst || paths.inst
     say "Changing directory to: `#{dir_path}`.", :cyan
     FileUtils.cd(dir_path)
-    if ENV.has_key?('SHELL')
-      system(ENV['SHELL'])
-    else
-      error 'Cannot find a valid shell. The environment variable `SHELL` is unset.'
-    end
+    system(get_env!(:SHELL))
 
     # Inform user about the changing directory status.
     say "CD done in: `#{dir_path}`.", :green
   end
 
-  option :vars_name, :required => true, :aliases => [:vars, :v],
-         :desc => 'The name for the variables file to be used.'
-  option :inst_name, :required => true, :aliases => [:inst, :i],
-         :desc => 'The name for the new configuration instance.'
-  option :meta_name, :default => Fizzy::CFG.default_meta_name, :aliases => [:meta, :m],
-         :desc => 'Name of the meta file (e.g. meta-user.yml).'
-  option :fizzy_dir, :default => Fizzy::CFG.default_fizzy_dir, :aliases => :f,
-         :desc => 'The root path for the directory internally used by fizzy.'
-  option :run_mode, :default => 'normal', :aliases => [:rm, :r],
-         :enum => ['normal', 'paranoid', 'dry'],
-         :desc => 'Ask confirmation for each filesystem operation.'
-  option :verbose, :type => :boolean, :default => false, :aliases => :verb,
-         :desc => 'If the output should be verbose.'
-  desc 'install', 'Install the current configuration instance in the system.'
+  method_option(*shared_option(:verbose))
+  method_option(*shared_option(:fizzy_dir))
+  method_option(*shared_option(:inst_name, required: true))
+  method_option(*shared_option(:vars_name, required: true))
+  method_option(*shared_option(:meta_name))
+  method_option(*shared_option(:run_mode))
+  desc "install",
+       "Install the current configuration instance in the system."
   def install
     # Prepare stuff for performing install.
     @run_mode = options.run_mode.to_sym
     @verbose = options.verbose
     paths = prepare_storage(options.fizzy_dir,
-                            :valid_cfg     => false,
-                            :meta_name     => options.meta_name,
-                            :cur_inst_name => options.inst_name)
+                            valid_cfg:     false,
+                            meta_name:     options.meta_name,
+                            cur_inst_name: options.inst_name)
     setup_vars(paths.cur_inst_vars, options.vars_name)
 
     meta = get_meta(paths.cur_inst_meta, paths.cur_inst_vars, paths.cur_inst,
@@ -1264,45 +1387,42 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
     say "Installing the configuration instance `#{options.inst_name}` " +
         "into the system.", :blue
 
-    meta['elems'].each do |elem|
+    meta["elems"].each do |elem|
       say "Installing element: `#{elem['name']}`.", :cyan
       elements_appliers.each { |applier| applier.call(elem) }
-      if elem['notes']
+      if elem["notes"]
         say "Notes for `#{elem['name']}`:", :yellow
-        say elem['notes'].split("\n").collect { |s|
-          "  #{s}"
-        }.join("\n")
+        say elem["notes"].split("\n").collect { |s| "  #{s}" }.join("\n")
       end
     end
-    meta['commands'].each do |spec|
-      say "Executing command: `#{spec['name']}`.", :cyan
-      available_commands[spec['type']]['executor'].call(spec)
+    meta["commands"].each do |spec|
+      say "Executing command: `#{spec["name"]}`.", :cyan
+      available_commands[spec["type"]]["executor"].call(spec)
     end
 
     # Inform the user about installation status.
     say "The configuration instance `#{options.inst_name}` has been " +
-        'installed into the system', :green
+        "installed into the system", :green
   end
 
 end
 
 # ☛ Commands → Main ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-class Fizzy::MainCommand < Thor
+class Fizzy::MainCommand < Fizzy::BaseCommand
 
-  include Fizzy::Utils
+  desc "cfg SUBCOMMAND ...ARGS",
+       "Manage the Fizzy configuration (without modifying the host system)."
+  subcommand "cfg", Fizzy::CfgCommand
 
-  desc 'cfg SUBCOMMAND ...ARGS',
-       'Manage the Fizzy configuration (without modifying the host system).'
-  subcommand 'cfg', Fizzy::CfgCommand
+  desc "inst SUBCOMMAND ...ARGS",
+       "Manage a configuration instance"
+  subcommand "inst", Fizzy::InstCommand
 
-  desc 'inst SUBCOMMAND ...ARGS', 'Manage a configuration instance'
-  subcommand 'inst', Fizzy::InstCommand
-
-  desc 'usage', 'Show how to use Fizzy.'
+  desc "usage", "Show how to use Fizzy."
   def usage
-    url = 'https://raw.githubusercontent.com/alem0lars/fizzy/master/README.md'
-    res = Net::HTTP.get_response(URI(url))
+    url = URI.join(Fizzy::CFG.static_files_base_url, "README.md")
+    res = Net::HTTP.get_response(url)
     if res.is_a?(Net::HTTPSuccess)
       say "\n#{res.body}\n"
     else

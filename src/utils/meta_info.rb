@@ -1,6 +1,7 @@
-module Fizzy::Utils
+# Access informations declared in the meta file.
+#
+module Fizzy::MetaInfo
 
-  #
   # Return the normalized and validated meta object.
   #
   # Be sure to call `setup_vars` before calling this method.
@@ -160,11 +161,10 @@ module Fizzy::Utils
     meta
   end # }}}
 
-  #
   # Return whether the provided `only` specification is evaluated as an allows
   # and not as a denies.
   #
-  def selected_by_only?(only, verbose) # {{{
+  def selected_by_only?(only, verbose)
     unless only
       selected = true
       info(' ↳ ', "#{set_color('✔', :green)} (`only` is empty).") if verbose
@@ -203,6 +203,6 @@ module Fizzy::Utils
     end
 
     selected
-  end # }}}
+  end
 
 end

@@ -1,4 +1,4 @@
-module Fizzy::Utils
+module Fizzy::Vars
 
   attr_reader :vars
 

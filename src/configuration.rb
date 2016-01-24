@@ -10,6 +10,10 @@ Fizzy::CFG.os = case RUBY_PLATFORM
                 else               :windows
                 end
 
+# Remote URL for fizzy static files.
+Fizzy::CFG.static_files_base_url =
+  URI("https://raw.githubusercontent.com/alem0lars/fizzy/master")
+
 # Default fizzy root directory (holding all of the fizzy stuff).
 Fizzy::CFG.default_fizzy_dir = Pathname.new(
   ENV["FIZZY_DIR"] ||

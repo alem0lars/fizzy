@@ -6,6 +6,8 @@ require "net/http"
 require "pathname"
 require "yaml"
 require "json"
+require "shellwords"
+require "uri"
 
 # Try to require `thor` or raise an exception.
 begin

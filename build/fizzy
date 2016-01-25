@@ -39,7 +39,7 @@
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 
-# ☛ Requires ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Requires ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Core modules.
 require "fileutils"
@@ -65,7 +65,7 @@ end
 module Fizzy
 end
 
-# ☛ Configuration ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Configuration ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Fizzy::CFG = OpenStruct.new
 
@@ -79,9 +79,9 @@ Fizzy::CFG.os = case RUBY_PLATFORM
                 else               :windows
                 end
 
-# Remote URL for fizzy static files.
+# Remote URL for fizzy static files (must end with a slash).
 Fizzy::CFG.static_files_base_url =
-  URI("https://raw.githubusercontent.com/alem0lars/fizzy/master")
+  URI("https://raw.githubusercontent.com/alem0lars/fizzy/master/")
 
 # Default fizzy root directory (holding all of the fizzy stuff).
 Fizzy::CFG.default_fizzy_dir = Pathname.new(
@@ -96,7 +96,7 @@ Fizzy::CFG.default_fizzy_dir = Pathname.new(
 # Default meta file name.
 Fizzy::CFG.default_meta_name = "meta.yml"
 
-# ☛ Exts → Hash ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Exts → Hash ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class Hash
   #
@@ -126,7 +126,7 @@ class Hash
   end
 end
 
-# ☛ Exts → Thor ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Exts → Thor ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class Thor
   module Actions
@@ -140,7 +140,7 @@ class Thor
   end
 end
 
-# ☛ Utils → Git ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Git ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 module Fizzy::Git
 
@@ -264,7 +264,7 @@ module Fizzy::Git
 
 end
 
-# ☛ Utils → Environment ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Environment ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Utilities to retrieve informations about the host environment & system.
 #
@@ -297,7 +297,7 @@ module Fizzy::Environment
 
 end
 
-# ☛ Utils → Execution ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Execution ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Utilities to start and manage programs execution.
 #
@@ -333,7 +333,7 @@ module Fizzy::Execution
 
 end
 
-# ☛ Utils → Meta Info ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Meta Info ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Access informations declared in the meta file.
 #
@@ -544,7 +544,7 @@ module Fizzy::MetaInfo
 
 end
 
-# ☛ Utils → Meta Elements ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Meta Elements ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Manage elements declared in the meta file.
 #
@@ -624,7 +624,7 @@ module Fizzy::MetaElements
 
 end
 
-# ☛ Utils → Meta Commands ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Meta Commands ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Manage commands declared in the meta file.
 #
@@ -661,7 +661,7 @@ module Fizzy::MetaCommands
   end
 end
 
-# ☛ Utils → Vars ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Vars ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 module Fizzy::Vars
 
@@ -838,7 +838,7 @@ module Fizzy::Vars
 
 end
 
-# ☛ Utils → Filesystem ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Filesystem ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Utilities to interact with the filesystem.
 #
@@ -980,13 +980,10 @@ module Fizzy::Filesystem
 
 end
 
-# ☛ Utils → Io ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Io ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# I/O & Logging
+module Fizzy::IO
 
-module Fizzy::Utils
-
-  #
   # Ask a question to the user.
   #
   # The message is made by the `question` string, with some additions (like
@@ -1007,13 +1004,13 @@ module Fizzy::Utils
       elsif answer =~ /n|no|fuck|fuck\s+you|fuck\s+off/i
         false
       else
-        say 'Answer misunderstood', :yellow
-        quiz(question, :type => type)
+        say "Answer misunderstood", :yellow
+        quiz question, type: type
       end
     when :string
       if answer.empty?
-        warning 'Empty answer', :ask_continue => false
-        quiz(question, :type => type)
+        warning "Empty answer", ask_continue: false
+        quiz question, type: type
       else
         answer
       end
@@ -1022,17 +1019,15 @@ module Fizzy::Utils
     end
   end
 
-  #
   # Display an informative message (`msg`) to the user.
   #
   # The `prefix` argument should contain some text displayed before the
   # message, typically to show the context which the message belongs to.
   #
   def info(prefix, msg)
-    say("☞ #{set_color(prefix, :cyan)}#{set_color(msg, :white)}")
+    say "☞ #{set_color(prefix, :cyan)}#{set_color(msg, :white)}"
   end
 
-  #
   # Display an informative message (`msg`) to the user.
   #
   # If `ask_continue` is `true`, the user can interactively choose to stop
@@ -1040,10 +1035,9 @@ module Fizzy::Utils
   #
   def warning(msg, ask_continue: true)
     say "⚠ #{msg}", :yellow
-    exit(-1) if ask_continue && !quiz('continue')
+    exit(-1) if ask_continue && !quiz("continue")
   end
 
-  #
   # Display an error message (`msg`) to the user. Before returning, the
   # program will exit (with exit status `-1`).
   #
@@ -1054,7 +1048,7 @@ module Fizzy::Utils
 
 end
 
-# ☛ Commands → Base ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Commands → Base ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Base class for all fizzy commands.
 #
@@ -1119,25 +1113,31 @@ class Fizzy::BaseCommand < Thor
     }
   }
 
-  # Get a shared option.
-  #
-  def self.shared_option(name, required: false)
-    args = SHARED_OPTIONS[$1].dup
-    error("Invalid option `#{name}`: it doesn't exist.") if args.nil?
+  class << self
 
-    if required
-      args.delete(:default)
-      args[:required] = true
-    else
-      error("Invalid shared option `#{name}`: it doesn't have a default value.")
+    include Fizzy::IO
+
+    # Get a shared option.
+    #
+    def shared_option(name, required: false)
+      args = SHARED_OPTIONS[name].dup
+      error "Invalid option `#{name}`: it doesn't exist." if args.nil?
+
+      if required
+        args.delete :default
+        args[:required] = true
+      elsif !args.has_key? :default
+        error "Invalid shared option `#{name}`: doesn't have a default value."
+      end
+
+      [name, args]
     end
 
-    [$1, args]
   end
 
 end
 
-# ☛ Commands → Cfg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Commands → Cfg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class Fizzy::CfgCommand < Fizzy::BaseCommand
 
@@ -1150,13 +1150,13 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
        "Cleanup the fizzy storage."
   def cleanup
     # Prepare paths for cleanup.
-    paths = prepare_storage(options.fizzy_dir,
+    paths = prepare_storage options.fizzy_dir,
                             valid_meta: false,
                             valid_cfg:  false,
-                            valid_inst: false)
+                            valid_inst: false
 
     # Perform cleanup.
-    status = exec_cmd("rm -Rf #{Shellwords.escape(paths.root)}") \
+    status = exec_cmd "rm -Rf #{Shellwords.escape(paths.root)}" \
       if quiz "Do you want to remove the fizzy root directory `#{paths.root}`"
 
     # Inform user about the cleanup status.
@@ -1176,17 +1176,17 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
        "(useful for extensive filesystem manipulations)."
   def cd
     # Prepare stuff for changing directory.
-    paths = prepare_storage(options.fizzy_dir,
-                            :valid_meta   => false,
-                            :valid_inst   => false,
-                            :valid_cfg    => !options.cfg_name.nil?,
-                            :cur_cfg_name => options.cfg_name)
+    paths = prepare_storage options.fizzy_dir,
+                            valid_meta:   false,
+                            valid_inst:   false,
+                            valid_cfg:    !options.cfg_name.nil?,
+                            cur_cfg_name: options.cfg_name
 
     # Changing directory.
     dir_path = paths.cur_cfg || paths.cfg
     say "Changing directory to: `#{dir_path}`.", :cyan
-    FileUtils.cd(dir_path)
-    system(get_env!(:SHELL))
+    FileUtils.cd dir_path
+    system get_env! :SHELL
 
     # Inform user about the changing directory status.
     say "CD done in: `#{dir_path}`.", :green
@@ -1198,18 +1198,18 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
        "Find the files relative to PATTERN and edit them."
   def edit(pattern)
     # Prepare stuff for editing.
-    paths = prepare_storage(options.fizzy_dir,
+    paths = prepare_storage options.fizzy_dir,
                             valid_meta:   false,
                             valid_inst:   false,
-                            cur_cfg_name: options.cfg_name)
-    find_path = (paths.cur_cfg || paths.cfg).join(pattern)
+                            cur_cfg_name: options.cfg_name
+    find_path = (paths.cur_cfg || paths.cfg).join pattern
     cfg_files_arg = if find_path.exist?
-                      Shellwords.escape(find_path)
+                      Shellwords.escape find_path
                     else
                       Dir.glob("#{find_path}*", File::FNM_DOTMATCH).to_a.
                         delete_if { |path| path =~ /\.git/ }.
-                        collect { |path| Shellwords.escape(path) }.
-                        join(" ")
+                        collect   { |path| Shellwords.escape(path) }.
+                        join " "
                     end.strip
 
     # Perform edit.
@@ -1219,7 +1219,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
       status = nil
     else
       say "Editing configuration file(s): `#{cfg_files_arg}`.", :cyan
-      status = system("#{Fizzy::CFG.editor} #{cfg_files_arg}")
+      status = system "#{Fizzy::CFG.editor} #{cfg_files_arg}"
     end
 
     # Inform user about the editing status.
@@ -1238,11 +1238,11 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
   desc "sync", "Synchronize the remote repository with the local one."
   def sync
     # Prepare stuff for syncing.
-    paths = prepare_storage(options.fizzy_dir,
+    paths = prepare_storage options.fizzy_dir,
                             valid_meta:   false,
                             valid_cfg:    false,
                             valid_inst:   false,
-                            cur_cfg_name: options.cfg_name)
+                            cur_cfg_name: options.cfg_name
 
     # Perform sync.
     sync_result = if paths.cur_cfg.directory?
@@ -1261,23 +1261,19 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
           if should_commit
             commit_msg = quiz "Type the commit message", type: :string
             status   = git_add
-            status &&= git_commit(msg: commit_msg)
+            status &&= git_commit message: commit_msg
           else
             status = false
           end
         end
         # (Optional) Perform pull.
-        if status && git_should_pull(paths.cur_cfg)
-          status = git_pull
-        end
+        status = git_pull if status && git_should_pull(paths.cur_cfg)
         # (Optional) Perform push.
-        if status && git_should_push(paths.cur_cfg)
-          status = git_push
-        end
+        status = git_push if status && git_should_push(paths.cur_cfg)
       end
       status
     else
-      git_clone(options.cfg_url, paths.cur_cfg)
+      git_clone options.cfg_url, paths.cur_cfg
     end
 
     # Inform user about sync status.
@@ -1298,15 +1294,15 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
        "Create a configuration instance in the current machine."
   def instantiate
     # Before instantiation.
-    paths = prepare_storage(options.fizzy_dir,
+    paths = prepare_storage options.fizzy_dir,
                             meta_name:     options.meta_name,
                             valid_inst:    false,
                             cur_cfg_name:  options.cfg_name,
-                            cur_inst_name: options.inst_name)
-    setup_vars(paths.cur_cfg_vars, options.vars_name)
+                            cur_inst_name: options.inst_name
+    setup_vars paths.cur_cfg_vars, options.vars_name
 
-    meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg,
-                    options.verbose)
+    meta = get_meta paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg,
+                    options.verbose
 
     info "meta: ", "#{set_color(meta["elems"].count, :green)}/" +
                    "#{meta["all_elems_count"]} elem(s) selected."
@@ -1324,7 +1320,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     end
 
     begin
-      directory(paths.cur_cfg, paths.cur_inst, exclude_pattern: exclude_pattern)
+      directory paths.cur_cfg, paths.cur_inst, exclude_pattern: exclude_pattern
     rescue SyntaxError
       error "Error while processing the template: `#{$fizzy_cur_template}`."
     end
@@ -1335,7 +1331,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
 end
 
-# ☛ Commands → Inst ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Commands → Inst ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class Fizzy::InstCommand < Fizzy::BaseCommand
 
@@ -1346,58 +1342,58 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
        "(useful for extensive filesystem manipulations)."
   def cd
     # Prepare stuff for changing directory.
-    paths = prepare_storage(options.fizzy_dir,
+    paths = prepare_storage options.fizzy_dir,
                             valid_meta:    false,
                             valid_cfg:     false,
                             valid_inst:    !options.inst_name.nil?,
-                            cur_inst_name: options.inst_name)
+                            cur_inst_name: options.inst_name
 
     # Changing directory.
     dir_path = paths.cur_inst || paths.inst
     say "Changing directory to: `#{dir_path}`.", :cyan
-    FileUtils.cd(dir_path)
-    system(get_env!(:SHELL))
+    FileUtils.cd dir_path
+    system get_env! :SHELL
 
     # Inform user about the changing directory status.
     say "CD done in: `#{dir_path}`.", :green
   end
 
   method_option(*shared_option(:verbose))
+  method_option(*shared_option(:run_mode))
   method_option(*shared_option(:fizzy_dir))
   method_option(*shared_option(:inst_name, required: true))
   method_option(*shared_option(:vars_name, required: true))
   method_option(*shared_option(:meta_name))
-  method_option(*shared_option(:run_mode))
   desc "install",
        "Install the current configuration instance in the system."
   def install
     # Prepare stuff for performing install.
     @run_mode = options.run_mode.to_sym
     @verbose = options.verbose
-    paths = prepare_storage(options.fizzy_dir,
+    paths = prepare_storage options.fizzy_dir,
                             valid_cfg:     false,
                             meta_name:     options.meta_name,
-                            cur_inst_name: options.inst_name)
-    setup_vars(paths.cur_inst_vars, options.vars_name)
+                            cur_inst_name: options.inst_name
+    setup_vars paths.cur_inst_vars, options.vars_name
 
-    meta = get_meta(paths.cur_inst_meta, paths.cur_inst_vars, paths.cur_inst,
-                    options.verbose)
+    meta = get_meta paths.cur_inst_meta, paths.cur_inst_vars, paths.cur_inst,
+                    options.verbose
 
     # Install the instance into the system.
     say "Installing the configuration instance `#{options.inst_name}` " +
         "into the system.", :blue
 
     meta["elems"].each do |elem|
-      say "Installing element: `#{elem['name']}`.", :cyan
+      say "Installing element: `#{elem["name"]}`.", :cyan
       elements_appliers.each { |applier| applier.call(elem) }
       if elem["notes"]
-        say "Notes for `#{elem['name']}`:", :yellow
+        say "Notes for `#{elem["name"]}`:", :yellow
         say elem["notes"].split("\n").collect { |s| "  #{s}" }.join("\n")
       end
     end
     meta["commands"].each do |spec|
       say "Executing command: `#{spec["name"]}`.", :cyan
-      available_commands[spec["type"]]["executor"].call(spec)
+      available_commands[spec["type"]]["executor"].call spec
     end
 
     # Inform the user about installation status.
@@ -1407,7 +1403,7 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
 
 end
 
-# ☛ Commands → Main ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Commands → Main ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class Fizzy::MainCommand < Fizzy::BaseCommand
 
@@ -1419,47 +1415,48 @@ class Fizzy::MainCommand < Fizzy::BaseCommand
        "Manage a configuration instance"
   subcommand "inst", Fizzy::InstCommand
 
-  desc "usage", "Show how to use Fizzy."
+  desc "usage",
+       "Show how to use Fizzy."
   def usage
-    url = URI.join(Fizzy::CFG.static_files_base_url, "README.md")
-    res = Net::HTTP.get_response(url)
-    if res.is_a?(Net::HTTPSuccess)
+    url = URI.join Fizzy::CFG.static_files_base_url, "README.md"
+    res = Net::HTTP.get_response url
+    if res.is_a? Net::HTTPSuccess
       say "\n#{res.body}\n"
     else
       error "Network error: cannot retrieve `#{url}`."
     end
   end
 
-  option :cfg_name, :required => true, :aliases => [:cfg, :c],
-         :desc => 'The name of the configuration that should be used.'
-  option :vars_name, :required => true, :aliases => [:vars, :v],
-         :desc => 'The name for the variables file to be used.'
-  option :inst_name, :required => true, :aliases => [:inst, :i],
-         :desc => 'The name for the new configuration instance.'
-  option :meta_name, :default => Fizzy::CFG.default_meta_name, :aliases => [:meta, :m],
-         :desc => 'Name of the meta file (e.g. meta-user.yml).'
-  option :fizzy_dir, :default => Fizzy::CFG.default_fizzy_dir, :aliases => :f,
-         :desc => 'The root path for the directory internally used by fizzy.'
-  option :run_mode, :default => 'normal', :aliases => [:rm, :r],
-         :enum => ['normal', 'paranoid', 'dry'],
-         :desc => 'Ask confirmation for each filesystem operation.'
-  option :verbose, :type => :boolean, :default => false, :aliases => :verb,
-         :desc => 'If the output should be verbose.'
-  desc 'quick-install', 'Quickly install a configuration.'
+  method_option(*shared_option(:verbose))
+  method_option(*shared_option(:run_mode))
+  method_option(*shared_option(:fizzy_dir))
+  method_option(*shared_option(:cfg_name, required: true))
+  method_option(*shared_option(:inst_name, required: true))
+  method_option(*shared_option(:vars_name, required: true))
+  method_option(*shared_option(:meta_name))
+  desc "quick-install",
+       "Quickly install a configuration."
   def quick_install
-    invoke Cfg, 'instantiate', [],
-           :cfg_name => options.cfg_name, :vars_name => options.vars_name,
-           :inst_name => options.inst_name, :fizzy_dir => options.fizzy_dir,
-           :meta_name => options.meta_name, :verbose => options.verbose
-    invoke Inst, 'install', [],
-           :vars_name => options.vars_name, :inst_name => options.inst_name,
-           :fizzy_dir => options.fizzy_dir, :meta_name => options.meta_name,
-           :run_mode => options.run_mode, :verbose => options.verbose
+    invoke CfgCommand, "instantiate", [],
+           cfg_name:  options.cfg_name,
+           vars_name: options.vars_name,
+           inst_name: options.inst_name,
+           fizzy_dir: options.fizzy_dir,
+           meta_name: options.meta_name,
+           verbose:   options.verbose
+    invoke InstCommand, "install", [],
+           vars_name: options.vars_name,
+           inst_name: options.inst_name,
+           fizzy_dir: options.fizzy_dir,
+           meta_name: options.meta_name,
+           run_mode:  options.run_mode,
+           verbose:   options.verbose
   end
   map :qi => :quick_install
+
 end
 
-# ☛ Main ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Main ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Entry point.
 Fizzy::MainCommand.start(ARGV)

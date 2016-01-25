@@ -93,6 +93,22 @@ task :build do
   info("Build successfully completed", success: true)
 end
 
+# Task `run` ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+task :run => :build do |t, args|
+  args = ARGV[1..-1]
+  args.each { |a| task a.to_sym do ; end } # Prevent unknown task errors.
+
+  cmd = BIN_PATH.to_s
+  args = args.map { |arg| Shellwords.escape(arg) }.join(" ")
+
+  if args.empty?
+    exec cmd
+  else
+    exec cmd, *args
+  end
+end
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 task :default => :build

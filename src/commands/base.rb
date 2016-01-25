@@ -61,20 +61,26 @@ class Fizzy::BaseCommand < Thor
     }
   }
 
-  # Get a shared option.
-  #
-  def self.shared_option(name, required: false)
-    args = SHARED_OPTIONS[$1].dup
-    error "Invalid option `#{name}`: it doesn't exist." if args.nil?
+  class << self
 
-    if required
-      args.delete :default
-      args[:required] = true
-    else
-      error "Invalid shared option `#{name}`: it doesn't have a default value."
+    include Fizzy::IO
+
+    # Get a shared option.
+    #
+    def shared_option(name, required: false)
+      args = SHARED_OPTIONS[name].dup
+      error "Invalid option `#{name}`: it doesn't exist." if args.nil?
+
+      if required
+        args.delete :default
+        args[:required] = true
+      elsif !args.has_key? :default
+        error "Invalid shared option `#{name}`: doesn't have a default value."
+      end
+
+      [name, args]
     end
 
-    [$1, args]
   end
 
 end

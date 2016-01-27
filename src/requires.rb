@@ -1,13 +1,14 @@
 # Core modules.
 require "fileutils"
 require "find"
-require "ostruct"
-require "net/http"
-require "pathname"
-require "yaml"
 require "json"
+require "net/http"
+require "ostruct"
+require "pathname"
 require "shellwords"
+require "strscan"
 require "uri"
+require "yaml"
 
 # Try to require `thor` or raise an exception.
 begin

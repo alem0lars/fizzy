@@ -1,4 +1,4 @@
-class LogicParser
+class Fizzy::LogicParser
 
   token FEATURE VARIABLE VALUE
 
@@ -22,20 +22,15 @@ end
 
 ---- inner
 
-  def make_lexer aString
-    result = LogicLexer.new
-    result.ignore /\s+/
-    result.keyword 'item'
-    result.token /\w+/, :WORD
-    result.start aString
-    return result
+  def parse(arg)
+    @lexer = Fizzy::LogicLexer.new
+    @lexer.start arg
+    do_parse
   end
 
 
-  def parse(arg)
-    @result = Catalog.new
-    @lexer = make_lexer arg
-    do_parse
+  def next_token
+    @lexer.next_token
   end
 
 # vim: set filetype=racc :

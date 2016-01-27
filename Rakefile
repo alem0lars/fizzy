@@ -17,6 +17,8 @@ BIN_PATH     = BUILD_PATH.join "fizzy"
 
 BUILD_CFG_PATH = ROOT_PATH.join "build-cfg.yaml"
 
+GRAMMARS_SOURCE_NAME = "<grammars>"
+
 # Utils ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 def info(msg, indent: 0, success: false)
@@ -71,13 +73,9 @@ def prepare_build
   return build_cfg
 end
 
-desc "Build Fizzy"
-task :build do
-  build_cfg = prepare_build
+def build_grammars(build_cfg)
+  additional_sources = []
 
-  info "Build started"
-
-  # ☛ Build grammars.
   build_cfg["grammars"].each do |grammar_file_name|
     info "Building grammar `#{grammar_file_name}`.", indent: 1
     parser_src_file_path = GRAMMARS_PATH.join grammar_file_name, "parser.y"
@@ -87,8 +85,28 @@ task :build do
     status = system "racc #{Shellwords.escape parser_src_file_path} " +
                     "  -o #{Shellwords.escape parser_out_file_path}"
     error "Failed to run `racc` for `#{parser_src_file_path}`." unless status
-    build_cfg["sources"].unshift lexer_src_file_path, parser_out_file_path
+    additional_sources << lexer_src_file_path
+    additional_sources << parser_out_file_path
   end
+
+  if additional_sources.length > 0
+    grammar_start_index = build_cfg["sources"].find_index GRAMMARS_SOURCE_NAME
+    unless grammar_start_index
+      error "Cannot find `grammar` in `sources` element in `build-cfg.yaml`."
+    end
+    build_cfg["sources"].insert grammar_start_index, *additional_sources
+    build_cfg["sources"].delete GRAMMARS_SOURCE_NAME
+  end
+end
+
+desc "Build Fizzy"
+task :build do
+  build_cfg = prepare_build
+
+  info "Build started"
+
+  # ☛ Build grammars.
+  build_grammars build_cfg
 
   # ☛ Write preamble.
   write_bin "HashBang", build_cfg["hashbang"], newlines: 2
@@ -116,8 +134,8 @@ task :build do
 
   # ☛ Cleanup temporary files.
   build_cfg["sources"].
-    select { |name| name.to_s =~ /^#{TMP_PATH.to_s}/ }.
-    each   { |tmp_file| tmp_file.delete }
+    select { |name|     name.to_s =~ /^#{TMP_PATH.to_s}/ }.
+    each   { |tmp_file| tmp_file.delete                  }
 
   # ☛ Set executable permissions.
   BIN_PATH.chmod 0775

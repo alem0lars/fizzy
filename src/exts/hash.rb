@@ -1,5 +1,5 @@
 class Hash
-  #
+
   # Perform recursive merge of the current `Hash` (`self`) with the provided one
   # (the `second` argument).
   #
@@ -8,14 +8,14 @@ class Hash
   def deep_merge(second)
     merger = proc do |key, v1, v2|
       if Hash === v1 && Hash === v2
-        v1.merge(v2, &merger)
+        v1.merge v2, &merger
       elsif Array === v1 && Array === v2
         (Set.new(v1) + Set.new(v2)).to_a
       else
         v2
       end
     end
-    self.merge(second, &merger)
+    self.merge second, &merger
   end
 
   def fqkeys(prefix="")
@@ -24,4 +24,5 @@ class Hash
       acc + (v.is_a?(Hash) ? v.fqkeys(prefix_new) : [prefix_new])
     end
   end
+
 end

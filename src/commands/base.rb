@@ -13,6 +13,7 @@ class Fizzy::BaseCommand < Thor
   include Fizzy::MetaElements
   include Fizzy::MetaCommands
   include Fizzy::Vars
+  include Fizzy::Requirements
 
   # Common options, shared among many commands.
   #

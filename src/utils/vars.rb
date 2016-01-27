@@ -2,6 +2,128 @@ module Fizzy::Vars
 
   attr_reader :vars
 
+  # Setup the variables that will be used during ERB processing.
+  #
+  # Those variables will be set into an instance field called `@vars`.
+  #
+  # After calling this method, you can directly access the variables using
+  # `@vars` or using the attribute reader `vars`.
+  #
+  def setup_vars(vars_dir_path, name)
+    info "vars: ", name
+    @vars = _setup_vars(vars_dir_path, name)
+  end
+
+  # Check if the feature with the provided name (`feature_name`) is enabled.
+  #
+  # Since the features are defined just using variables, before calling this
+  # method be sure that `setup_vars` has already been called.
+  #
+  def has_feature?(feature_name)
+    get_var!('features').include? feature_name.to_s
+  end
+
+  # Filter the values associated to the features, keeping only those
+  # associated to available features.
+  #
+  def data_for_features(info, sep: nil)
+    data = []
+    info.each do |feature_name, associated_value|
+      if has_feature?(feature_name.to_sym)
+        if associated_value.respond_to?(:call)
+          data << associated_value.call
+        else
+          data << associated_value
+        end
+      end
+    end
+    if data.length == 1
+      def data.inspect
+        first
+      end
+    elsif sep
+      def data.inspect
+        join sep
+      end
+    end
+    data
+  end
+
+  # Same of `get_var`, but raise an error if the variable hasn't been found or
+  # is `nil`.
+  #
+  def get_var!(var_name, type: nil)
+    value = get_var(var_name, type: type)
+    error("Undefined variable: `#{var_name}`.") if value.nil?
+    value
+  end
+
+  # Return the variable matching the provided `name`.
+  #
+  # The variables object being looked up is the one returned from the
+  # method `vars`.
+  #
+  def get_var(var_name, type: nil, strict: false)
+    _typize_var(var_name, _get_var(vars, var_name), type, strict)
+  end
+
+  def _typize_var(var_name, var, type, strict)
+    return var if type.nil? || type.end_with?("?") && var.nil?
+    case type
+    when :string, :str
+      strict ? _ensure_type!(var_name, var, String) : var.to_s
+    when :symbol, :sym
+      strict ? _ensure_type!(var_name, var, Symbol) : var.to_s.to_sym
+    when :integer
+      strict ? _ensure_type!(var_name, var, Integer) : Integer(var)
+    when :boolean, :bool
+      if strict
+        _ensure_type!(var_name, var, TrueClass, FalseClass)
+      else
+        if var.nil?
+          nil
+        elsif var.is_a?(TrueClass) || var.to_s == "true"
+          true
+        elsif var.is_a?(FalseClass) || var.to_s == "false"
+          false
+        else
+          error "Invalid value `#{var}` for variable `#{var_name}`: " +
+                "it can't be converted to a boolean."
+        end
+      end
+    when :path, :pth then
+      if strict && !File.exist?(var)
+        error "Invalid variable `#{var_name}`: `#{var}` doesn't exist"
+      else
+        Pathname.new var
+      end
+    when :file, :pth then
+      if strict && !File.file?(var)
+        error "Invalid variable `#{var_name}`: `#{var}` isn't a file"
+      else
+        Pathname.new var
+      end
+    when :directory, :dir then
+      if strict && !File.directory?(var)
+        error "Invalid variable `#{var_name}`: `#{var}` isn't a directory"
+      else
+        Pathname.new var
+      end
+    else
+      error "Unhandled type `#{type}`. " +
+            "If you need support for a new type, open an issue."
+    end
+  end
+
+  def _ensure_type!(var_name, var, *types)
+    if types.any? { |type| var.is_a? type }
+      var
+    else
+      error "Invalid type for variable: `#{var_name}`: " +
+            "it's not a `#{type.name}`."
+    end
+  end
+
   def _get_var(vars, var_name)
     dot_split_regexp = /([^.]+)(?:\.|$)/
     var_name.to_s
@@ -77,13 +199,13 @@ module Fizzy::Vars
         end
       end
     end
-    collisions.uniq do |c| # remove duplicate collisions
+    collisions.uniq do |c| # Remove duplicate collisions.
       [c[:key]] + [c[:value_a], c[:value_b]].sort
     end
   end
 
   def _merge_parents_vars(vars_dir_path, parents)
-    parents.inject([]) do |acc, parent| # vars for each parent
+    parents.inject([]) do |acc, parent| # Vars for each parent.
       parent_vars = _setup_vars(vars_dir_path, parent)
       acc << parent_vars
       collisions = _get_vars_collisions(acc)
@@ -93,7 +215,7 @@ module Fizzy::Vars
         }.join("\n")
       end
       acc
-    end.inject({}) do |acc, parent_vars| # merge them
+    end.inject({}) do |acc, parent_vars| # Merge them.
       acc.deep_merge(parent_vars)
     end
   end
@@ -105,70 +227,6 @@ module Fizzy::Vars
     parents = _parse_parents_vars(fmt, content)
     parents_vars = _merge_parents_vars(vars_dir_path, parents)
     _merge_with_parents_vars(self_vars, parents_vars)
-  end
-
-  #
-  # Setup the variables that will be used during ERB processing.
-  #
-  # Those variables will be set into an instance field called `@vars`.
-  #
-  # After calling this method, you can directly access the variables using
-  # `@vars` or using the attribute reader `vars`.
-  #
-  def setup_vars(vars_dir_path, name)
-    info "vars: ", name
-    @vars = _setup_vars(vars_dir_path, name)
-  end
-
-  #
-  # Return the variable matching the provided `name`.
-  #
-  # The variables object being looked up is the one returned from the
-  # method `vars`.
-  #
-  def get_var(var_name)
-    _get_var(vars, var_name)
-  end
-
-  #
-  # Same of `get_var`, but raise an error if the variable hasn't been found or
-  # is `nil`.
-  #
-  def get_var!(var_name)
-    get_var(var_name) || error("Undefined or `nil` variable: `#{var_name}`.")
-  end
-
-  #
-  # Check if the feature with the provided name (`feature_name`) is enabled.
-  #
-  # Since the features are defined just using variables, before calling this
-  # method be sure that `setup_vars` has already been called.
-  #
-  def has_feature?(feature_name)
-    get_var!('features').include? feature_name.to_s
-  end
-
-  #
-  # Filter the values associated to the features, keeping only those
-  # associated to available features.
-  #
-  def data_for_features(info, sep: nil)
-    data = []
-    info.each do |feature_name, associated_value|
-      if has_feature?(feature_name.to_sym)
-        if associated_value.respond_to?(:call)
-          data << associated_value.call
-        else
-          data << associated_value
-        end
-      end
-    end
-    if data.length == 1
-      def data.inspect() first end
-    elsif sep
-      def data.inspect() join(sep) end
-    end
-    data
   end
 
 end

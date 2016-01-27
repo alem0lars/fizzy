@@ -10,6 +10,7 @@ files:
   - utils/meta_elements
   - utils/meta_commands
   - utils/vars
+  - utils/locals
   - utils/filesystem
   - utils/io
   - commands/base

@@ -1,4 +1,7 @@
-files:
+grammars:
+  - logic
+
+sources:
   - requires
   - configuration
   - exts/hash

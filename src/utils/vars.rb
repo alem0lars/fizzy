@@ -1,5 +1,7 @@
 module Fizzy::Vars
 
+  include Fizzy::IO
+
   attr_reader :vars
 
   # Setup the variables that will be used during ERB processing.
@@ -10,7 +12,7 @@ module Fizzy::Vars
   # `@vars` or using the attribute reader `vars`.
   #
   def setup_vars(vars_dir_path, name)
-    info "vars: ", name
+    info("vars: ", name)
     @vars = _setup_vars(vars_dir_path, name)
   end
 
@@ -20,7 +22,7 @@ module Fizzy::Vars
   # method be sure that `setup_vars` has already been called.
   #
   def has_feature?(feature_name)
-    get_var!('features').include? feature_name.to_s
+    get_var!("features").include?(feature_name.to_s)
   end
 
   # Filter the values associated to the features, keeping only those
@@ -28,6 +30,7 @@ module Fizzy::Vars
   #
   def data_for_features(info, sep: nil)
     data = []
+
     info.each do |feature_name, associated_value|
       if has_feature?(feature_name.to_sym)
         if associated_value.respond_to?(:call)
@@ -37,15 +40,17 @@ module Fizzy::Vars
         end
       end
     end
+
     if data.length == 1
       def data.inspect
         first
       end
     elsif sep
       def data.inspect
-        join sep
+        join(sep)
       end
     end
+
     data
   end
 
@@ -87,31 +92,31 @@ module Fizzy::Vars
         elsif var.is_a?(FalseClass) || var.to_s == "false"
           false
         else
-          error "Invalid value `#{var}` for variable `#{var_name}`: " +
-                "it can't be converted to a boolean."
+          error("Invalid value `#{var}` for variable `#{var_name}`: " +
+                "it can't be converted to a boolean.")
         end
       end
     when :path, :pth then
       if strict && !File.exist?(var)
-        error "Invalid variable `#{var_name}`: `#{var}` doesn't exist"
+        error("Invalid variable `#{var_name}`: `#{var}` doesn't exist")
       else
-        Pathname.new var
+        Pathname.new(var)
       end
     when :file, :pth then
       if strict && !File.file?(var)
-        error "Invalid variable `#{var_name}`: `#{var}` isn't a file"
+        error("Invalid variable `#{var_name}`: `#{var}` isn't a file")
       else
-        Pathname.new var
+        Pathname.new(var)
       end
     when :directory, :dir then
       if strict && !File.directory?(var)
-        error "Invalid variable `#{var_name}`: `#{var}` isn't a directory"
+        error("Invalid variable `#{var_name}`: `#{var}` isn't a directory")
       else
-        Pathname.new var
+        Pathname.new(var)
       end
     else
-      error "Unhandled type `#{type}`. " +
-            "If you need support for a new type, open an issue."
+      error("Unhandled type `#{type}`. " +
+            "If you need support for a new type, open an issue.")
     end
   end
 
@@ -119,8 +124,8 @@ module Fizzy::Vars
     if types.any? { |type| var.is_a? type }
       var
     else
-      error "Invalid type for variable: `#{var_name}`: " +
-            "it's not a `#{type.name}`."
+      error("Invalid type for variable: `#{var_name}`: " +
+            "it's not a `#{type.name}`.")
     end
   end
 
@@ -144,7 +149,7 @@ module Fizzy::Vars
     yaml_file_path = find_yaml_path(File.join(vars_dir_path, name))
     if yaml_file_path
       [:yaml, File.read(yaml_file_path)]
-    elsif ENV.has_key? name
+    elsif ENV.has_key?(name)
       [:json, ENV[name]]
     else
       [nil, nil]
@@ -210,9 +215,10 @@ module Fizzy::Vars
       acc << parent_vars
       collisions = _get_vars_collisions(acc)
       unless collisions.empty?
-        error "Inconsistent variables specification:\n" + collisions.map { |c|
-          "\t→ Collision with key=`#{c[:key]}`: value_a=`#{c[:value_a]}` value_b=`#{c[:value_b]}`"
-        }.join("\n")
+        error("Inconsistent variables specification:\n" + collisions.map { |c|
+                "\t→ Collision with key=`#{c[:key]}`: " +
+                "value_a=`#{c[:value_a]}` value_b=`#{c[:value_b]}`"
+              }.join("\n"))
       end
       acc
     end.inject({}) do |acc, parent_vars| # Merge them.

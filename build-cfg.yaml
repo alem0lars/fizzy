@@ -6,18 +6,18 @@ sources:
   - configuration
   - exts/hash
   - exts/thor
+  - utils/io
   - grammars/base_lexer
   - <grammars>
-  - utils/git
   - utils/environment
   - utils/execution
-  - utils/meta_info
-  - utils/meta_elements
-  - utils/meta_commands
+  - utils/filesystem
+  - utils/git
   - utils/vars
   - utils/locals
-  - utils/filesystem
-  - utils/io
+  - utils/meta_commands
+  - utils/meta_info
+  - utils/meta_elements
   - commands/base
   - commands/cfg
   - commands/inst

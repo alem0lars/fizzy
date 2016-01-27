@@ -9,11 +9,11 @@ class Fizzy::BaseCommand < Thor
   include Fizzy::Filesystem
   include Fizzy::Git
   include Fizzy::IO
+  include Fizzy::Vars
+  include Fizzy::Locals
   include Fizzy::MetaInfo
   include Fizzy::MetaElements
   include Fizzy::MetaCommands
-  include Fizzy::Vars
-  include Fizzy::Requirements
 
   # Common options, shared among many commands.
   #
@@ -70,13 +70,13 @@ class Fizzy::BaseCommand < Thor
     #
     def shared_option(name, required: false)
       args = SHARED_OPTIONS[name].dup
-      error "Invalid option `#{name}`: it doesn't exist." if args.nil?
+      error("Invalid option `#{name}`: it doesn't exist.") if args.nil?
 
       if required
-        args.delete :default
+        args.delete(:default)
         args[:required] = true
-      elsif !args.has_key? :default
-        error "Invalid shared option `#{name}`: doesn't have a default value."
+      elsif !args.has_key?(:default)
+        error("Invalid shared option `#{name}`: doesn't have a default value.")
       end
 
       [name, args]

@@ -2,6 +2,8 @@
 #
 module Fizzy::MetaCommands
 
+  include Fizzy::Git
+
   # Return a data structure containing the commands that can be specified in
   # the meta file.
   #
@@ -15,14 +17,12 @@ module Fizzy::MetaCommands
   def available_commands
     { "git_sync" => {
         "validator" => lambda { |spec|
-          if spec.has_key?("dst")
-            spec["dst"] = File.expand_path(spec["dst"])
-          end
+          spec["dst"] = File.expand_path(spec["dst"]) if spec.has_key?("dst")
           status   = spec.has_key?("repo")
           status &&= spec.has_key?("dst")
         },
         "executor" => lambda { |spec|
-          if File.directory?(spec["dst"])
+          if File.directory? spec["dst"]
             FileUtils.cd(spec["dst"]) { git_pull }
           else
             git_clone(spec["repo"], spec["dst"])
@@ -31,4 +31,5 @@ module Fizzy::MetaCommands
       }
     }
   end
+
 end

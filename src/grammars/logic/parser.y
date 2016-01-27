@@ -24,7 +24,7 @@ end
 
   def parse(arg)
     @lexer = Fizzy::LogicLexer.new
-    @lexer.start arg
+    @lexer.start(arg)
     do_parse
   end
 

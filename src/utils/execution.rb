@@ -2,10 +2,11 @@
 #
 module Fizzy::Execution
 
+  include Fizzy::IO
+
   # Execute the provided shell command (`cmd`).
-  #
-  # If `as_su` is `true` the command is executed as super user (i.e. as root,
-  # using sudo).
+  # If `as_su` is `true` the command is executed as super user
+  # (i.e. as root, using sudo).
   #
   def exec_cmd(cmd, as_su: false)
     full_cmd = as_su ? "sudo #{cmd}" : cmd
@@ -22,7 +23,7 @@ module Fizzy::Execution
                  end
 
     if really_run || @run_mode == :dry
-      say as_su ? "[sudo] #{cmd}" : cmd, :magenta
+      tell(as_su ? "[sudo] #{cmd}" : cmd, :magenta)
     end
 
     if really_run

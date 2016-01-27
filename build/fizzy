@@ -39,11 +39,114 @@
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 
-# ☞ Lexer ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Requires ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-class LogicLexer
+# Core modules.
+require "fileutils"
+require "find"
+require "json"
+require "net/http"
+require "ostruct"
+require "pathname"
+require "shellwords"
+require "strscan"
+require "uri"
+require "yaml"
 
-  require 'strscan'
+# Try to require `thor` or raise an exception.
+begin
+  require "thor"
+rescue
+  puts "\e[31m☠ The gem `thor` is not installed. " +
+       "To install run: `gem install thor`. Aborting.\e[0m"
+  exit(-1)
+end
+
+# Top-level namespace.
+module Fizzy
+end
+
+# ☞ Configuration ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Fizzy::CFG = OpenStruct.new
+
+# Default editor.
+Fizzy::CFG.editor = ENV["EDITOR"] || "vim"
+
+# The operating-system which fizzy is running on.
+Fizzy::CFG.os = case RUBY_PLATFORM
+                when /darwin/ then :osx
+                when /linux/  then :linux
+                else               :windows
+                end
+
+# Remote URL for fizzy static files (must end with a slash).
+Fizzy::CFG.static_files_base_url =
+  URI("https://raw.githubusercontent.com/alem0lars/fizzy/master/")
+
+# Default fizzy root directory (holding all of the fizzy stuff).
+Fizzy::CFG.default_fizzy_dir = Pathname.new(
+  ENV["FIZZY_DIR"] ||
+  case Fizzy::CFG.os
+  when :linux   then "/usr/share/fizzy"
+  when :osx     then "~/Library/Application Support/fizzy"
+  when :windows then "~/fizzy"
+  end
+).expand_path
+
+# Default meta file name.
+Fizzy::CFG.default_meta_name = "meta.yml"
+
+# ☞ Exts → Hash ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class Hash
+
+  # Perform recursive merge of the current `Hash` (`self`) with the provided one
+  # (the `second` argument).
+  #
+  # The merge have knows how to recurse in both `Hash`es and `Array`s.
+  #
+  def deep_merge(second)
+    merger = proc do |key, v1, v2|
+      if Hash === v1 && Hash === v2
+        v1.merge v2, &merger
+      elsif Array === v1 && Array === v2
+        (Set.new(v1) + Set.new(v2)).to_a
+      else
+        v2
+      end
+    end
+    self.merge second, &merger
+  end
+
+  def fqkeys(prefix="")
+    self.inject([]) do |acc, (k, v)|
+      prefix_new = prefix.empty? ? k.to_s : "#{prefix}.#{k}"
+      acc + (v.is_a?(Hash) ? v.fqkeys(prefix_new) : [prefix_new])
+    end
+  end
+
+end
+
+# ☞ Exts → Thor ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class Thor
+  module Actions
+
+    # Monkey-patch to retrieve the template currently processed.
+    old_template = instance_method(:template)
+    define_method :template, ->(source, *args, &blk) do
+      $fizzy_cur_template = source
+      old_template.bind(self).(source, *args, &blk)
+    end
+
+  end
+end
+
+# ☞ Grammars → Base Lexer ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class Fizzy::BaseLexer
+  include Fizzy::IO
 
   def initialize
     @rules = []
@@ -57,12 +160,12 @@ class LogicLexer
     @rules << [pattern, token]
   end
 
-  def keyword aString
-    @rules << [Regexp.new(aString), aString]
+  def keyword string
+    @rules << [Regexp.new(string), string]
   end
 
-  def start aString
-    @base = StringScanner.new aString
+  def start string
+    @base = StringScanner.new string
   end
 
   def next_token
@@ -76,7 +179,23 @@ class LogicLexer
       m = @base.scan(key)
       return [value, m] if m
     end
-    raise  "unexpected characters  <#{@base.peek(5)}>"
+    error "Unexpected characters  <#{@base.peek(5)}>"
+  end
+
+end
+
+# ☞ Lexer ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class Fizzy::LogicLexer < Fizzy::BaseLexer
+
+  def initialize
+    super
+
+    ignore(/\s+/)
+
+    token(/\w+/, :FEATURE)
+    token(/[\w](?:\.[\w]+)*/, :VARIABLE)
+    token(/.+/, :VALUE)
   end
 
 end
@@ -90,24 +209,20 @@ end
 #
 
 require 'racc/parser.rb'
-class LogicParser < Racc::Parser
+module Fizzy
+  class LogicParser < Racc::Parser
 
 module_eval(<<'...end parser.y/module_eval...', 'parser.y', 24)
 
-  def make_lexer aString
-    result = LogicLexer.new
-    result.ignore /\s+/
-    result.keyword 'item'
-    result.token /\w+/, :WORD
-    result.start aString
-    return result
+  def parse(arg)
+    @lexer = Fizzy::LogicLexer.new
+    @lexer.start arg
+    do_parse
   end
 
 
-  def parse(arg)
-    @result = Catalog.new
-    @lexer = make_lexer arg
-    do_parse
+  def next_token
+    @lexer.next_token
   end
 
 # vim: set filetype=racc :
@@ -263,110 +378,8 @@ def _reduce_none(val, _values, result)
   val[0]
 end
 
-end   # class LogicParser
-
-# ☞ Requires ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-# Core modules.
-require "fileutils"
-require "find"
-require "ostruct"
-require "net/http"
-require "pathname"
-require "yaml"
-require "json"
-require "shellwords"
-require "uri"
-
-# Try to require `thor` or raise an exception.
-begin
-  require "thor"
-rescue
-  puts "\e[31m☠ The gem `thor` is not installed. " +
-       "To install run: `gem install thor`. Aborting.\e[0m"
-  exit(-1)
-end
-
-# Top-level namespace.
-module Fizzy
-end
-
-# ☞ Configuration ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Fizzy::CFG = OpenStruct.new
-
-# Default editor.
-Fizzy::CFG.editor = ENV["EDITOR"] || "vim"
-
-# The operating-system which fizzy is running on.
-Fizzy::CFG.os = case RUBY_PLATFORM
-                when /darwin/ then :osx
-                when /linux/  then :linux
-                else               :windows
-                end
-
-# Remote URL for fizzy static files (must end with a slash).
-Fizzy::CFG.static_files_base_url =
-  URI("https://raw.githubusercontent.com/alem0lars/fizzy/master/")
-
-# Default fizzy root directory (holding all of the fizzy stuff).
-Fizzy::CFG.default_fizzy_dir = Pathname.new(
-  ENV["FIZZY_DIR"] ||
-  case Fizzy::CFG.os
-  when :linux   then "/usr/share/fizzy"
-  when :osx     then "~/Library/Application Support/fizzy"
-  when :windows then "~/fizzy"
-  end
-).expand_path
-
-# Default meta file name.
-Fizzy::CFG.default_meta_name = "meta.yml"
-
-# ☞ Exts → Hash ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-class Hash
-
-  # Perform recursive merge of the current `Hash` (`self`) with the provided one
-  # (the `second` argument).
-  #
-  # The merge have knows how to recurse in both `Hash`es and `Array`s.
-  #
-  def deep_merge(second)
-    merger = proc do |key, v1, v2|
-      if Hash === v1 && Hash === v2
-        v1.merge v2, &merger
-      elsif Array === v1 && Array === v2
-        (Set.new(v1) + Set.new(v2)).to_a
-      else
-        v2
-      end
-    end
-    self.merge second, &merger
-  end
-
-  def fqkeys(prefix="")
-    self.inject([]) do |acc, (k, v)|
-      prefix_new = prefix.empty? ? k.to_s : "#{prefix}.#{k}"
-      acc + (v.is_a?(Hash) ? v.fqkeys(prefix_new) : [prefix_new])
-    end
-  end
-
-end
-
-# ☞ Exts → Thor ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-class Thor
-  module Actions
-
-    # Monkey-patch to retrieve the template currently processed.
-    old_template = instance_method(:template)
-    define_method :template, ->(source, *args, &blk) do
-      $fizzy_cur_template = source
-      old_template.bind(self).(source, *args, &blk)
-    end
-
-  end
-end
+  end   # class LogicParser
+  end   # module Fizzy
 
 # ☞ Utils → Git ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

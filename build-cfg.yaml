@@ -6,6 +6,8 @@ sources:
   - configuration
   - exts/hash
   - exts/thor
+  - grammars/base_lexer
+  - <grammars>
   - utils/git
   - utils/environment
   - utils/execution

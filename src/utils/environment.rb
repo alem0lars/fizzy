@@ -2,6 +2,8 @@
 #
 module Fizzy::Environment
 
+  include Fizzy::IO
+
   # Return the environment variable matching the provided `name`.
   #
   def get_env(name, default: nil)
@@ -12,7 +14,9 @@ module Fizzy::Environment
   # been found or is `nil`.
   #
   def get_env!(name)
-    get_env(name) || error("Undefined environment variable: `#{name}`.")
+    value = get_env(name)
+    error("Undefined environment variable: `#{name}`.") if value.nil?
+    value
   end
 
   # Check if the underlying operating system is MacOSX.

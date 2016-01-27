@@ -2,6 +2,9 @@
 #
 module Fizzy::MetaElements
 
+  include Fizzy::IO
+  include Fizzy::Execution
+
   # Return a list of functions capable to apply modifications on the system
   # based on the current elements configuration instance.
   #
@@ -33,20 +36,20 @@ module Fizzy::MetaElements
       },
       lambda { |elem| # Create a symlink for each elements' `src_path`.
         elem["fs_maps"].each do |m|
-          say "  #{m["src_path"]} ← #{m["dst_path"]}" if @verbose
+          tell("  #{m["src_path"]} ← #{m["dst_path"]}") if @verbose
           cmd = "ln -s"
           should_link = if File.file?(m["dst_path"])
             dst_real_path = Pathname.new(m["dst_path"]).realpath.to_s
             if dst_real_path != m["src_path"]
               cmd << " -f"
-              quiz "The destination file `#{m["dst_path"]}` already " +
-                   "exists. Overwrite"
+              quiz("The destination file `#{m["dst_path"]}` already " +
+                   "exists. Overwrite")
             else
               false
             end
           elsif File.directory?(m["dst_path"])
-            if quiz "The destination file `#{m["dst_path"]}` is a " +
-                    "directory. Delete it"
+            if quiz("The destination file `#{m["dst_path"]}` is a " +
+                    "directory. Delete it")
               exec_cmd("rm -Rf #{m["dst_path"]}",
                        as_su: !existing_dir(File.dirname(m["dst_path"])))
             end
@@ -56,17 +59,19 @@ module Fizzy::MetaElements
           end
 
           if should_link
-            cmd << " \"#{m["src_path"]}\" \"#{m["dst_path"]}\""
-            exec_cmd(cmd,
-                     :as_su => !existing_dir(File.dirname(m['dst_path'])))
+            cmd << " #{Shellwords.escape m["src_path"]}"
+            cmd << " #{Shellwords.escape m["dst_path"]}"
+            exec_cmd(cmd, as_su: !existing_dir(File.dirname(m["dst_path"])))
           end
         end
       },
-      lambda { |elem| # Change permissions of the instantiated files (if specified).
+      lambda { |elem| # Change perms of the instantiated files (if specified).
         if elem.has_key?("perms")
           elem["fs_maps"].each do |m|
-            say "Changing permissions of #{m['src_path']} to #{elem["perms"]}" if @verbose
-            exec_cmd("chmod -R #{Shellwords.escape(elem["perms"])} #{Shellwords.escape(m["src_path"])}",
+            tell("Changing permissions of #{m["src_path"]} to " +
+                 elem["perms"]) if @verbose
+            exec_cmd("chmod -R #{Shellwords.escape(elem["perms"])} " +
+                     Shellwords.escape(m["src_path"]),
                      as_su: !File.owned?(m["src_path"]))
           end
         end

@@ -1,5 +1,11 @@
 module Fizzy::IO
 
+  # Get the shell object.
+  # It will be lazily instantiated.
+  def shell
+    @shell ||= Thor::Shell::Color.new
+  end
+
   # Ask a question to the user.
   #
   # The message is made by the `question` string, with some additions (like
@@ -12,7 +18,7 @@ module Fizzy::IO
   #              answer isn't empty is returned.
   #
   def quiz(question, type: :bool)
-    answer = ask "#{question.strip}? ", :magenta
+    answer = shell.ask("#{question.strip}? ", :magenta)
     case type
     when :bool
       if answer =~ /y|ye|yes|yeah|ofc/i
@@ -20,18 +26,18 @@ module Fizzy::IO
       elsif answer =~ /n|no|fuck|fuck\s+you|fuck\s+off/i
         false
       else
-        say "Answer misunderstood", :yellow
-        quiz question, type: type
+        tell("Answer misunderstood", :yellow)
+        quiz(question, type: type)
       end
     when :string
       if answer.empty?
-        warning "Empty answer", ask_continue: false
-        quiz question, type: type
+        warning("Empty answer", ask_continue: false)
+        quiz(question, type: type)
       else
         answer
       end
     else
-      error "Unhandled question type: `#{type}`."
+      error("Unhandled question type: `#{type}`.")
     end
   end
 
@@ -41,7 +47,7 @@ module Fizzy::IO
   # message, typically to show the context which the message belongs to.
   #
   def info(prefix, msg)
-    say "☞ #{set_color(prefix, :cyan)}#{set_color(msg, :white)}"
+    tell("☞ #{colorize(prefix, :cyan)}#{colorize(msg, :white)}")
   end
 
   # Display an informative message (`msg`) to the user.
@@ -50,7 +56,7 @@ module Fizzy::IO
   # the program or exit (with exit status `-1`).
   #
   def warning(msg, ask_continue: true)
-    say "⚠ #{msg}", :yellow
+    tell("⚠ #{msg}", :yellow)
     exit(-1) if ask_continue && !quiz("continue")
   end
 
@@ -58,8 +64,22 @@ module Fizzy::IO
   # program will exit (with exit status `-1`).
   #
   def error(msg)
-    say "☠ #{msg}", :red
+    tell("☠ #{msg}", :red)
     exit(-1)
+  end
+
+  # Tell something to the user.
+  # It's a proxy method to `Thor::Shell::Color.say`.
+  #
+  def tell(*args)
+    shell.say(*args)
+  end
+
+  # Colorize the provided string.
+  # It's a proxy method to `Thor::Shell::Color.set_color`.
+  #
+  def colorize(*args)
+    shell.set_color(*args)
   end
 
 end

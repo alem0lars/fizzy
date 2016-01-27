@@ -1,4 +1,5 @@
 class Fizzy::BaseLexer
+
   include Fizzy::IO
 
   def initialize
@@ -18,7 +19,7 @@ class Fizzy::BaseLexer
   end
 
   def start string
-    @base = StringScanner.new string
+    @base = StringScanner.new(string)
   end
 
   def next_token
@@ -32,7 +33,7 @@ class Fizzy::BaseLexer
       m = @base.scan(key)
       return [value, m] if m
     end
-    error "Unexpected characters  <#{@base.peek(5)}>"
+    error("Unexpected characters: `#{@base.peek(5)}`.")
   end
 
 end

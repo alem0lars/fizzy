@@ -1,22 +1,20 @@
 class Fizzy::MainCommand < Fizzy::BaseCommand
 
-  desc "cfg SUBCOMMAND ...ARGS",
-       "Manage the Fizzy configuration (without modifying the host system)."
-  subcommand "cfg", Fizzy::CfgCommand
+  desc("cfg SUBCOMMAND ...ARGS", "Manage the Fizzy configuration " +
+                                 "(without modifying the host system).")
+  subcommand("cfg", Fizzy::CfgCommand)
 
-  desc "inst SUBCOMMAND ...ARGS",
-       "Manage a configuration instance"
-  subcommand "inst", Fizzy::InstCommand
+  desc("inst SUBCOMMAND ...ARGS", "Manage a configuration instance")
+  subcommand("inst", Fizzy::InstCommand)
 
-  desc "usage",
-       "Show how to use Fizzy."
+  desc("usage", "Show how to use Fizzy.")
   def usage
-    url = URI.join Fizzy::CFG.static_files_base_url, "README.md"
-    res = Net::HTTP.get_response url
-    if res.is_a? Net::HTTPSuccess
-      say "\n#{res.body}\n"
+    url = URI.join(Fizzy::CFG.static_files_base_url, "README.md")
+    res = Net::HTTP.get_response(url)
+    if res.is_a?(Net::HTTPSuccess)
+      tell("\n#{res.body}\n")
     else
-      error "Network error: cannot retrieve `#{url}`."
+      error("Network error: cannot retrieve `#{url}`.")
     end
   end
 
@@ -27,23 +25,22 @@ class Fizzy::MainCommand < Fizzy::BaseCommand
   method_option(*shared_option(:inst_name, required: true))
   method_option(*shared_option(:vars_name, required: true))
   method_option(*shared_option(:meta_name))
-  desc "quick-install",
-       "Quickly install a configuration."
+  desc("quick-install", "Quickly install a configuration.")
   def quick_install
-    invoke CfgCommand, "instantiate", [],
+    invoke(CfgCommand, "instantiate", [],
            cfg_name:  options.cfg_name,
            vars_name: options.vars_name,
            inst_name: options.inst_name,
            fizzy_dir: options.fizzy_dir,
            meta_name: options.meta_name,
-           verbose:   options.verbose
-    invoke InstCommand, "install", [],
+           verbose:   options.verbose)
+    invoke(InstCommand, "install", [],
            vars_name: options.vars_name,
            inst_name: options.inst_name,
            fizzy_dir: options.fizzy_dir,
            meta_name: options.meta_name,
            run_mode:  options.run_mode,
-           verbose:   options.verbose
+           verbose:   options.verbose)
   end
   map :qi => :quick_install
 

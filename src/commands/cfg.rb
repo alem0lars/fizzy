@@ -5,122 +5,121 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
   end
 
   method_option(*shared_option(:fizzy_dir))
-  desc "cleanup",
-       "Cleanup the fizzy storage."
+  desc("cleanup", "Cleanup the fizzy storage.")
   def cleanup
     # Prepare paths for cleanup.
-    paths = prepare_storage options.fizzy_dir,
+    paths = prepare_storage(options.fizzy_dir,
                             valid_meta: false,
                             valid_cfg:  false,
-                            valid_inst: false
+                            valid_inst: false)
 
     # Perform cleanup.
-    status = exec_cmd "rm -Rf #{Shellwords.escape(paths.root)}" \
-      if quiz "Do you want to remove the fizzy root directory `#{paths.root}`"
+    status = exec_cmd("rm -Rf #{Shellwords.escape(paths.root)}") \
+      if quiz("Do you want to remove the fizzy root directory `#{paths.root}`")
 
     # Inform user about the cleanup status.
     if status
-      say "Successfully cleaned: `#{paths.root}`.", :green
+      tell("Successfully cleaned: `#{paths.root}`.", :green)
     elsif status.nil?
-      warning "Cleanup skipped.", ask_continue: false
+      warning("Cleanup skipped.", ask_continue: false)
     else
-      error "Failed to cleanup: `#{paths.root}`.", :red
+      error("Failed to cleanup: `#{paths.root}`.", :red)
     end
   end
 
   method_option(*shared_option(:fizzy_dir))
   method_option(*shared_option(:cfg_name))
-  desc "cd",
+  desc("cd",
        "Change directory to the configuration directory " +
-       "(useful for extensive filesystem manipulations)."
+       "(useful for extensive filesystem manipulations).")
   def cd
     # Prepare stuff for changing directory.
-    paths = prepare_storage options.fizzy_dir,
+    paths = prepare_storage(options.fizzy_dir,
                             valid_meta:   false,
                             valid_inst:   false,
                             valid_cfg:    !options.cfg_name.nil?,
-                            cur_cfg_name: options.cfg_name
+                            cur_cfg_name: options.cfg_name)
 
     # Changing directory.
     dir_path = paths.cur_cfg || paths.cfg
-    say "Changing directory to: `#{dir_path}`.", :cyan
-    FileUtils.cd dir_path
-    system get_env! :SHELL
+    tell("Changing directory to: `#{dir_path}`.", :cyan)
+    FileUtils.cd(dir_path)
+    system(get_env!(:SHELL))
 
     # Inform user about the changing directory status.
-    say "CD done in: `#{dir_path}`.", :green
+    tell("CD done in: `#{dir_path}`.", :green)
   end
 
   method_option(*shared_option(:fizzy_dir))
   method_option(*shared_option(:cfg_name))
-  desc "edit PATTERN",
-       "Find the files relative to PATTERN and edit them."
+  desc("edit PATTERN",
+       "Find the files relative to PATTERN and edit them.")
   def edit(pattern)
     # Prepare stuff for editing.
-    paths = prepare_storage options.fizzy_dir,
+    paths = prepare_storage(options.fizzy_dir,
                             valid_meta:   false,
                             valid_inst:   false,
-                            cur_cfg_name: options.cfg_name
-    find_path = (paths.cur_cfg || paths.cfg).join pattern
+                            cur_cfg_name: options.cfg_name)
+    find_path = (paths.cur_cfg || paths.cfg).join(pattern)
     cfg_files_arg = if find_path.exist?
-                      Shellwords.escape find_path
+                      Shellwords.escape(find_path)
                     else
                       Dir.glob("#{find_path}*", File::FNM_DOTMATCH).to_a.
                         delete_if { |path| path =~ /\.git/ }.
                         collect   { |path| Shellwords.escape(path) }.
-                        join " "
+                        join(" ")
                     end.strip
 
     # Perform edit.
     if cfg_files_arg.empty?
-      warning "No files matching `#{cfg_name}` have been found.",
-              ask_continue: false
+      warning("No files matching `#{cfg_name}` have been found.",
+              ask_continue: false)
       status = nil
     else
-      say "Editing configuration file(s): `#{cfg_files_arg}`.", :cyan
-      status = system "#{Fizzy::CFG.editor} #{cfg_files_arg}"
+      tell("Editing configuration file(s): `#{cfg_files_arg}`.", :cyan)
+      status = system("#{Fizzy::CFG.editor} #{cfg_files_arg}")
     end
 
     # Inform user about the editing status.
     if status
-      say "Successfully edited: `#{cfg_files_arg}`.", :green
+      tell("Successfully edited: `#{cfg_files_arg}`.", :green)
     elsif status.nil?
-      warning "Editing skipped.", ask_continue: false
+      warning("Editing skipped.", ask_continue: false)
     else
-      error "Failed to edit: `#{cfg_files_arg}`.", :red
+      error("Failed to edit: `#{cfg_files_arg}`.", :red)
     end
   end
 
   method_option(*shared_option(:fizzy_dir))
   method_option(*shared_option(:cfg_name))
   method_option(*shared_option(:cfg_url))
-  desc "sync", "Synchronize the remote repository with the local one."
+  desc("sync", "Synchronize the remote repository with the local one.")
   def sync
     # Prepare stuff for syncing.
-    paths = prepare_storage options.fizzy_dir,
+    paths = prepare_storage(options.fizzy_dir,
                             valid_meta:   false,
                             valid_cfg:    false,
                             valid_inst:   false,
-                            cur_cfg_name: options.cfg_name
+                            cur_cfg_name: options.cfg_name)
 
     # Perform sync.
     sync_result = if paths.cur_cfg.directory?
-      say "Syncing from origin", :blue
+      tell("Syncing from origin", :blue)
       status = nil
       FileUtils.cd(paths.cur_cfg) do
         # Perform fetch, because we need to know if there are remote changes,
         # so we need to know the updated remote commit hash.
-        say "Fetching informations from origin.", :cyan
+        tell("Fetching informations from origin.", :cyan)
         status = git_fetch
         # (Optional) Perform commit.
         if status && git_has_local_changes(paths.cur_cfg)
-          say "The configuration has the following local changes:\n" +
-              "#{set_color(git_local_changes(paths.cur_cfg), :white)}", :cyan
-          should_commit = quiz "Do you want to commit them all"
+          tell "The configuration has the following local changes:\n" +
+              "#{colorize(git_local_changes(paths.cur_cfg), :white)}", :cyan
+          should_commit = quiz("Do you want to commit them all")
           if should_commit
-            commit_msg = quiz "Type the commit message", type: :string
+            commit_msg = quiz("Type the commit message", type: :string)
             status   = git_add
-            status &&= git_commit message: commit_msg
+            status &&= git_commit(message: commit_msg)
           else
             status = false
           end
@@ -132,14 +131,14 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
       end
       status
     else
-      git_clone options.cfg_url, paths.cur_cfg
+      git_clone(options.cfg_url, paths.cur_cfg)
     end
 
     # Inform user about sync status.
     if sync_result
-      say "Synced to: `#{paths.cur_cfg}`.", :green
+      tell("Synced to: `#{paths.cur_cfg}`.", :green)
     else
-      error "Unable to sync."
+      error("Unable to sync.")
     end
   end
 
@@ -149,29 +148,28 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
   method_option(*shared_option(:inst_name, required: true))
   method_option(*shared_option(:vars_name, required: true))
   method_option(*shared_option(:meta_name))
-  desc "instantiate",
-       "Create a configuration instance in the current machine."
+  desc("instantiate", "Create a configuration instance in the current machine.")
   def instantiate
     # Before instantiation.
-    paths = prepare_storage options.fizzy_dir,
+    paths = prepare_storage(options.fizzy_dir,
                             meta_name:     options.meta_name,
                             valid_inst:    false,
                             cur_cfg_name:  options.cfg_name,
-                            cur_inst_name: options.inst_name
-    setup_vars paths.cur_cfg_vars, options.vars_name
+                            cur_inst_name: options.inst_name)
+    setup_vars(paths.cur_cfg_vars, options.vars_name)
 
-    meta = get_meta paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg,
-                    options.verbose
+    meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg,
+                    options.verbose)
 
-    info "meta: ", "#{set_color(meta["elems"].count, :green)}/" +
-                   "#{meta["all_elems_count"]} elem(s) selected."
-    info "meta: ", "#{set_color(meta["excluded_files"].count, :red)}/" +
-                   "#{meta["all_files.count"]} file(s) excluded."
-    say
+    info("meta: ", "#{colorize(meta["elems"].count, :green)}/" +
+                   "#{meta["all_elems_count"]} elem(s) selected.")
+    info("meta: ", "#{colorize(meta["excluded_files"].count, :red)}/" +
+                   "#{meta["all_files.count"]} file(s) excluded.")
+    tell
 
     # Create a configuration instance.
-    say "Creating a configuration instance named `#{options.inst_name}` " +
-        "from: `#{paths.cur_cfg}`.", :blue
+    tell("Creating a configuration instance named `#{options.inst_name}` " +
+         "from: `#{paths.cur_cfg}`.", :blue)
 
     exclude_pattern = /\.git|README/
     meta["excluded_files"].each do |excluded_file|
@@ -179,13 +177,13 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     end
 
     begin
-      directory paths.cur_cfg, paths.cur_inst, exclude_pattern: exclude_pattern
+      directory(paths.cur_cfg, paths.cur_inst, exclude_pattern: exclude_pattern)
     rescue SyntaxError
-      error "Error while processing the template: `#{$fizzy_cur_template}`."
+      error("Error while processing the template: `#{$fizzy_cur_template}`.")
     end
 
     # After instantiation.
-    say "Created the configuration instance in: `#{paths.cur_inst}`.", :green
+    tell("Created the configuration instance in: `#{paths.cur_inst}`.", :green)
   end
 
 end

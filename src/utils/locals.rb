@@ -1,6 +1,17 @@
-module Fizzy::Requirements
+module Fizzy::Locals
+
+  include Fizzy::IO
+
+  def define_locals(&block)
+    error("No requirements specification provided.") unless block_given?
+    proxy = Fizzy::Locals::Proxy.new(self)
+    proxy.instance_eval(&block)
+    self.locals = proxy.locals
+  end
 
   class Proxy
+
+    include Fizzy::IO
 
     attr_reader :locals
 
@@ -14,8 +25,11 @@ module Fizzy::Requirements
     def variable(name, *args, **kwargs)
       name = name.to_s.to_sym
       error "Invalid local name `#{name}`: it's blank." if name.empty?
-      type = options.fetch :type, nil
-      local_name = options.fetch :as, name
+
+      # Read provided options.
+      type       = options.fetch(:type, nil)
+      local_name = options.fetch(:as,   name)
+
       if optional
         @locals[local_name] = receiver.get_var name, type: type
       else
@@ -27,7 +41,7 @@ module Fizzy::Requirements
     #
     def computed(name, fn)
       name = name.to_s.to_sym
-      error "Invalid local name `#{name}`: it's blank." if name.empty?
+      error("Invalid local name `#{name}`: it's blank.") if name.empty?
       error("Cannot compute local `#{name}`.") if fn.nil?
 
       @locals[name] = fn.call
@@ -42,24 +56,20 @@ module Fizzy::Requirements
     # Access the value of a local or raise an error if it's not defined.
     #
     def local!(name)
-      value = local(name)
+      value = local name
       error("Undefined local `#{name}`.") if value.nil?
       value
     end
 
+    # If all locals identified by `names` are available, evaluate the block
+    # passing the locals' values.
+    #
     def local?(*names, &block)
       values = names.collect { |name| local(name) }
       are_locals_available = values.compact.length != values.length
       yield(*values) if are_locals_available
     end
 
-  end
-
-  def define_locals(&block)
-    error("No requirements specification provided.") unless block_given?
-    proxy = Fizzy::Requirements::Proxy.new self
-    proxy.instance_eval(&block)
-    self.locals = proxy.locals
   end
 
 end

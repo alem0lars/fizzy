@@ -14,8 +14,8 @@ require "yaml"
 begin
   require "thor"
 rescue
-  puts "\e[31m☠ The gem `thor` is not installed. " +
-       "To install run: `gem install thor`. Aborting.\e[0m"
+  puts("\e[31m☠ The gem `thor` is not installed. " +
+       "To install run: `gem install thor`. Aborting.\e[0m")
   exit(-1)
 end
 

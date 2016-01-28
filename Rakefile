@@ -6,27 +6,28 @@ require "shellwords"
 
 # Configuration ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-ROOT_PATH     = Pathname.new File.dirname __FILE__
-BUILD_PATH    = ROOT_PATH.join "build"
-TMP_PATH      = ROOT_PATH.join "tmp"
-SRC_PATH      = ROOT_PATH.join "src"
-GRAMMARS_PATH = SRC_PATH.join  "grammars"
+ROOT_PATH     = Pathname.new(File.dirname(__FILE__))
+BUILD_PATH    = ROOT_PATH.join("build")
+TMP_PATH      = ROOT_PATH.join("tmp")
+SRC_PATH      = ROOT_PATH.join("src")
+GRAMMARS_PATH = SRC_PATH.join("grammars")
 
-OLD_BIN_PATH = BUILD_PATH.join "fizzy-old"
-BIN_PATH     = BUILD_PATH.join "fizzy"
+OLD_BIN_PATH = BUILD_PATH.join("fizzy-old")
+BIN_PATH     = BUILD_PATH.join("fizzy")
+BIN_RB_PATH  = Pathname.new("#{BIN_PATH}.rb")
 
-BUILD_CFG_PATH = ROOT_PATH.join "build-cfg.yaml"
+BUILD_CFG_PATH = ROOT_PATH.join("build-cfg.yaml")
 
 GRAMMARS_SOURCE_NAME = "<grammars>"
 
 # Utils ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 def info(msg, indent: 0, success: false)
-  puts ("\t" * indent) + "☞ " + "\e[#{success ? 32 : 34}m#{msg}\e[0m"
+  puts(("\t" * indent) + "☞ " + "\e[#{success ? 32 : 34}m#{msg}\e[0m")
 end
 
 def error(msg)
-  puts "\e[31m☠ Error: #{msg}\e[0m"
+  puts("\e[31m☠ Error: #{msg}\e[0m")
   exit(-1)
 end
 
@@ -43,7 +44,7 @@ def write_bin(title, content, newlines: [0, 0], mode: "a")
     else
       error "Invalid argument `newlines`: expected to be a 2-ple or number"
     end
-    bin_file.write content
+    bin_file.write(content)
   end
 end
 
@@ -60,16 +61,17 @@ def prepare_build
   error("Current fizzy binary is a directory.. WTF?") if BIN_PATH.directory?
   error("Old fizzy binary is a directory.. WTF?") if OLD_BIN_PATH.directory?
   OLD_BIN_PATH.delete if OLD_BIN_PATH.file?
+  BIN_RB_PATH.delete  if BIN_RB_PATH.file?
   BIN_PATH.rename(OLD_BIN_PATH) if BIN_PATH.file?
   # ☛ Check source directory
   error("No source directory found") unless SRC_PATH.directory?
   # ☛ Check source files
-  src_file_paths = Pathname.glob SRC_PATH.join "*.rb"
+  src_file_paths = Pathname.glob(SRC_PATH.join "*.rb")
   error("No source files have been found") if src_file_paths.empty?
   # ☛ Read build configuration.
-  build_cfg = YAML.load_file BUILD_CFG_PATH.to_s
+  build_cfg = YAML.load_file(BUILD_CFG_PATH.to_s)
 
-  info "Build successfully prepared", success: true
+  info("Build successfully prepared", success: true)
   return build_cfg
 end
 
@@ -78,24 +80,23 @@ def build_grammars(build_cfg)
 
   build_cfg["grammars"].each do |grammar_file_name|
     info "Building grammar `#{grammar_file_name}`.", indent: 1
-    parser_src_file_path = GRAMMARS_PATH.join grammar_file_name, "parser.y"
-    lexer_src_file_path  = GRAMMARS_PATH.join grammar_file_name, "lexer.rb"
-    parser_out_file_path = TMP_PATH.join "#{grammar_file_name}_parser.rb"
+    parser_src_file_path = GRAMMARS_PATH.join(grammar_file_name, "parser.y")
+    lexer_src_file_path  = GRAMMARS_PATH.join(grammar_file_name, "lexer.rb")
+    parser_out_file_path = TMP_PATH.join("#{grammar_file_name}_parser.rb")
 
-    status = system "racc #{Shellwords.escape parser_src_file_path} " +
-                    "  -o #{Shellwords.escape parser_out_file_path}"
-    error "Failed to run `racc` for `#{parser_src_file_path}`." unless status
+    status = system("racc #{Shellwords.escape parser_src_file_path} " +
+                    "  -o #{Shellwords.escape parser_out_file_path}")
+    error("Failed to run `racc` for `#{parser_src_file_path}`.") unless status
     additional_sources << lexer_src_file_path
     additional_sources << parser_out_file_path
   end
 
-  if additional_sources.length > 0
-    grammar_start_index = build_cfg["sources"].find_index GRAMMARS_SOURCE_NAME
-    unless grammar_start_index
-      error "Cannot find `grammar` in `sources` element in `build-cfg.yaml`."
-    end
-    build_cfg["sources"].insert grammar_start_index, *additional_sources
-    build_cfg["sources"].delete GRAMMARS_SOURCE_NAME
+  unless additional_sources.empty?
+    grammar_start_index = build_cfg["sources"].find_index(GRAMMARS_SOURCE_NAME)
+    error "Cannot find `grammar` in `sources` element in `build-cfg.yaml`." \
+      unless grammar_start_index
+    build_cfg["sources"].insert(grammar_start_index, *additional_sources)
+    build_cfg["sources"].delete(GRAMMARS_SOURCE_NAME)
   end
 end
 
@@ -103,22 +104,22 @@ desc "Build Fizzy"
 task :build do
   build_cfg = prepare_build
 
-  info "Build started"
+  info("Build started")
 
-  # ☛ Build grammars.
-  build_grammars build_cfg
+  # ☞ Build grammars.
+  build_grammars(build_cfg)
 
-  # ☛ Write preamble.
-  write_bin "HashBang", build_cfg["hashbang"], newlines: 2
-  write_bin "Header",   build_cfg["header"],   newlines: 1
+  # ☞ Write preamble.
+  write_bin("HashBang", build_cfg["hashbang"], newlines: 2)
+  write_bin("Header",   build_cfg["header"],   newlines: 1)
 
-  # ☛ Write source files content.
+  # ☞ Write source files content.
   build_cfg["sources"].each do |src_file_name|
-    src_file_path = Pathname.new src_file_name
+    src_file_path = Pathname.new(src_file_name)
     if src_file_path.absolute?
-      src_file_name = src_file_path.basename src_file_path.extname
+      src_file_name = src_file_path.basename(src_file_path.extname)
     else
-      src_file_path = SRC_PATH.join "#{src_file_path}.rb"
+      src_file_path = SRC_PATH.join("#{src_file_path}.rb")
     end
     src_file_name = src_file_name.to_s
 
@@ -126,21 +127,24 @@ task :build do
       split("/").join(" → ").
       split("_").join(" ").
       split(/(\s+(?:\S+\s+)?)/).map { |e| e.capitalize }.join
-    write_bin "Separator for section `#{src_file_name}`",
+    write_bin("Separator for section `#{src_file_name}`",
               "# ☞ #{section_title} ".ljust(80, "━"),
-              newlines: [1, 2]
-    write_bin "Content of file `#{src_file_name}`", src_file_path.read
+              newlines: [1, 2])
+    write_bin("Content of file `#{src_file_name}`", src_file_path.read)
   end
 
-  # ☛ Cleanup temporary files.
+  # ☞ Cleanup temporary files.
   build_cfg["sources"].
     select { |name|     name.to_s =~ /^#{TMP_PATH.to_s}/ }.
     each   { |tmp_file| tmp_file.delete                  }
 
-  # ☛ Set executable permissions.
+  # ☞ Set executable permissions.
   BIN_PATH.chmod 0775
 
-  info "Build successfully completed", success: true
+  # ☞ Link to a `.rb` file (mainly used for testing purposes).
+  BIN_RB_PATH.make_symlink(BIN_PATH)
+
+  info("Build successfully completed", success: true)
 end
 
 # Task `run` ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -153,10 +157,18 @@ task :run => :build do |t, args|
   args = args.map { |arg| Shellwords.escape(arg) }.join(" ")
 
   if args.empty?
-    exec cmd
+    exec(cmd)
   else
-    exec cmd, *args
+    exec(cmd, *args)
   end
+end
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Task `console` ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+task :console => :build do
+  system("irb -I . -r build/fizzy")
 end
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

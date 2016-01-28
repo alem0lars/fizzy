@@ -1,30 +1,35 @@
 class Fizzy::LogicParser
 
-  token FEATURE VARIABLE VALUE
+  token EQ AND OR LBRACKET RBRACKET
+        FEATURE_PREFIX FEATURE_NAME
+        VAR_PREFIX VAR_NAME
+        VALUE
 
   prechigh
-    left '&&'
-    left '||'
+    left AND
+    left OR
   preclow
 
 rule
 
   target: exp
 
-  exp: exp '&&' exp            { result &&= val[2]                    }
-     | exp '||' exp            { result ||= val[2]                    }
-     | '(' exp ')'             { result   = val[1]                    }
-     | 'f?' FEATURE            { result   = has_feature?(val[1])      }
-     | 'v?' VARIABLE           { result   = !get_var(val[1]).nil?     }
-     | 'v?' VARIABLE '=' VALUE { result   = get_var(val[1]) == val[3] }
+  exp: LBRACKET exp RBRACKET { result = val[1] }
+
+     | exp AND exp { result &&= val[2] }
+     | exp OR exp  { result ||= val[2] }
+
+     | FEATURE_PREFIX FEATURE_NAME  { result = @rcv.has_feature?(val[1])      }
+     | VAR_PREFIX VAR_NAME          { result = @rcv.!get_var(val[1]).nil?     }
+     | VAR_PREFIX VAR_NAME EQ VALUE { result = @rcv.get_var(val[1]) == val[3] }
 
 end
 
 ---- inner
 
-  def parse(arg)
-    @lexer = Fizzy::LogicLexer.new
-    @lexer.start(arg)
+  def parse(receiver, arg)
+    @rcv = receiver
+    @lexer = Fizzy::LogicLexer.new(arg)
     do_parse
   end
 

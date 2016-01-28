@@ -11,11 +11,16 @@ class Fizzy::LogicLexer < Fizzy::BaseLexer
     token(/\(/,   :LBRACKET)
     token(/\)/,   :RBRACKET)
 
-    tokens(/(f\?)(\w+)/, :FEATURE_PREFIX, :FEATURE_NAME)
-
-    tokens(/(v\?)([\w](?:[._-][\w]+)*)/, :VAR_PREFIX, :VAR_NAME)
+    tokens(/(f\?)(#{name_with("-_")})/,  :FEATURE_PREFIX, :FEATURE_NAME)
+    tokens(/(v\?)(#{name_with("-_.")})/, :VAR_PREFIX,     :VAR_NAME)
 
     token(/.+/, :VALUE) # Anything that would otherwise not match is a value.
+  end
+
+private
+
+  def name_with(symbols)
+    /\w+(?:[#{symbols}]\w+)*/
   end
 
 end

@@ -76,14 +76,15 @@ def prepare_build
   build_cfg = YAML.load_file(BUILD_CFG_PATH.to_s)
 
   info("Build successfully prepared", success: true)
-  return build_cfg
+
+  build_cfg
 end
 
 def build_grammars(build_cfg)
   additional_sources = []
 
   build_cfg["grammars"].each do |grammar_file_name|
-    info "Building grammar `#{grammar_file_name}`.", indent: 1
+    info("Building grammar `#{grammar_file_name}`.", indent: 1)
     parser_src_file_path = GRAMMARS_PATH.join(grammar_file_name, "parser.y")
     lexer_src_file_path  = GRAMMARS_PATH.join(grammar_file_name, "lexer.rb")
     parser_out_file_path = TMP_PATH.join("#{grammar_file_name}_parser.rb")

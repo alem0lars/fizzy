@@ -28,6 +28,8 @@ end
 ---- inner
 
   def parse(receiver, arg)
+    @yydebug = Fizzy::CFG.debug
+    puts @yydebug
     @rcv = receiver
     @lexer = Fizzy::LogicLexer.new(arg)
     do_parse

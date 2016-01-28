@@ -1,6 +1,7 @@
 module Fizzy::Vars
 
   include Fizzy::IO
+  include Fizzy::Filesystem
 
   attr_reader :vars
 
@@ -146,10 +147,12 @@ module Fizzy::Vars
   end
 
   def _read_vars(vars_dir_path, name)
-    yaml_file_path = find_yaml_path(File.join(vars_dir_path, name))
+    yaml_file_path = find_yaml_path(File.join(vars_dir_path, name)) \
+      unless vars_dir_path.nil? || name.nil?
+
     if yaml_file_path
       [:yaml, File.read(yaml_file_path)]
-    elsif ENV.has_key?(name)
+    elsif !name.nil? && ENV.has_key?(name)
       [:json, ENV[name]]
     else
       [nil, nil]

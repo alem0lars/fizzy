@@ -48,6 +48,7 @@ require "json"
 require "net/http"
 require "ostruct"
 require "pathname"
+require "securerandom"
 require "shellwords"
 require "strscan"
 require "uri"
@@ -72,6 +73,9 @@ Fizzy::CFG = OpenStruct.new
 
 # Default editor.
 Fizzy::CFG.editor = ENV["EDITOR"] || "vim"
+
+# Debug mode.
+Fizzy::CFG.debug = ENV["FIZZY_DEBUG"] =~ /^(?:true|yes)$/
 
 # The operating-system which fizzy is running on.
 Fizzy::CFG.os = case RUBY_PLATFORM
@@ -333,10 +337,12 @@ require 'racc/parser.rb'
 module Fizzy
   class LogicParser < Racc::Parser
 
-module_eval(<<'...end parser.y/module_eval...', 'parser.y', 31)
+module_eval(<<'...end parser.y/module_eval...', 'parser.y', 29)
 
   def parse(receiver, arg)
-    @receiver = receiver
+    @yydebug = Fizzy::CFG.debug
+    puts @yydebug
+    @rcv = receiver
     @lexer = Fizzy::LogicLexer.new(arg)
     do_parse
   end
@@ -445,7 +451,7 @@ Racc_token_to_s_table = [
   "target",
   "exp" ]
 
-Racc_debug_parser = false
+Racc_debug_parser = true
 
 ##### State transition tables end #####
 
@@ -476,22 +482,21 @@ module_eval(<<'.,.,', 'parser.y', 19)
 
 module_eval(<<'.,.,', 'parser.y', 21)
   def _reduce_5(val, _values, result)
-     result = receiver.has_feature?(val[1])  
+     result = @rcv.has_feature?(val[1])      
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 22)
   def _reduce_6(val, _values, result)
-     result = receiver.!get_var(val[1]).nil? 
+     result = @rcv.!get_var(val[1]).nil?     
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 24)
+module_eval(<<'.,.,', 'parser.y', 23)
   def _reduce_7(val, _values, result)
-           result = receiver.get_var(val[1]) == val[3]
-     
+     result = @rcv.get_var(val[1]) == val[3] 
     result
   end
 .,.,
@@ -854,6 +859,7 @@ end
 module Fizzy::Vars
 
   include Fizzy::IO
+  include Fizzy::Filesystem
 
   attr_reader :vars
 
@@ -999,10 +1005,12 @@ module Fizzy::Vars
   end
 
   def _read_vars(vars_dir_path, name)
-    yaml_file_path = find_yaml_path(File.join(vars_dir_path, name))
+    yaml_file_path = find_yaml_path(File.join(vars_dir_path, name)) \
+      unless vars_dir_path.nil? || name.nil?
+
     if yaml_file_path
       [:yaml, File.read(yaml_file_path)]
-    elsif ENV.has_key?(name)
+    elsif !name.nil? && ENV.has_key?(name)
       [:json, ENV[name]]
     else
       [nil, nil]

@@ -3,12 +3,16 @@
 require "pathname"
 require "yaml"
 require "shellwords"
+require "rake/testtask"
 
 # Configuration ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEBUG = ENV["FIZZY_DEBUG"] == "true"
 
 ROOT_PATH     = Pathname.new(File.dirname(__FILE__))
 BUILD_PATH    = ROOT_PATH.join("build")
 TMP_PATH      = ROOT_PATH.join("tmp")
+TEST_PATH     = ROOT_PATH.join("test")
 SRC_PATH      = ROOT_PATH.join("src")
 GRAMMARS_PATH = SRC_PATH.join("grammars")
 
@@ -84,8 +88,9 @@ def build_grammars(build_cfg)
     lexer_src_file_path  = GRAMMARS_PATH.join(grammar_file_name, "lexer.rb")
     parser_out_file_path = TMP_PATH.join("#{grammar_file_name}_parser.rb")
 
-    status = system("racc #{Shellwords.escape parser_src_file_path} " +
-                    "  -o #{Shellwords.escape parser_out_file_path}")
+    status = system("racc " + (DEBUG ? "-g " : "") +
+                    "   #{Shellwords.escape parser_src_file_path} " +
+                    "-o #{Shellwords.escape parser_out_file_path}")
     error("Failed to run `racc` for `#{parser_src_file_path}`.") unless status
     additional_sources << lexer_src_file_path
     additional_sources << parser_out_file_path
@@ -161,6 +166,16 @@ task :run => :build do |t, args|
   else
     exec(cmd, *args)
   end
+end
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Task `test` ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rake::TestTask.new do |t|
+  t.libs += [BUILD_PATH, TEST_PATH]
+  t.test_files = FileList[TEST_PATH.join("test_*.rb")]
+  t.verbose = true
 end
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -3,6 +3,9 @@ Fizzy::CFG = OpenStruct.new
 # Default editor.
 Fizzy::CFG.editor = ENV["EDITOR"] || "vim"
 
+# Debug mode.
+Fizzy::CFG.debug = ENV["FIZZY_DEBUG"] =~ /^(?:true|yes)$/
+
 # The operating-system which fizzy is running on.
 Fizzy::CFG.os = case RUBY_PLATFORM
                 when /darwin/ then :osx

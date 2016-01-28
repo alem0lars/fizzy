@@ -41,13 +41,28 @@ module Fizzy::IO
     end
   end
 
+  def debug(msg)
+    caller_info = caller.
+      map { |c| c[/`.*'/][1..-2].split(" ").first }.
+      uniq[0..2].
+      join(" → ")
+
+    tell(colorize("⚫ ", :magenta) +
+         colorize("<", :blue) +
+         colorize(caller_info, :cyan) +
+         colorize(">", :blue) +
+         colorize(": #{msg}", :white)) if Fizzy::CFG.debug
+  end
+
   # Display an informative message (`msg`) to the user.
   #
   # The `prefix` argument should contain some text displayed before the
   # message, typically to show the context which the message belongs to.
   #
   def info(prefix, msg)
-    tell("☞ #{colorize(prefix, :cyan)}#{colorize(msg, :white)}")
+    tell(colorize("☞ ", :magenta) +
+         colorize(prefix, :cyan) +
+         colorize(" #{msg}", :white))
   end
 
   # Display an informative message (`msg`) to the user.
@@ -56,16 +71,17 @@ module Fizzy::IO
   # the program or exit (with exit status `-1`).
   #
   def warning(msg, ask_continue: true)
-    tell("⚠ #{msg}", :yellow)
+    tell(colorize("☞ ", :magenta) + colorize(msg, :yellow))
     exit(-1) if ask_continue && !quiz("continue")
   end
 
   # Display an error message (`msg`) to the user. Before returning, the
   # program will exit (with exit status `-1`).
   #
-  def error(msg)
-    tell("☠ #{msg}", :red)
-    exit(-1)
+  def error(msg, status: -1)
+    error("Invalid status code `#{status}`: it's not negative") if status >= 0
+    tell(colorize("☠ ", :magenta) + colorize(msg, :red))
+    exit(status)
   end
 
   # Tell something to the user.

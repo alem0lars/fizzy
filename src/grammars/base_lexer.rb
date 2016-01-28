@@ -38,6 +38,7 @@ private
     @tokens = []
     @tokens += find_tokens until @base.empty?
     @tokens << [false, false] # Last token, meaning EOS.
+    debug("Built tokens: `#{@tokens}`.")
   end
 
   def find_tokens

@@ -192,13 +192,28 @@ module Fizzy::IO
     end
   end
 
+  def debug(msg)
+    caller_info = caller.
+      map { |c| c[/`.*'/][1..-2].split(" ").first }.
+      uniq[0..2].
+      join(" → ")
+
+    tell(colorize("⚫ ", :magenta) +
+         colorize("<", :blue) +
+         colorize(caller_info, :cyan) +
+         colorize(">", :blue) +
+         colorize(": #{msg}", :white)) if Fizzy::CFG.debug
+  end
+
   # Display an informative message (`msg`) to the user.
   #
   # The `prefix` argument should contain some text displayed before the
   # message, typically to show the context which the message belongs to.
   #
   def info(prefix, msg)
-    tell("☞ #{colorize(prefix, :cyan)}#{colorize(msg, :white)}")
+    tell(colorize("☞ ", :magenta) +
+         colorize(prefix, :cyan) +
+         colorize(" #{msg}", :white))
   end
 
   # Display an informative message (`msg`) to the user.
@@ -207,16 +222,17 @@ module Fizzy::IO
   # the program or exit (with exit status `-1`).
   #
   def warning(msg, ask_continue: true)
-    tell("⚠ #{msg}", :yellow)
+    tell(colorize("☞ ", :magenta) + colorize(msg, :yellow))
     exit(-1) if ask_continue && !quiz("continue")
   end
 
   # Display an error message (`msg`) to the user. Before returning, the
   # program will exit (with exit status `-1`).
   #
-  def error(msg)
-    tell("☠ #{msg}", :red)
-    exit(-1)
+  def error(msg, status: -1)
+    error("Invalid status code `#{status}`: it's not negative") if status >= 0
+    tell(colorize("☠ ", :magenta) + colorize(msg, :red))
+    exit(status)
   end
 
   # Tell something to the user.
@@ -277,6 +293,7 @@ private
     @tokens = []
     @tokens += find_tokens until @base.empty?
     @tokens << [false, false] # Last token, meaning EOS.
+    debug("Built tokens: `#{@tokens}`.")
   end
 
   def find_tokens
@@ -316,11 +333,16 @@ class Fizzy::LogicLexer < Fizzy::BaseLexer
     token(/\(/,   :LBRACKET)
     token(/\)/,   :RBRACKET)
 
-    tokens(/(f\?)(\w+)/, :FEATURE_PREFIX, :FEATURE_NAME)
-
-    tokens(/(v\?)([\w](?:[._-][\w]+)*)/, :VAR_PREFIX, :VAR_NAME)
+    tokens(/(f\?)(#{name_with("-_")})/,  :FEATURE_PREFIX, :FEATURE_NAME)
+    tokens(/(v\?)(#{name_with("-_.")})/, :VAR_PREFIX,     :VAR_NAME)
 
     token(/.+/, :VALUE) # Anything that would otherwise not match is a value.
+  end
+
+private
+
+  def name_with(symbols)
+    /\w+(?:[#{symbols}]\w+)*/
   end
 
 end
@@ -334,22 +356,44 @@ end
 #
 
 require 'racc/parser.rb'
+
+
+  include Fizzy::IO
+
 module Fizzy
   class LogicParser < Racc::Parser
 
-module_eval(<<'...end parser.y/module_eval...', 'parser.y', 29)
+module_eval(<<'...end parser.y/module_eval...', 'parser.y', 33)
 
   def parse(receiver, arg)
     @yydebug = Fizzy::CFG.debug
-    puts @yydebug
     @rcv = receiver
     @lexer = Fizzy::LogicLexer.new(arg)
     do_parse
+    @res
   end
-
 
   def next_token
     @lexer.next_token
+  end
+
+private
+
+  def check_feature_avail(name)
+    @res = @rcv.has_feature?(name)
+    debug("Parsed feature `#{name}`: it's #{@res ? "" : "not "}available.")
+  end
+
+  def check_var_avail(name)
+    @res = !@rcv.get_var(name).nil?
+    debug("Parsed variable `#{name}` with value `#{@rcv.get_var(name)}`: " +
+          "it's #{@res ? "" : "not "}available.")
+  end
+
+  def check_var_value(name, expected_value)
+    @res = @rcv.get_var(name) == expected_value
+    debug("Parsed variable `#{name}` with value `#{@rcv.get_var(name)}`: " +
+          "it's #{@res ? "" : "not "}equal to `#{expected_value}`.")
   end
 
 # vim: set filetype=racc :
@@ -451,7 +495,7 @@ Racc_token_to_s_table = [
   "target",
   "exp" ]
 
-Racc_debug_parser = true
+Racc_debug_parser = false
 
 ##### State transition tables end #####
 
@@ -461,42 +505,42 @@ Racc_debug_parser = true
 
 module_eval(<<'.,.,', 'parser.y', 16)
   def _reduce_2(val, _values, result)
-     result = val[1] 
+     @res = val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 18)
   def _reduce_3(val, _values, result)
-     result &&= val[2] 
+     @res &&= val[2] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 19)
   def _reduce_4(val, _values, result)
-     result ||= val[2] 
+     @res ||= val[2] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 21)
   def _reduce_5(val, _values, result)
-     result = @rcv.has_feature?(val[1])      
+     check_feature_avail(val[1])     
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 22)
   def _reduce_6(val, _values, result)
-     result = @rcv.!get_var(val[1]).nil?     
+     check_var_avail(val[1])         
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 23)
   def _reduce_7(val, _values, result)
-     result = @rcv.get_var(val[1]) == val[3] 
+     check_var_value(val[1], val[3]) 
     result
   end
 .,.,

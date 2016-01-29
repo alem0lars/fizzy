@@ -264,7 +264,7 @@ class Fizzy::BaseLexer
   end
 
   def ignore(pattern)
-    @rules << [pattern, :SKIP]
+    @rules << [pattern, [:SKIP]]
   end
 
   def tokens(pattern, *names)
@@ -301,8 +301,8 @@ private
       matched_substring = @base.scan(pattern)
       unless matched_substring.nil?
         if @base[1].nil? # No captures, return the matched string.
-          error("Only one token (not `#{tokens.length}`) should be provided.") \
-            if tokens.length != 1
+          error("Only one token, not `#{tokens.length}` (`#{tokens}`) should " +
+                "be provided.") if tokens.length != 1
           return [[tokens.first, matched_substring]]
         else
           captures, base_idx = [], 0
@@ -347,6 +347,60 @@ private
 
 end
 
+# ☞ Evaluator ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class Fizzy::LogicEvaluator
+
+  include Fizzy::IO
+
+  attr_accessor :result
+
+  def initialize(receiver)
+    @receiver = receiver
+    @result   = nil
+  end
+
+  def result=(other)
+    @result = result
+    debug("Initialized `result` to `#{other}`.")
+  end
+
+  def and(other)
+    prev_result_value = @result
+    @result &&= other
+    debug("Performed logical `and` between previous value of result " +
+          "(`#{prev_result_value}`) and `#{other}`: operation evaluated " +
+          "to `#{@result}`.")
+  end
+
+  def or(other)
+    prev_result_value = @result
+    @result ||= other
+    debug("Performed logical `or` between previous value of result " +
+          "(`#{prev_result_value}`) and `#{other}`: operation evaluated " +
+          "to `#{@result}`.")
+  end
+
+  def has_feature?(name)
+    @result = @receiver.has_feature?(name)
+    debug("Parsed feature `#{name}`: it's #{@result ? "" : "not "}available.")
+  end
+
+  def has_variable?(name)
+    @result = !@receiver.get_var(name).nil?
+    debug("Parsed variable `#{name}` with value " +
+          "`#{@receiver.get_var(name)}`: " +
+          "it's #{@result ? "" : "not "}available.")
+  end
+
+  def variable_value?(name, expected_value)
+    @result = @receiver.get_var(name) == expected_value
+    debug("Parsed variable `#{name}` with value " +
+          "`#{@receiver.get_var(name)}`: " +
+          "it's #{@result ? "" : "not "}equal to `#{expected_value}`.")
+  end
+end
+
 # ☞ Logic Parser ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 #
@@ -356,44 +410,21 @@ end
 #
 
 require 'racc/parser.rb'
-
-
-  include Fizzy::IO
-
 module Fizzy
   class LogicParser < Racc::Parser
 
-module_eval(<<'...end parser.y/module_eval...', 'parser.y', 33)
+module_eval(<<'...end parser.y/module_eval...', 'parser.y', 29)
 
   def parse(receiver, arg)
     @yydebug = Fizzy::CFG.debug
-    @rcv = receiver
     @lexer = Fizzy::LogicLexer.new(arg)
+    @eval  = Fizzy::LogicEvaluator.new(receiver)
     do_parse
-    @res
+    @eval.result
   end
 
   def next_token
     @lexer.next_token
-  end
-
-private
-
-  def check_feature_avail(name)
-    @res = @rcv.has_feature?(name)
-    debug("Parsed feature `#{name}`: it's #{@res ? "" : "not "}available.")
-  end
-
-  def check_var_avail(name)
-    @res = !@rcv.get_var(name).nil?
-    debug("Parsed variable `#{name}` with value `#{@rcv.get_var(name)}`: " +
-          "it's #{@res ? "" : "not "}available.")
-  end
-
-  def check_var_value(name, expected_value)
-    @res = @rcv.get_var(name) == expected_value
-    debug("Parsed variable `#{name}` with value `#{@rcv.get_var(name)}`: " +
-          "it's #{@res ? "" : "not "}equal to `#{expected_value}`.")
   end
 
 # vim: set filetype=racc :
@@ -495,7 +526,7 @@ Racc_token_to_s_table = [
   "target",
   "exp" ]
 
-Racc_debug_parser = false
+Racc_debug_parser = true
 
 ##### State transition tables end #####
 
@@ -505,42 +536,42 @@ Racc_debug_parser = false
 
 module_eval(<<'.,.,', 'parser.y', 16)
   def _reduce_2(val, _values, result)
-     @res = val[1] 
+     @eval.result = val[1] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 18)
   def _reduce_3(val, _values, result)
-     @res &&= val[2] 
+     @eval.and(val[2]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 19)
   def _reduce_4(val, _values, result)
-     @res ||= val[2] 
+     @eval.or(val[2])  
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 21)
   def _reduce_5(val, _values, result)
-     check_feature_avail(val[1])     
+     @eval.has_feature?(val[1])            
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 22)
   def _reduce_6(val, _values, result)
-     check_var_avail(val[1])         
+     @eval.has_variable?(val[1])           
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 23)
   def _reduce_7(val, _values, result)
-     check_var_value(val[1], val[3]) 
+     @eval.variable_value?(val[1], val[3]) 
     result
   end
 .,.,

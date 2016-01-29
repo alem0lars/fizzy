@@ -83,18 +83,20 @@ end
 def build_grammars(build_cfg)
   additional_sources = []
 
-  build_cfg["grammars"].each do |grammar_file_name|
-    info("Building grammar `#{grammar_file_name}`.", indent: 1)
-    parser_src_file_path = GRAMMARS_PATH.join(grammar_file_name, "parser.y")
-    lexer_src_file_path  = GRAMMARS_PATH.join(grammar_file_name, "lexer.rb")
-    parser_out_file_path = TMP_PATH.join("#{grammar_file_name}_parser.rb")
+  build_cfg["grammars"].each do |grammar_name|
+    info("Building grammar `#{grammar_name}`.", indent: 1)
+    parser_src_path = GRAMMARS_PATH.join(grammar_name, "parser.y")
+    lexer_path  = GRAMMARS_PATH.join(grammar_name, "lexer.rb")
+    evaluator_path  = GRAMMARS_PATH.join(grammar_name, "evaluator.rb")
+    parser_out_path = TMP_PATH.join("#{grammar_name}_parser.rb")
 
     status = system("racc " + (DEBUG ? "-g " : "") +
-                    "   #{Shellwords.escape parser_src_file_path} " +
-                    "-o #{Shellwords.escape parser_out_file_path}")
-    error("Failed to run `racc` for `#{parser_src_file_path}`.") unless status
-    additional_sources << lexer_src_file_path
-    additional_sources << parser_out_file_path
+                    "   #{Shellwords.escape parser_src_path} " +
+                    "-o #{Shellwords.escape parser_out_path}")
+    error("Failed to run `racc` for `#{parser_src_path}`.") unless status
+    additional_sources << lexer_path if lexer_path.file?
+    additional_sources << evaluator_path if evaluator_path.file?
+    additional_sources << parser_out_path
   end
 
   unless additional_sources.empty?
@@ -155,7 +157,7 @@ end
 
 # Task `run` ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-task :run => :build do |t, args|
+task run: :build do |t, args|
   args = ARGV[1..-1]
   args.each { |a| task a.to_sym do ; end } # Prevent unknown task errors.
 
@@ -179,11 +181,13 @@ Rake::TestTask.new do |t|
   t.verbose = true
 end
 
+task test: :build
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Task `console` ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-task :console => :build do
+task console: :build do
   system("irb -I . -r build/fizzy")
 end
 

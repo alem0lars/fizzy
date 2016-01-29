@@ -2,20 +2,30 @@ require "helper"
 
 class Fizzy::Tests::LogicGrammar < Test::Unit::TestCase
 
-  def test_simple_feature_success
-    @available_features.each { |feature| assert_parse("f?#{feature}") }
-  end
+  # def test_simple_feature_success
+  #   @available_features.each { |feature| assert_parse("f?#{feature}") }
+  # end
 
-  def test_simple_feature_failure
-    @unavailable_features.each { |feature| assert_not_parse("f?#{feature}") }
-  end
+  # def test_simple_feature_failure
+  #   @unavailable_features.each { |feature| assert_not_parse("f?#{feature}") }
+  # end
 
-  def test_simple_variable_success
-    @available_variables.each { |variable| assert_parse("v?#{variable}") }
-  end
+  # def test_simple_variable_success
+  #   @available_variables.each { |variable| assert_parse("v?#{variable}") }
+  # end
 
-  def test_simple_variable_failure
-    @unavailable_variables.each { |variable| assert_not_parse("v?#{variable}") }
+  # def test_simple_variable_failure
+  #   @unavailable_variables.each { |variable| assert_not_parse("v?#{variable}") }
+  # end
+
+  # def test_combined_features_success
+  #   assert_parse("f?#{@available_features.sample} && f?#{@available_features.sample}")
+  #   assert_parse("f?#{@unavailable_features.sample} || f?#{@available_features.sample}")
+  # end
+
+  def test_combined_features_failure
+    assert_not_parse("f?#{@unavailable_features.sample} && f?#{@available_features.sample}")
+  #  assert_not_parse("f?#{@unavailable_features.sample} || f?#{@unavailable_features.sample}")
   end
 
   def setup
@@ -23,8 +33,8 @@ class Fizzy::Tests::LogicGrammar < Test::Unit::TestCase
 
     @vars_mock = Fizzy::Mocks::Vars.new({
       "arte"        => "agility",
-      "arti"   => "agility",
-      "balpha"  => "strength",
+      "arti"        => "agility",
+      "balpha"      => "strength",
       "doc-rep"     => "intelligence",
       "flint_beast" => "agility",
       "keep-of_the" => {

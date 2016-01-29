@@ -9,7 +9,7 @@ class Fizzy::BaseLexer
   end
 
   def ignore(pattern)
-    @rules << [pattern, :SKIP]
+    @rules << [pattern, [:SKIP]]
   end
 
   def tokens(pattern, *names)
@@ -46,8 +46,8 @@ private
       matched_substring = @base.scan(pattern)
       unless matched_substring.nil?
         if @base[1].nil? # No captures, return the matched string.
-          error("Only one token (not `#{tokens.length}`) should be provided.") \
-            if tokens.length != 1
+          error("Only one token, not `#{tokens.length}` (`#{tokens}`) should " +
+                "be provided.") if tokens.length != 1
           return [[tokens.first, matched_substring]]
         else
           captures, base_idx = [], 0

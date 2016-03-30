@@ -63,6 +63,7 @@ module Fizzy::Git
 
   def git_clone(url, dst_path, recursive: true)
     error("Invalid url: can't be empty.") if url.nil?
+    url = git_normalize_url(url)
     tell("Syncing from remote repo: `#{url}`.", :blue)
 
     cmd  = "git clone"
@@ -126,6 +127,26 @@ module Fizzy::Git
     end
 
     exec_cmd(cmd, as_su: !existing_dir(Dir.pwd))
+  end
+
+  def git_normalize_url(url, default_protocol: "ssh")
+    protocols = %w(https ssh)
+    regexp = %r{
+      ^
+      (?<protocol>#{protocols.map{|p| "#{p}:"}.join("|")})?
+      (?<username>[a-z0-9\-_]+)
+      \/
+      (?<repository>[a-z0-9\-_]+)
+      $
+    }xi
+    md = url.match(regexp)
+    return url unless md
+    case md[:protocol] || default_protocol
+    when "ssh"   then "git@github.com:#{md[:username]}/#{md[:repository]}"
+    when "https" then "https://github.com/#{md[:username]}/#{md[:repository]}"
+    else error("Invalid protocol for `#{url}`: " +
+               "not in `[#{protocols.join(", ")}]`.")
+    end
   end
 
 end

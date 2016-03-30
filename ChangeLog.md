@@ -14,9 +14,10 @@
   `vars` or other stuff. It also serves as a sort of requirements specification
   for the current file.
 * Add grammars support, using `RACC` for writing parsers and `Fizzy::BaseLexer`
-for (regexp-based) lexers.
+  for (regexp-based) lexers.
 * Add grammar for logic expressions in `only` in `meta.yml`.
 * Add rake `console` task (with fizzy preloaded).
+* Allow to specify GitHub URLs using `username/reponame` shortcut.
 
 ## Current and previous versions
 

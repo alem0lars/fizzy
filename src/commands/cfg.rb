@@ -108,7 +108,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
   end
 
   method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:cfg_name))
+  method_option(*shared_option(:cfg_name, required: true))
   method_option(*shared_option(:cfg_url))
   desc("sync", "Synchronize the remote repository with the local one.")
   def sync

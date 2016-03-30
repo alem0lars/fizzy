@@ -140,7 +140,7 @@ task :build do
       split("_").join(" ").
       split(/(\s+(?:\S+\s+)?)/).map { |e| e.capitalize }.join
     write_bin("Separator for section `#{src_file_name}`",
-              "# ☞ #{section_title} ".ljust(80, "━"),
+              "# ☞ #{section_title} ".ljust(80, "─"),
               newlines: [1, 2])
     write_bin("Content of file `#{src_file_name}`", src_file_path.read)
   end

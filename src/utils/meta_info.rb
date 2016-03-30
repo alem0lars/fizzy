@@ -15,7 +15,8 @@ module Fizzy::MetaInfo
     meta = YAML.load(File.read(meta_path))
     meta["all_elems_count"] = meta["elems"].count
 
-    # Step 1: Normalize elements ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # ┌────────────────────────────────────────────────────────────────────────┐
+    # ├→ Step 1: Normalize elements ───────────────────────────────────────────┤
 
     elem_erb_excluded_fields = ["only"]
 
@@ -87,7 +88,8 @@ module Fizzy::MetaInfo
               "matches src: `#{elem["src"]}`.") unless found
     end
 
-    # Step 2: Normalize commands ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # ├────────────────────────────────────────────────────────────────────────┤
+    # ├→ Step 2: Normalize commands ───────────────────────────────────────────┤
 
     command_excluded_erb_fields = ["only"]
 
@@ -140,7 +142,7 @@ module Fizzy::MetaInfo
       selected ? spec : nil
     end.compact
 
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # └────────────────────────────────────────────────────────────────────────┘
 
     # Build the list of excluded files (needed by Thor's `directory()`).
     all_files = Set.new Find.find(elems_base_path).select { |f| File.file?(f) }

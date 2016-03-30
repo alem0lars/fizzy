@@ -18,6 +18,7 @@
 * Add grammar for logic expressions in `only` in `meta.yml`.
 * Add rake `console` task (with fizzy preloaded).
 * Allow to specify GitHub URLs using `username/reponame` shortcut.
+* Stronger paths checks in `prepare_storage`.
 
 ## Current and previous versions
 

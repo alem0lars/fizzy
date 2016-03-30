@@ -87,8 +87,6 @@ module Fizzy::MetaInfo
               "matches src: `#{elem["src"]}`.") unless found
     end
 
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
     # Step 2: Normalize commands ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     command_excluded_erb_fields = ["only"]

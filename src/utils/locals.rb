@@ -30,19 +30,16 @@ module Fizzy::Locals
 
     # Create a new `local` fetching the value from the corresponding `variable`.
     #
-    def variable(name, *args, **kwargs)
+    def variable(name, *args, **options)
       name = name.to_s.to_sym
-      error "Invalid local name `#{name}`: it's blank." if name.empty?
 
       # Read provided options.
-      type       = options.fetch(:type, nil)
-      local_name = options.fetch(:as,   name)
+      type       = options.fetch(:type,    nil)
+      local_name = options.fetch(:as,      name)
+      default    = options.fetch(:default, nil)
 
-      if optional
-        @locals[local_name] = receiver.get_var name, type: type
-      else
-        @locals[local_name] = receiver.get_var! name, type: type
-      end
+      local = receiver.get_var(name, type: type)
+      @locals[local_name] = local.nil? ? local : default
     end
 
     # Create a new computed `local`, based upon other locals.
@@ -73,7 +70,7 @@ module Fizzy::Locals
     # passing the locals' values.
     #
     def local?(*names, &block)
-      values = names.collect { |name| local(name) }
+      values = names.collect{|name| local(name)}
       are_locals_available = values.compact.length != values.length
       yield(*values) if are_locals_available
     end

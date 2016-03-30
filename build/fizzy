@@ -670,11 +670,12 @@ module Fizzy::Filesystem
   # Find a YAML file prefixed by `path` (guess extension name).
   #
   def find_yaml_path(path)
-    if File.file?(path)
+    if path.file?
       path
     else
       %w(yml yaml).map do |ext|
-        "#{path}.#{ext}" if File.file?("#{path}.#{ext}")
+        p = Pathname.new("#{path}.#{ext}")
+        p if p.file?
       end.compact.first
     end
   end
@@ -686,8 +687,8 @@ module Fizzy::Filesystem
   #
   def existing_dir(path, writable: true)
     dir_path = path
-    dir_path = File.dirname(dir_path) until File.directory?(dir_path)
-    (writable && !File.writable?(dir_path)) ? nil : dir_path
+    dir_path = dir_path.dirname until dir_path.directory?
+    (writable && !dir_path.writable?) ? nil : dir_path
   end
 
   # Return an object (`OpenStruct`), which contains all of the well-known
@@ -697,19 +698,20 @@ module Fizzy::Filesystem
   # points to a correct thing.
   #
   # You can skip some validations and filling some paths:
-  # - `valid_cfg`: If `false` don't validate and fill paths related to the
-  #                configuration.
+  # - `valid_cfg`:
+  #   - If `false` don't validate and fill paths related to the configuration.
+  #   - If `readonly`, don't validate writability for configuration.
   # - `valid_inst`:
   #   - If `false` don't validate and fill paths related to the configuration
   #     instances.
   #   - If `true`, be sure to provide the argument `cur_inst_name`, which
   #     should contain the name of the current instance (the instance that
   #     should be used).
+  #   - If `readonly`, don't validate writability for instance.
   #
   def prepare_storage(root_path,
                       valid_meta: true, valid_cfg: true, valid_inst: true,
-                      meta_name: nil, cur_cfg_name: nil, cur_inst_name: nil,
-                      readonly: false)
+                      meta_name: nil, cur_cfg_name: nil, cur_inst_name: nil)
     root_path = Pathname.new(root_path).expand_path
 
     # Paths based on internal conventions.
@@ -739,7 +741,9 @@ module Fizzy::Filesystem
       end
     end
 
-    if !valid_cfg && root_path.directory? && !root_path.writable?
+    # XXX This check is for preventing errors when we don't want to create the
+    #     directory structure. Should we add a dedicate argument?
+    if !valid_cfg && !valid_inst && root_path.directory? && !root_path.writable?
       error("No write permissions in Fizzy storage at path `#{root_path}`.")
     end
 
@@ -748,9 +752,9 @@ module Fizzy::Filesystem
         error("The Fizzy root directory `#{root_path}` doesn't exist " +
               "(maybe you need to run: `fizzy cfg sync`).")
       end
-      if cur_cfg_path.nil? || !cur_cfg_path.directory? || !(readonly || cur_cfg_path.writable?)
+      if cur_cfg_path.nil? || !cur_cfg_path.directory? || !(valid_cfg == :readonly || cur_cfg_path.writable?)
         error("The current configuration `#{cur_cfg_name}` is invalid: " +
-              "it's not a valid (writable) directory.")
+              "it's not a valid directory.")
       end
       if valid_meta && (cur_cfg_meta_path.nil? || !cur_cfg_meta_path.file?)
         error("The meta file path `#{cur_cfg_meta_path}` is invalid.")
@@ -765,9 +769,9 @@ module Fizzy::Filesystem
         error("The Fizzy root directory `#{root_path}` doesn't exist " +
               "(maybe you need to run: `fizzy cfg sync`).")
       end
-      if cur_inst_path.nil? || !cur_inst_path.directory? || !(readonly || cur_inst_path.writable?)
+      if cur_inst_path.nil? || !cur_inst_path.directory? || !(valid_inst == :readonly || cur_inst_path.writable?)
         error("The current instance `#{cur_inst_name}` is invalid: it's " +
-              "not a valid (writable) directory.")
+              "not a valid directory.")
       end
       if valid_meta && (cur_inst_meta_path.nil? || !cur_inst_meta_path.file?)
         error("The meta file path `#{cur_inst_meta_path}` is invalid.")
@@ -1117,8 +1121,9 @@ module Fizzy::Vars
   end
 
   def _read_vars(vars_dir_path, name)
-    yaml_file_path = find_yaml_path(File.join(vars_dir_path, name)) \
-      unless vars_dir_path.nil? || name.nil?
+    unless vars_dir_path.nil? || name.nil?
+      yaml_file_path = find_yaml_path(vars_dir_path.join(name))
+    end
 
     if yaml_file_path
       [:yaml, File.read(yaml_file_path)]
@@ -1405,7 +1410,7 @@ module Fizzy::MetaInfo
         each do |subfile_path|
 
         subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
-          Pathname.new(elems_base_path)).to_s
+                           Pathname.new(elems_base_path)).to_s
         if md = Regexp.new(elem["src"]).match(subfile_rel_path.gsub(/\.tt$/, ''))
           found = true
           dst_path = elem["dst"].gsub(/<([0-9]+)>/) do
@@ -1418,8 +1423,8 @@ module Fizzy::MetaInfo
             end
           end
           elem["fs_maps"] << {
-            "src_path" => File.expand_path(subfile_path),
-            "dst_path" => File.expand_path(dst_path)
+            "src_path" => Pathname.new(subfile_path).expand_path,
+            "dst_path" => Pathname.new(dst_path).expand_path
           }
         end
       end
@@ -1484,15 +1489,16 @@ module Fizzy::MetaInfo
 
     # └────────────────────────────────────────────────────────────────────────┘
 
-    # Build the list of excluded files (needed by Thor's `directory()`).
-    all_files = Set.new Find.find(elems_base_path).select { |f| File.file?(f) }
+    # Build the list of excluded files (needed by thor's `directory()`).
+    all_files = Set.new(Find.find(elems_base_path)
+                            .map{|f| Pathname.new(f).expand_path}
+                            .select{|f| f.file?})
     src_paths = Set.new(
       meta["elems"].collect_concat do |elem|
-        elem["fs_maps"].collect { |m| m["src_path"] }
-      end
-    )
-    vars_files = Dir.glob(File.join(vars_path, "*"), File::FNM_DOTMATCH)
-    meta["system_files"]    = Set.new vars_files << meta_path
+        elem["fs_maps"].map{|m| m["src_path"]}
+      end)
+    vars_files = Pathname.glob(vars_path.join("*"), File::FNM_DOTMATCH)
+    meta["system_files"]    = Set.new(vars_files << meta_path)
     meta["excluded_files"]  = all_files - src_paths - meta["system_files"]
     meta["all_files_count"] = all_files.count
 
@@ -1558,12 +1564,12 @@ module Fizzy::MetaElements
   def elements_appliers
     [ lambda { |elem| # Create parent directories.
         elem["fs_maps"].each do |m|
-          parent_dir = File.dirname(m["dst_path"])
+          parent_dir = m["dst_path"].dirname
           if elem.has_key?("perms")
             l_ex_dir_path = f_noex_dir_path = parent_dir
-            while !File.directory?(l_ex_dir_path)
+            while !l_ex_dir_path.directory?
               f_noex_dir_path = l_ex_dir_path
-              l_ex_dir_path   = File.dirname(l_ex_dir_path)
+              l_ex_dir_path   = l_ex_dir_path.dirname
             end
           else
             l_ex_dir_path = f_noex_dir_path = nil
@@ -1573,7 +1579,7 @@ module Fizzy::MetaElements
           #                    directory.
           # - `f_noex_dir_path`: Path of the first directory after the prefix
           #                      which points to an existing dir.
-          if !File.directory?(parent_dir)
+          if !parent_dir.directory?
             exec_cmd("mkdir -p #{Shellwords.escape(parent_dir)}",
                      as_su: !existing_dir(parent_dir))
           end
@@ -1583,20 +1589,19 @@ module Fizzy::MetaElements
         elem["fs_maps"].each do |m|
           tell("  #{m["src_path"]} ← #{m["dst_path"]}") if @verbose
           cmd = "ln -s"
-          should_link = if File.file?(m["dst_path"])
-            dst_real_path = Pathname.new(m["dst_path"]).realpath.to_s
-            if dst_real_path != m["src_path"]
+          should_link = if m["dst_path"].file?
+            if m["dst_path"].realpath != m["src_path"]
               cmd << " -f"
               quiz("The destination file `#{m["dst_path"]}` already " +
                    "exists. Overwrite")
             else
               false
             end
-          elsif File.directory?(m["dst_path"])
+          elsif m["dst_path"].directory?
             if quiz("The destination file `#{m["dst_path"]}` is a " +
                     "directory. Delete it")
               exec_cmd("rm -Rf #{m["dst_path"]}",
-                       as_su: !existing_dir(File.dirname(m["dst_path"])))
+                       as_su: !existing_dir(m["dst_path"].dirname))
             end
           else
             # Link does not exist yet.
@@ -1606,7 +1611,7 @@ module Fizzy::MetaElements
           if should_link
             cmd << " #{Shellwords.escape m["src_path"]}"
             cmd << " #{Shellwords.escape m["dst_path"]}"
-            exec_cmd(cmd, as_su: !existing_dir(File.dirname(m["dst_path"])))
+            exec_cmd(cmd, as_su: !existing_dir(m["dst_path"].dirname))
           end
         end
       },
@@ -1731,9 +1736,9 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     # Prepare paths before considering details.
     paths = prepare_storage(options.fizzy_dir,
                             valid_meta: false,
+                            valid_cfg:  :readonly,
                             valid_inst: false,
-                            cur_cfg_name: options.cfg_name,
-                            readonly: true)
+                            cur_cfg_name: options.cfg_name)
     # Print details.
     tell("Available variable files:", :cyan)
     avail_vars(paths.cur_cfg_vars).each do |path|
@@ -1890,6 +1895,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     # Before instantiation.
     paths = prepare_storage(options.fizzy_dir,
                             meta_name:     options.meta_name,
+                            valid_cfg:     :readonly,
                             valid_inst:    false,
                             cur_cfg_name:  options.cfg_name,
                             cur_inst_name: options.inst_name)

@@ -11,9 +11,9 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     # Prepare paths before considering details.
     paths = prepare_storage(options.fizzy_dir,
                             valid_meta: false,
+                            valid_cfg:  :readonly,
                             valid_inst: false,
-                            cur_cfg_name: options.cfg_name,
-                            readonly: true)
+                            cur_cfg_name: options.cfg_name)
     # Print details.
     tell("Available variable files:", :cyan)
     avail_vars(paths.cur_cfg_vars).each do |path|
@@ -170,6 +170,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     # Before instantiation.
     paths = prepare_storage(options.fizzy_dir,
                             meta_name:     options.meta_name,
+                            valid_cfg:     :readonly,
                             valid_inst:    false,
                             cur_cfg_name:  options.cfg_name,
                             cur_inst_name: options.inst_name)

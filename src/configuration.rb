@@ -1,5 +1,8 @@
 Fizzy::CFG = OpenStruct.new
 
+# URL for reporting fizzy issues.
+Fizzy::CFG.issues_url = "https://github.com/alem0lars/fizzy/issues"
+
 # Default editor.
 Fizzy::CFG.editor = ENV["EDITOR"] || "vim"
 

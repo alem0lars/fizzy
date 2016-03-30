@@ -2,6 +2,9 @@ module Fizzy::Locals
 
   include Fizzy::IO
 
+  # Entry point for using the DSL defined by `Proxy` class.
+  # The DSL is directly accessible inside the provided block.
+  #
   def define_locals(&block)
     error("No requirements specification provided.") unless block_given?
     proxy = Fizzy::Locals::Proxy.new(self)
@@ -9,6 +12,8 @@ module Fizzy::Locals
     self.locals = proxy.locals
   end
 
+  # DSL used for defining locals.
+  #
   class Proxy
 
     include Fizzy::IO
@@ -19,6 +24,8 @@ module Fizzy::Locals
       @receiver = receiver
       @locals   = {}
     end
+
+    # DSL definition ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     # Create a new `local` fetching the value from the corresponding `variable`.
     #
@@ -69,6 +76,8 @@ module Fizzy::Locals
       are_locals_available = values.compact.length != values.length
       yield(*values) if are_locals_available
     end
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   end
 

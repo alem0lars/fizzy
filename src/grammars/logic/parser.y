@@ -29,8 +29,8 @@ end
 
   def parse(receiver, arg)
     @yydebug = Fizzy::CFG.debug
-    @lexer = Fizzy::LogicLexer.new(arg)
-    @eval  = Fizzy::LogicEvaluator.new(receiver)
+    @lexer   = Fizzy::LogicLexer.new(arg)
+    @eval    = Fizzy::LogicEvaluator.new(receiver)
     do_parse
     @eval.result
   end

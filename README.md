@@ -41,4 +41,4 @@ The dependencies are:
 Then you can drop [fizzy](./fizzy) everywhere (possibly in the system path) and
 make it executable.
 
-**Contributions are really welcome!**
+**Contributions are welcome!**

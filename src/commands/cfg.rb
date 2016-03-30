@@ -52,8 +52,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
   method_option(*shared_option(:fizzy_dir))
   method_option(*shared_option(:cfg_name))
-  desc("edit PATTERN",
-       "Find the files relative to PATTERN and edit them.")
+  desc("edit PATTERN", "Find the files relative to PATTERN and edit them.")
   def edit(pattern)
     # Prepare stuff for editing.
     paths = prepare_storage(options.fizzy_dir,
@@ -142,9 +141,23 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     end
   end
 
+
+
+  method_option(*shared_option(:fizzy_dir))
+  method_option(*shared_option(:cfg_name,  required: true))
+  desc("info", "Show informations about a configuration.")
+  def info
+    # Before considering informations
+    paths = prepare_storage(options.fizzy_dir,
+                            valid_inst: false,
+                            cur_cfg_name: options.cfg_name)
+    vars_names = avail_vars(paths.cur_cfg_vars).map{|p| p.basename}
+    info("Available variable files: `[#{vars_names.join(", ")}]`.")
+  end
+
   method_option(*shared_option(:verbose))
   method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:cfg_name, required: true))
+  method_option(*shared_option(:cfg_name,  required: true))
   method_option(*shared_option(:inst_name, required: true))
   method_option(*shared_option(:vars_name, required: true))
   method_option(*shared_option(:meta_name))

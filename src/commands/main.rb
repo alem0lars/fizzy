@@ -21,7 +21,7 @@ class Fizzy::MainCommand < Fizzy::BaseCommand
   method_option(*shared_option(:verbose))
   method_option(*shared_option(:run_mode))
   method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:cfg_name, required: true))
+  method_option(*shared_option(:cfg_name,  required: true))
   method_option(*shared_option(:inst_name, required: true))
   method_option(*shared_option(:vars_name, required: true))
   method_option(*shared_option(:meta_name))

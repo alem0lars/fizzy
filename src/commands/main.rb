@@ -27,14 +27,14 @@ class Fizzy::MainCommand < Fizzy::BaseCommand
   method_option(*shared_option(:meta_name))
   desc("quick-install", "Quickly install a configuration.")
   def quick_install
-    invoke(CfgCommand, "instantiate", [],
+    invoke(Fizzy::CfgCommand, "instantiate", [],
            cfg_name:  options.cfg_name,
            vars_name: options.vars_name,
            inst_name: options.inst_name,
            fizzy_dir: options.fizzy_dir,
            meta_name: options.meta_name,
            verbose:   options.verbose)
-    invoke(InstCommand, "install", [],
+    invoke(Fizzy::InstCommand, "install", [],
            vars_name: options.vars_name,
            inst_name: options.inst_name,
            fizzy_dir: options.fizzy_dir,

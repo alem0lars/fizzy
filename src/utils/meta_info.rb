@@ -65,7 +65,7 @@ module Fizzy::MetaInfo
         each do |subfile_path|
 
         subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
-          Pathname.new(elems_base_path)).to_s
+                           Pathname.new(elems_base_path)).to_s
         if md = Regexp.new(elem["src"]).match(subfile_rel_path.gsub(/\.tt$/, ''))
           found = true
           dst_path = elem["dst"].gsub(/<([0-9]+)>/) do
@@ -78,8 +78,8 @@ module Fizzy::MetaInfo
             end
           end
           elem["fs_maps"] << {
-            "src_path" => File.expand_path(subfile_path),
-            "dst_path" => File.expand_path(dst_path)
+            "src_path" => Pathname.new(subfile_path).expand_path,
+            "dst_path" => Pathname.new(dst_path).expand_path
           }
         end
       end
@@ -144,15 +144,16 @@ module Fizzy::MetaInfo
 
     # └────────────────────────────────────────────────────────────────────────┘
 
-    # Build the list of excluded files (needed by Thor's `directory()`).
-    all_files = Set.new Find.find(elems_base_path).select { |f| File.file?(f) }
+    # Build the list of excluded files (needed by thor's `directory()`).
+    all_files = Set.new(Find.find(elems_base_path)
+                            .map{|f| Pathname.new(f).expand_path}
+                            .select{|f| f.file?})
     src_paths = Set.new(
       meta["elems"].collect_concat do |elem|
-        elem["fs_maps"].collect { |m| m["src_path"] }
-      end
-    )
-    vars_files = Dir.glob(File.join(vars_path, "*"), File::FNM_DOTMATCH)
-    meta["system_files"]    = Set.new vars_files << meta_path
+        elem["fs_maps"].map{|m| m["src_path"]}
+      end)
+    vars_files = Pathname.glob(vars_path.join("*"), File::FNM_DOTMATCH)
+    meta["system_files"]    = Set.new(vars_files << meta_path)
     meta["excluded_files"]  = all_files - src_paths - meta["system_files"]
     meta["all_files_count"] = all_files.count
 

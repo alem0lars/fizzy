@@ -153,8 +153,9 @@ module Fizzy::Vars
   end
 
   def _read_vars(vars_dir_path, name)
-    yaml_file_path = find_yaml_path(File.join(vars_dir_path, name)) \
-      unless vars_dir_path.nil? || name.nil?
+    unless vars_dir_path.nil? || name.nil?
+      yaml_file_path = find_yaml_path(vars_dir_path.join(name))
+    end
 
     if yaml_file_path
       [:yaml, File.read(yaml_file_path)]

@@ -8,11 +8,12 @@ module Fizzy::Filesystem
   # Find a YAML file prefixed by `path` (guess extension name).
   #
   def find_yaml_path(path)
-    if File.file?(path)
+    if path.file?
       path
     else
       %w(yml yaml).map do |ext|
-        "#{path}.#{ext}" if File.file?("#{path}.#{ext}")
+        p = Pathname.new("#{path}.#{ext}")
+        p if p.file?
       end.compact.first
     end
   end
@@ -24,8 +25,8 @@ module Fizzy::Filesystem
   #
   def existing_dir(path, writable: true)
     dir_path = path
-    dir_path = File.dirname(dir_path) until File.directory?(dir_path)
-    (writable && !File.writable?(dir_path)) ? nil : dir_path
+    dir_path = dir_path.dirname until dir_path.directory?
+    (writable && !dir_path.writable?) ? nil : dir_path
   end
 
   # Return an object (`OpenStruct`), which contains all of the well-known
@@ -35,19 +36,20 @@ module Fizzy::Filesystem
   # points to a correct thing.
   #
   # You can skip some validations and filling some paths:
-  # - `valid_cfg`: If `false` don't validate and fill paths related to the
-  #                configuration.
+  # - `valid_cfg`:
+  #   - If `false` don't validate and fill paths related to the configuration.
+  #   - If `readonly`, don't validate writability for configuration.
   # - `valid_inst`:
   #   - If `false` don't validate and fill paths related to the configuration
   #     instances.
   #   - If `true`, be sure to provide the argument `cur_inst_name`, which
   #     should contain the name of the current instance (the instance that
   #     should be used).
+  #   - If `readonly`, don't validate writability for instance.
   #
   def prepare_storage(root_path,
                       valid_meta: true, valid_cfg: true, valid_inst: true,
-                      meta_name: nil, cur_cfg_name: nil, cur_inst_name: nil,
-                      readonly: false)
+                      meta_name: nil, cur_cfg_name: nil, cur_inst_name: nil)
     root_path = Pathname.new(root_path).expand_path
 
     # Paths based on internal conventions.
@@ -77,7 +79,9 @@ module Fizzy::Filesystem
       end
     end
 
-    if !valid_cfg && root_path.directory? && !root_path.writable?
+    # XXX This check is for preventing errors when we don't want to create the
+    #     directory structure. Should we add a dedicate argument?
+    if !valid_cfg && !valid_inst && root_path.directory? && !root_path.writable?
       error("No write permissions in Fizzy storage at path `#{root_path}`.")
     end
 
@@ -86,9 +90,9 @@ module Fizzy::Filesystem
         error("The Fizzy root directory `#{root_path}` doesn't exist " +
               "(maybe you need to run: `fizzy cfg sync`).")
       end
-      if cur_cfg_path.nil? || !cur_cfg_path.directory? || !(readonly || cur_cfg_path.writable?)
+      if cur_cfg_path.nil? || !cur_cfg_path.directory? || !(valid_cfg == :readonly || cur_cfg_path.writable?)
         error("The current configuration `#{cur_cfg_name}` is invalid: " +
-              "it's not a valid (writable) directory.")
+              "it's not a valid directory.")
       end
       if valid_meta && (cur_cfg_meta_path.nil? || !cur_cfg_meta_path.file?)
         error("The meta file path `#{cur_cfg_meta_path}` is invalid.")
@@ -103,9 +107,9 @@ module Fizzy::Filesystem
         error("The Fizzy root directory `#{root_path}` doesn't exist " +
               "(maybe you need to run: `fizzy cfg sync`).")
       end
-      if cur_inst_path.nil? || !cur_inst_path.directory? || !(readonly || cur_inst_path.writable?)
+      if cur_inst_path.nil? || !cur_inst_path.directory? || !(valid_inst == :readonly || cur_inst_path.writable?)
         error("The current instance `#{cur_inst_name}` is invalid: it's " +
-              "not a valid (writable) directory.")
+              "not a valid directory.")
       end
       if valid_meta && (cur_inst_meta_path.nil? || !cur_inst_meta_path.file?)
         error("The meta file path `#{cur_inst_meta_path}` is invalid.")

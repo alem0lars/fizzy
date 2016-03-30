@@ -26,7 +26,7 @@ based systems because it's almost always in the `PATH` environment variable,
 so you can run `fizzy` from everywhere.
 
 ```ShellSession
-$ curl https://raw.githubusercontent.com/alem0lars/fizzy/master/build/fizzy | \
+$ curl -sL https://raw.githubusercontent.com/alem0lars/fizzy/master/build/fizzy | \
   sudo tee /usr/local/bin/fizzy > /dev/null && \
   sudo chmod +x /usr/local/bin/fizzy
 ```

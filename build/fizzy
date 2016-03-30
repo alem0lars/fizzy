@@ -72,6 +72,9 @@ end
 
 Fizzy::CFG = OpenStruct.new
 
+# URL for reporting fizzy issues.
+Fizzy::CFG.issues_url = "https://github.com/alem0lars/fizzy/issues"
+
 # Default editor.
 Fizzy::CFG.editor = ENV["EDITOR"] || "vim"
 
@@ -1048,8 +1051,8 @@ module Fizzy::Vars
   end
 
   def _typize_var(var_name, var, type, strict)
-    return var if type.nil? || type.end_with?("?") && var.nil?
-    case type
+    return var if type.nil? || (type.to_s.end_with?("?") && var.nil?)
+    case type.to_s.gsub(/\?$/, "").to_sym
     when :string, :str
       strict ? _ensure_type!(var_name, var, String) : var.to_s
     when :symbol, :sym
@@ -1090,13 +1093,13 @@ module Fizzy::Vars
         Pathname.new(var)
       end
     else
-      error("Unhandled type `#{type}`. " +
-            "If you need support for a new type, open an issue.")
+      error("Unhandled type `#{type}`. If you need support for a new type, " +
+            "open an issue at `#{Fizzy::CFG.issues_url}`.")
     end
   end
 
   def _ensure_type!(var_name, var, *types)
-    if types.any? { |type| var.is_a? type }
+    if types.any?{|type| var.is_a?(type)}
       var
     else
       error("Invalid type for variable: `#{var_name}`: " +
@@ -1106,11 +1109,9 @@ module Fizzy::Vars
 
   def _get_var(vars, var_name)
     dot_split_regexp = /([^.]+)(?:\.|$)/
-    var_name.to_s
-      .scan(dot_split_regexp).map { |match_group| match_group[0] }
-      .reject(&:empty?)
-      .inject(vars) do |cur_obj, name_component|
-
+    var_name.to_s.scan(dot_split_regexp).map{|match_group| match_group[0]}
+                 .reject(&:empty?)
+                 .inject(vars) do |cur_obj, name_component|
       nxt_obj = if cur_obj.has_key?(name_component)
         cur_obj[name_component]
       else
@@ -1226,10 +1227,26 @@ module Fizzy::Locals
   #
   def define_locals(&block)
     error("No requirements specification provided.") unless block_given?
-    proxy = Fizzy::Locals::Proxy.new(self)
-    proxy.instance_eval(&block)
-    self.locals = proxy.locals
+    @locals_proxy = Fizzy::Locals::Proxy.new(self)
+    @locals_proxy.instance_eval(&block)
   end
+
+  # ┌──────────────────────────────────────────────────────────────────────────┐
+  # ├→ Forward DSL calls to the `Proxy` ───────────────────────────────────────┤
+
+  def local(name)
+    @locals_proxy.local(name)
+  end
+
+  def local!(name)
+    @locals_proxy.local!(name)
+  end
+
+  def local?(*names, &block)
+    @locals_proxy.local?(*names, &block)
+  end
+
+  # └──────────────────────────────────────────────────────────────────────────┘
 
   # DSL used for defining locals.
   #
@@ -1257,8 +1274,8 @@ module Fizzy::Locals
       local_name = options.fetch(:as,      name)
       default    = options.fetch(:default, nil)
 
-      local = receiver.get_var(name, type: type)
-      @locals[local_name] = local.nil? ? local : default
+      local = @receiver.get_var(name, type: type)
+      @locals[local_name.to_sym] = local.nil? ? default : local
     end
 
     # Create a new computed `local`, based upon other locals.
@@ -1268,19 +1285,19 @@ module Fizzy::Locals
       error("Invalid local name `#{name}`: it's blank.") if name.empty?
       error("Cannot compute local `#{name}`.") if fn.nil?
 
-      @locals[name] = fn.call
+      @locals[name.to_sym] = fn.call
     end
 
     # Access the value of a local.
     #
     def local(name)
-      locals[name]
+      @locals[name.to_sym]
     end
 
     # Access the value of a local or raise an error if it's not defined.
     #
     def local!(name)
-      value = local name
+      value = local(name)
       error("Undefined local `#{name}`.") if value.nil?
       value
     end
@@ -1290,12 +1307,10 @@ module Fizzy::Locals
     #
     def local?(*names, &block)
       values = names.collect{|name| local(name)}
-      are_locals_available = values.compact.length != values.length
-      yield(*values) if are_locals_available
+      yield(*values) if values.compact.length == names.length
     end
 
     # └────────────────────────────────────────────────────────────────────────┘
-
   end
 
 end

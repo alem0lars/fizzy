@@ -80,8 +80,8 @@ module Fizzy::Vars
   end
 
   def _typize_var(var_name, var, type, strict)
-    return var if type.nil? || type.end_with?("?") && var.nil?
-    case type
+    return var if type.nil? || (type.to_s.end_with?("?") && var.nil?)
+    case type.to_s.gsub(/\?$/, "").to_sym
     when :string, :str
       strict ? _ensure_type!(var_name, var, String) : var.to_s
     when :symbol, :sym
@@ -122,13 +122,13 @@ module Fizzy::Vars
         Pathname.new(var)
       end
     else
-      error("Unhandled type `#{type}`. " +
-            "If you need support for a new type, open an issue.")
+      error("Unhandled type `#{type}`. If you need support for a new type, " +
+            "open an issue at `#{Fizzy::CFG.issues_url}`.")
     end
   end
 
   def _ensure_type!(var_name, var, *types)
-    if types.any? { |type| var.is_a? type }
+    if types.any?{|type| var.is_a?(type)}
       var
     else
       error("Invalid type for variable: `#{var_name}`: " +
@@ -138,11 +138,9 @@ module Fizzy::Vars
 
   def _get_var(vars, var_name)
     dot_split_regexp = /([^.]+)(?:\.|$)/
-    var_name.to_s
-      .scan(dot_split_regexp).map { |match_group| match_group[0] }
-      .reject(&:empty?)
-      .inject(vars) do |cur_obj, name_component|
-
+    var_name.to_s.scan(dot_split_regexp).map{|match_group| match_group[0]}
+                 .reject(&:empty?)
+                 .inject(vars) do |cur_obj, name_component|
       nxt_obj = if cur_obj.has_key?(name_component)
         cur_obj[name_component]
       else

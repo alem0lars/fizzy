@@ -7,10 +7,26 @@ module Fizzy::Locals
   #
   def define_locals(&block)
     error("No requirements specification provided.") unless block_given?
-    proxy = Fizzy::Locals::Proxy.new(self)
-    proxy.instance_eval(&block)
-    self.locals = proxy.locals
+    @locals_proxy = Fizzy::Locals::Proxy.new(self)
+    @locals_proxy.instance_eval(&block)
   end
+
+  # ┌──────────────────────────────────────────────────────────────────────────┐
+  # ├→ Forward DSL calls to the `Proxy` ───────────────────────────────────────┤
+
+  def local(name)
+    @locals_proxy.local(name)
+  end
+
+  def local!(name)
+    @locals_proxy.local!(name)
+  end
+
+  def local?(*names, &block)
+    @locals_proxy.local?(*names, &block)
+  end
+
+  # └──────────────────────────────────────────────────────────────────────────┘
 
   # DSL used for defining locals.
   #
@@ -38,8 +54,8 @@ module Fizzy::Locals
       local_name = options.fetch(:as,      name)
       default    = options.fetch(:default, nil)
 
-      local = receiver.get_var(name, type: type)
-      @locals[local_name] = local.nil? ? local : default
+      local = @receiver.get_var(name, type: type)
+      @locals[local_name.to_sym] = local.nil? ? default : local
     end
 
     # Create a new computed `local`, based upon other locals.
@@ -49,19 +65,19 @@ module Fizzy::Locals
       error("Invalid local name `#{name}`: it's blank.") if name.empty?
       error("Cannot compute local `#{name}`.") if fn.nil?
 
-      @locals[name] = fn.call
+      @locals[name.to_sym] = fn.call
     end
 
     # Access the value of a local.
     #
     def local(name)
-      locals[name]
+      @locals[name.to_sym]
     end
 
     # Access the value of a local or raise an error if it's not defined.
     #
     def local!(name)
-      value = local name
+      value = local(name)
       error("Undefined local `#{name}`.") if value.nil?
       value
     end
@@ -71,12 +87,10 @@ module Fizzy::Locals
     #
     def local?(*names, &block)
       values = names.collect{|name| local(name)}
-      are_locals_available = values.compact.length != values.length
-      yield(*values) if are_locals_available
+      yield(*values) if values.compact.length == names.length
     end
 
     # └────────────────────────────────────────────────────────────────────────┘
-
   end
 
 end

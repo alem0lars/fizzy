@@ -54,9 +54,9 @@ module Fizzy::Git
     cmd << " #{Shellwords.escape(remote)}" unless remote.nil?
     cmd << " #{Shellwords.escape(branch)}" unless branch.nil?
 
-    status   = exec_cmd(cmd, as_su: !existing_dir(Dir.pwd))
+    status   = exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
     status &&= exec_cmd("git submodule update --recursive",
-                        as_su: !existing_dir(Dir.pwd)) if with_submodules
+                        as_su: !existing_dir(Pathname.pwd)) if with_submodules
 
     status
   end
@@ -85,7 +85,7 @@ module Fizzy::Git
     cmd << " #{Shellwords.escape(remote)}" unless remote.nil?
     cmd << " #{Shellwords.escape(branch)}" unless branch.nil?
 
-    exec_cmd(cmd, as_su: !existing_dir(Dir.pwd))
+    exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
   end
 
   def git_fetch(remote: nil, branch: nil)
@@ -100,7 +100,7 @@ module Fizzy::Git
     cmd << " #{Shellwords.escape(remote)}" unless remote.nil?
     cmd << " #{Shellwords.escape(branch)}" unless branch.nil?
 
-    exec_cmd(cmd, as_su: !existing_dir(Dir.pwd))
+    exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
   end
 
   def git_add(files: nil)
@@ -113,7 +113,7 @@ module Fizzy::Git
       cmd << files.map { |f| Shellwords.escape(f) }.join(" ")
     end
 
-    exec_cmd(cmd, as_su: !existing_dir(Dir.pwd))
+    exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
   end
 
   def git_commit(message: nil)
@@ -126,7 +126,7 @@ module Fizzy::Git
       cmd << " -m #{Shellwords.escape(message)}"
     end
 
-    exec_cmd(cmd, as_su: !existing_dir(Dir.pwd))
+    exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
   end
 
   def git_normalize_url(url, default_protocol: "ssh")

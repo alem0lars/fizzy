@@ -21,43 +21,43 @@ class Fizzy::BaseCommand < Thor
     verbose: {
       default: false,
       type:    :boolean,
-      aliases: :verb,
+      aliases: :v,
       desc:    "Whether the output should be verbose."
     },
     run_mode: {
       default: "normal",
-      aliases: [:rm, :r],
+      aliases: :R,
       enum:    %w(normal paranoid dry),
       desc:    "Ask confirmation for each filesystem operation."
     },
     fizzy_dir: {
       default: Fizzy::CFG.default_fizzy_dir,
-      aliases: :f,
+      aliases: :F,
       desc:    "The root path for the directory internally used by fizzy."
     },
     cfg_url: {
       default: nil,
-      aliases: [:cu],
+      aliases: :U,
       desc: "The URL to the repository holding config."
     },
     cfg_name: {
       default: nil,
-      aliases: [:cfg, :c],
+      aliases: :C,
       desc:    "The name of the configuration that should be used."
     },
     inst_name: {
       default: nil,
-      aliases: [:inst, :i],
+      aliases: :I,
       desc:    "The name for the configuration instance to be used."
     },
     vars_name: {
       default: nil,
-      aliases: [:vars, :v],
+      aliases: :V,
       desc:    "The name for the variables file to be used."
     },
     meta_name: {
       default: Fizzy::CFG.default_meta_name,
-      aliases: [:meta, :m],
+      aliases: :M,
       desc:    "The name of the meta file."
     }
   }

@@ -717,20 +717,18 @@ module Fizzy::Filesystem
     cfg_path = root_path.join("cfg")
     cur_cfg_path = cfg_path.join(cur_cfg_name) if cur_cfg_name
     cur_cfg_vars_path = cur_cfg_path.join("vars") if cur_cfg_path
-    cur_cfg_meta_path = find_yaml_path(cur_cfg_path.join(meta_name)) \
-      if cur_cfg_path && meta_name
+    cur_cfg_meta_path = find_yaml_path(cur_cfg_path.join(meta_name)) if cur_cfg_path && meta_name
 
     inst_path = root_path.join("inst")
     cur_inst_path = inst_path.join(cur_inst_name) if cur_inst_name
     cur_inst_vars_path = cur_inst_path.join("vars") if cur_inst_path
-    cur_inst_meta_path = find_yaml_path(cur_inst_path.join(meta_name)) \
-      if cur_inst_path && meta_name
+    cur_inst_meta_path = find_yaml_path(cur_inst_path.join(meta_name)) if cur_inst_path && meta_name
 
     # Validate `root_path`.
-    error("Cannot create directory: `#{root_path}`.") \
-      if !File.directory?(root_path) && !File.writable?(parent_path)
-
-    if File.file? root_path
+    if !root_path.directory? && !parent_path.writable?
+      error("Cannot create directory: `#{root_path}`.")
+    end
+    if root_path.file?
       if quiz("`#{root_path}` already exists but is a regular file. Remove")
         exec_cmd("rm #{Shellwords.escape(root_path)}",
                  as_su: File.owned?(root_path))
@@ -740,33 +738,42 @@ module Fizzy::Filesystem
       end
     end
 
-    error("No write permissions in Fizzy storage at path `#{root_path}`.") \
-      if !valid_cfg && File.directory?(root_path) && !File.writable?(root_path)
+    if !valid_cfg && root_path.directory? && !root_path.writable?
+      error("No write permissions in Fizzy storage at path `#{root_path}`.")
+    end
 
     if valid_cfg
-      error("The Fizzy root directory `#{root_path}` doesn't exist " +
-            "(maybe you need to run: `fizzy cfg sync`).") \
-        unless File.directory?(root_path)
-      error("The current configuration `#{cur_cfg_name}` is invalid: " +
-            "it's not a valid directory.") \
-        if !File.directory?(cur_cfg_path) || !File.writable?(cur_cfg_path)
-      error("The meta file path `#{cur_cfg_meta_path}` is invalid.") \
-        if valid_meta && !File.file?(cur_cfg_meta_path)
-      error("The variables directory `#{cur_cfg_vars_path}` is invalid.") \
-        unless File.directory?(cur_cfg_vars_path)
+      unless root_path.directory?
+        error("The Fizzy root directory `#{root_path}` doesn't exist " +
+              "(maybe you need to run: `fizzy cfg sync`).")
+      end
+      if cur_cfg_path.nil? || !cur_cfg_path.directory? || !cur_cfg_path.writable?
+        error("The current configuration `#{cur_cfg_name}` is invalid: " +
+              "it's not a valid (writable) directory.")
+      end
+      if valid_meta && (cur_cfg_meta_path.nil? || !cur_cfg_meta_path.file?)
+        error("The meta file path `#{cur_cfg_meta_path}` is invalid.")
+      end
+      if cur_cfg_vars_path.nil? || !cur_cfg_vars_path.directory?
+        error("The variables directory `#{cur_cfg_vars_path}` is invalid.")
+      end
     end
 
     if valid_inst
-      error("The Fizzy root directory `#{root_path}` doesn't exist " +
-            "(maybe you need to run: `fizzy cfg sync`).") \
-        unless root_path.directory?
-      error("The current instance `#{cur_inst_name}` is invalid: it's " +
-            "not a valid directory.") \
-        if !cur_inst_path.directory? || !cur_inst_path.writable?
-      error("The meta file path `#{cur_inst_meta_path}` is invalid.") \
-        if valid_meta && !cur_inst_meta_path.file?
-      error("The variables directory `#{cur_inst_vars_path}` is invalid.") \
-        unless cur_inst_vars_path.directory?
+      unless root_path.directory?
+        error("The Fizzy root directory `#{root_path}` doesn't exist " +
+              "(maybe you need to run: `fizzy cfg sync`).")
+      end
+      if cur_inst_path.nil? || !cur_inst_path.directory? || !cur_inst_path.writable?
+        error("The current instance `#{cur_inst_name}` is invalid: it's " +
+              "not a valid (writable) directory.")
+      end
+      if valid_meta && (cur_inst_meta_path.nil? || !cur_inst_meta_path.file?)
+        error("The meta file path `#{cur_inst_meta_path}` is invalid.")
+      end
+      if cur_inst_vars_path.nil? || !cur_inst_vars_path.directory?
+        error("The variables directory `#{cur_inst_vars_path}` is invalid.")
+      end
     end
 
     # Create non-existing internal directories.
@@ -778,8 +785,9 @@ module Fizzy::Filesystem
                  as_su: File.owned?(dir_path))
       end
     end
-    FileUtils.mkdir_p(cur_inst_path) \
-      if cur_inst_path && !cur_inst_path.directory?
+    if cur_inst_path && !cur_inst_path.directory?
+      FileUtils.mkdir_p(cur_inst_path)
+    end
 
     # Return the known storage paths.
     OpenStruct.new(
@@ -959,6 +967,12 @@ module Fizzy::Vars
   include Fizzy::Filesystem
 
   attr_reader :vars
+
+  # Return a list of the available variables files.
+  #
+  def avail_vars(vars_dir_path)
+    Pathname.glob(vars_dir_path.join("*"))
+  end
 
   # Setup the variables that will be used during ERB processing.
   #
@@ -1636,43 +1650,43 @@ class Fizzy::BaseCommand < Thor
     verbose: {
       default: false,
       type:    :boolean,
-      aliases: :verb,
+      aliases: :v,
       desc:    "Whether the output should be verbose."
     },
     run_mode: {
       default: "normal",
-      aliases: [:rm, :r],
+      aliases: :R,
       enum:    %w(normal paranoid dry),
       desc:    "Ask confirmation for each filesystem operation."
     },
     fizzy_dir: {
       default: Fizzy::CFG.default_fizzy_dir,
-      aliases: :f,
+      aliases: :F,
       desc:    "The root path for the directory internally used by fizzy."
     },
     cfg_url: {
       default: nil,
-      aliases: [:cu],
+      aliases: :U,
       desc: "The URL to the repository holding config."
     },
     cfg_name: {
       default: nil,
-      aliases: [:cfg, :c],
+      aliases: :C,
       desc:    "The name of the configuration that should be used."
     },
     inst_name: {
       default: nil,
-      aliases: [:inst, :i],
+      aliases: :I,
       desc:    "The name for the configuration instance to be used."
     },
     vars_name: {
       default: nil,
-      aliases: [:vars, :v],
+      aliases: :V,
       desc:    "The name for the variables file to be used."
     },
     meta_name: {
       default: Fizzy::CFG.default_meta_name,
-      aliases: [:meta, :m],
+      aliases: :M,
       desc:    "The name of the meta file."
     }
   }
@@ -1757,8 +1771,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
   method_option(*shared_option(:fizzy_dir))
   method_option(*shared_option(:cfg_name))
-  desc("edit PATTERN",
-       "Find the files relative to PATTERN and edit them.")
+  desc("edit PATTERN", "Find the files relative to PATTERN and edit them.")
   def edit(pattern)
     # Prepare stuff for editing.
     paths = prepare_storage(options.fizzy_dir,
@@ -1847,9 +1860,23 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     end
   end
 
+
+
+  method_option(*shared_option(:fizzy_dir))
+  method_option(*shared_option(:cfg_name,  required: true))
+  desc("info", "Show informations about a configuration.")
+  def info
+    # Before considering informations
+    paths = prepare_storage(options.fizzy_dir,
+                            valid_inst: false,
+                            cur_cfg_name: options.cfg_name)
+    vars_names = avail_vars(paths.cur_cfg_vars).map{|p| p.basename}
+    info("Available variable files: `[#{vars_names.join(", ")}]`.")
+  end
+
   method_option(*shared_option(:verbose))
   method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:cfg_name, required: true))
+  method_option(*shared_option(:cfg_name,  required: true))
   method_option(*shared_option(:inst_name, required: true))
   method_option(*shared_option(:vars_name, required: true))
   method_option(*shared_option(:meta_name))
@@ -1988,20 +2015,20 @@ class Fizzy::MainCommand < Fizzy::BaseCommand
   method_option(*shared_option(:verbose))
   method_option(*shared_option(:run_mode))
   method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:cfg_name, required: true))
+  method_option(*shared_option(:cfg_name,  required: true))
   method_option(*shared_option(:inst_name, required: true))
   method_option(*shared_option(:vars_name, required: true))
   method_option(*shared_option(:meta_name))
   desc("quick-install", "Quickly install a configuration.")
   def quick_install
-    invoke(CfgCommand, "instantiate", [],
+    invoke(Fizzy::CfgCommand, "instantiate", [],
            cfg_name:  options.cfg_name,
            vars_name: options.vars_name,
            inst_name: options.inst_name,
            fizzy_dir: options.fizzy_dir,
            meta_name: options.meta_name,
            verbose:   options.verbose)
-    invoke(InstCommand, "install", [],
+    invoke(Fizzy::InstCommand, "install", [],
            vars_name: options.vars_name,
            inst_name: options.inst_name,
            fizzy_dir: options.fizzy_dir,

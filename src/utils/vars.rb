@@ -5,6 +5,12 @@ module Fizzy::Vars
 
   attr_reader :vars
 
+  # Return a list of the available variables files.
+  #
+  def avail_vars(vars_dir_path)
+    Pathname.glob(vars_dir_path.join("*"))
+  end
+
   # Setup the variables that will be used during ERB processing.
   #
   # Those variables will be set into an instance field called `@vars`.

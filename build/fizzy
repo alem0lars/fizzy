@@ -40,7 +40,7 @@
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 
-# ☞ Requires ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Requires ───────────────────────────────────────────────────────────────────
 
 # Core modules.
 require "fileutils"
@@ -68,7 +68,7 @@ end
 module Fizzy
 end
 
-# ☞ Configuration ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Configuration ──────────────────────────────────────────────────────────────
 
 Fizzy::CFG = OpenStruct.new
 
@@ -102,7 +102,7 @@ Fizzy::CFG.default_fizzy_dir = Pathname.new(
 # Default meta file name.
 Fizzy::CFG.default_meta_name = "meta.yml"
 
-# ☞ Exts → Hash ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Exts → Hash ────────────────────────────────────────────────────────────────
 
 class Hash
 
@@ -133,7 +133,7 @@ class Hash
 
 end
 
-# ☞ Exts → Thor ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Exts → Thor ────────────────────────────────────────────────────────────────
 
 class Thor
   module Actions
@@ -148,7 +148,7 @@ class Thor
   end
 end
 
-# ☞ Utils → Io ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Io ─────────────────────────────────────────────────────────────────
 
 module Fizzy::IO
 
@@ -252,7 +252,7 @@ module Fizzy::IO
 
 end
 
-# ☞ Grammars → Base Lexer ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Grammars → Base Lexer ──────────────────────────────────────────────────────
 
 class Fizzy::BaseLexer
 
@@ -319,7 +319,7 @@ private
 
 end
 
-# ☞ Lexer ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Lexer ──────────────────────────────────────────────────────────────────────
 
 class Fizzy::LogicLexer < Fizzy::BaseLexer
 
@@ -348,7 +348,7 @@ private
 
 end
 
-# ☞ Evaluator ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Evaluator ──────────────────────────────────────────────────────────────────
 
 class Fizzy::LogicEvaluator
 
@@ -402,7 +402,7 @@ class Fizzy::LogicEvaluator
   end
 end
 
-# ☞ Logic Parser ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Logic Parser ───────────────────────────────────────────────────────────────
 
 #
 # DO NOT MODIFY!!!!
@@ -584,7 +584,7 @@ end
   end   # class LogicParser
   end   # module Fizzy
 
-# ☞ Utils → Environment ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Environment ────────────────────────────────────────────────────────
 
 # Utilities to retrieve informations about the host environment & system.
 #
@@ -621,7 +621,7 @@ module Fizzy::Environment
 
 end
 
-# ☞ Utils → Execution ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Execution ──────────────────────────────────────────────────────────
 
 # Utilities to start and manage programs execution.
 #
@@ -658,7 +658,7 @@ module Fizzy::Execution
 
 end
 
-# ☞ Utils → Filesystem ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Filesystem ─────────────────────────────────────────────────────────
 
 # Utilities to interact with the filesystem.
 #
@@ -796,7 +796,7 @@ module Fizzy::Filesystem
 
 end
 
-# ☞ Utils → Git ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Git ────────────────────────────────────────────────────────────────
 
 module Fizzy::Git
 
@@ -930,7 +930,7 @@ module Fizzy::Git
 
 end
 
-# ☞ Utils → Vars ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Vars ───────────────────────────────────────────────────────────────
 
 module Fizzy::Vars
 
@@ -1174,7 +1174,7 @@ module Fizzy::Vars
 
 end
 
-# ☞ Utils → Locals ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Locals ─────────────────────────────────────────────────────────────
 
 module Fizzy::Locals
 
@@ -1262,7 +1262,7 @@ module Fizzy::Locals
 
 end
 
-# ☞ Utils → Meta Commands ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Meta Commands ──────────────────────────────────────────────────────
 
 # Manage commands declared in the meta file.
 #
@@ -1300,7 +1300,7 @@ module Fizzy::MetaCommands
 
 end
 
-# ☞ Utils → Meta Info ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Meta Info ──────────────────────────────────────────────────────────
 
 # Access informations declared in the meta file.
 #
@@ -1505,7 +1505,7 @@ module Fizzy::MetaInfo
 
 end
 
-# ☞ Utils → Meta Elements ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Utils → Meta Elements ──────────────────────────────────────────────────────
 
 # Manage elements declared in the meta file.
 #
@@ -1590,7 +1590,7 @@ module Fizzy::MetaElements
 
 end
 
-# ☞ Commands → Base ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Commands → Base ────────────────────────────────────────────────────────────
 
 # Base class for all fizzy commands.
 #
@@ -1680,7 +1680,7 @@ class Fizzy::BaseCommand < Thor
 
 end
 
-# ☞ Commands → Cfg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Commands → Cfg ─────────────────────────────────────────────────────────────
 
 class Fizzy::CfgCommand < Fizzy::BaseCommand
 
@@ -1872,7 +1872,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
 end
 
-# ☞ Commands → Inst ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Commands → Inst ────────────────────────────────────────────────────────────
 
 class Fizzy::InstCommand < Fizzy::BaseCommand
 
@@ -1942,7 +1942,7 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
 
 end
 
-# ☞ Commands → Main ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Commands → Main ────────────────────────────────────────────────────────────
 
 class Fizzy::MainCommand < Fizzy::BaseCommand
 
@@ -1992,7 +1992,7 @@ class Fizzy::MainCommand < Fizzy::BaseCommand
 
 end
 
-# ☞ Main ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ☞ Main ───────────────────────────────────────────────────────────────────────
 
 # Entry point.
 Fizzy::MainCommand.start(ARGV) if $0 == __FILE__

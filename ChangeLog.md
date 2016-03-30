@@ -19,6 +19,7 @@
 * Add rake `console` task (with fizzy preloaded).
 * Allow to specify GitHub URLs using `username/reponame` shortcut.
 * Stronger paths checks in `prepare_storage`.
+* Add command `cfg info`.
 
 ## Current and previous versions
 

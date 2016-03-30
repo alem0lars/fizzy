@@ -46,7 +46,8 @@ module Fizzy::Filesystem
   #
   def prepare_storage(root_path,
                       valid_meta: true, valid_cfg: true, valid_inst: true,
-                      meta_name: nil, cur_cfg_name: nil, cur_inst_name: nil)
+                      meta_name: nil, cur_cfg_name: nil, cur_inst_name: nil,
+                      readonly: false)
     root_path = Pathname.new(root_path).expand_path
 
     # Paths based on internal conventions.
@@ -85,7 +86,7 @@ module Fizzy::Filesystem
         error("The Fizzy root directory `#{root_path}` doesn't exist " +
               "(maybe you need to run: `fizzy cfg sync`).")
       end
-      if cur_cfg_path.nil? || !cur_cfg_path.directory? || !cur_cfg_path.writable?
+      if cur_cfg_path.nil? || !cur_cfg_path.directory? || !(readonly || cur_cfg_path.writable?)
         error("The current configuration `#{cur_cfg_name}` is invalid: " +
               "it's not a valid (writable) directory.")
       end
@@ -102,7 +103,7 @@ module Fizzy::Filesystem
         error("The Fizzy root directory `#{root_path}` doesn't exist " +
               "(maybe you need to run: `fizzy cfg sync`).")
       end
-      if cur_inst_path.nil? || !cur_inst_path.directory? || !cur_inst_path.writable?
+      if cur_inst_path.nil? || !cur_inst_path.directory? || !(readonly || cur_inst_path.writable?)
         error("The current instance `#{cur_inst_name}` is invalid: it's " +
               "not a valid (writable) directory.")
       end

@@ -184,7 +184,7 @@ module Fizzy::MetaInfo
                   true
                 end
       vars_ok = wants_vars ?
-          only["vars"].any? { |var| !get_var(var).nil? } :
+          only["vars"].any? { |var| !get_var(var, single_match: force).nil? } :
           true
 
       selected   = !wants_features && !wants_vars

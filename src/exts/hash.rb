@@ -25,4 +25,8 @@ class Hash
     end
   end
 
+  def slice(*keys)
+    self.select{|k, _| keys.include?(k)}
+  end
+
 end

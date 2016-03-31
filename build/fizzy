@@ -1270,40 +1270,10 @@ module Fizzy::Vars
     parents_vars.deep_merge(self_vars)
   end
 
-  def _get_var_collisions(parents_vars)
-    collisions = []
-    parents_vars.each do |parent_vars|
-      others_vars = parents_vars - [parent_vars]
-      others_vars.each do |other_vars|
-        other_vars_keys = other_vars.fqkeys
-        common_keys = other_vars_keys & parent_vars.fqkeys
-        common_keys.each do |key|
-          value_a = _get_var(parent_vars, key)
-          value_b = _get_var(other_vars, key)
-          if value_a != value_b
-            collisions << { key: key, value_a: value_a, value_b: value_b }
-          end
-        end
-      end
-    end
-    collisions.uniq do |c| # Remove duplicate collisions.
-      [c[:key]] + [c[:value_a], c[:value_b]].sort
-    end
-  end
-
   def _merge_parents_vars(vars_dir_path, parents)
     parents.inject([]) do |acc, parent| # Vars for each parent.
       parent_vars = _setup_vars(vars_dir_path, parent)
       acc << parent_vars
-      # TODO: Collisions atm compare parents.. this doesn't work well..
-      # collisions = _get_var_collisions(acc)
-      # unless collisions.empty?
-      #   error("Inconsistent variables specification:\n" + collisions.map { |c|
-      #           "\t→ Collision with key=`#{c[:key]}`: " +
-      #           "value_a=`#{c[:value_a]}` value_b=`#{c[:value_b]}`"
-      #         }.join("\n"))
-      # end
-      acc
     end.inject({}) do |acc, parent_vars| # Merge them.
       acc.deep_merge(parent_vars)
     end

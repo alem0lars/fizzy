@@ -39,10 +39,10 @@ module Fizzy::Environment
 
   # Execute a function, based on the underlying operating system.
   #
-  def case_os(osx_fn: lambda {}, linux_fn: lambda {}, windows_fn: lambda {})
-    osx_fn.call     if is_osx?
-    linux_fn.call   if is_linux?
-    windows_fn.call if is_windows?
+  def case_os(osx: lambda {}, linux: lambda {}, windows: lambda {})
+    osx.call     if is_osx?
+    linux.call   if is_linux?
+    windows.call if is_windows?
   end
 
 end

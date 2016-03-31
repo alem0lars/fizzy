@@ -22,6 +22,7 @@
 - Add command `cfg info`.
 - Allow to select variables (with `get_var` and derivatives) using regexp
   (e.g. `mercurial.mergetool.(name|cmd)`).
+- Add function `case_os`.
 
 ## Current and previous versions
 

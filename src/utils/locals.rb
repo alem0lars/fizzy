@@ -60,12 +60,12 @@ module Fizzy::Locals
 
     # Create a new computed `local`, based upon other locals.
     #
-    def computed(name, fn)
+    def computed(name, &block)
       name = name.to_s.to_sym
       error("Invalid local name `#{name}`: it's blank.") if name.empty?
-      error("Cannot compute local `#{name}`.") if fn.nil?
+      error("Cannot compute local `#{name}`.") unless block_given?
 
-      @locals[name.to_sym] = fn.call
+      @locals[name.to_sym] = @receiver.instance_exec(&block)
     end
 
     # Access the value of a local.

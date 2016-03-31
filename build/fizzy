@@ -1908,9 +1908,11 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                   Pathname.glob("#{find_path}*", File::FNM_DOTMATCH).to_a.
                     select(&:file?).
                     reject{|path| path.to_s =~ /\.git/}
-                end.strip
+                end
 
-    cfg_files_arg = cfg_files.collect{|path| Shellwords.escape(path)}.join(" ")
+    cfg_files_arg = cfg_files.collect{|path| Shellwords.escape(path)}
+                             .join(" ")
+                             .strip
 
     # Perform edit.
     if cfg_files_arg.empty?

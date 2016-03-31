@@ -78,14 +78,15 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst:   false,
                             cur_cfg_name: options.cfg_name)
     find_path = (paths.cur_cfg || paths.cfg).join(pattern)
-    cfg_files_arg = if find_path.exist?
-                      Shellwords.escape(find_path)
-                    else
-                      Dir.glob("#{find_path}*", File::FNM_DOTMATCH).to_a.
-                        delete_if { |path| path =~ /\.git/ }.
-                        collect   { |path| Shellwords.escape(path) }.
-                        join(" ")
-                    end.strip
+    cfg_files = if find_path.exist?
+                  Array[find_path]
+                else
+                  Pathname.glob("#{find_path}*", File::FNM_DOTMATCH).to_a.
+                    select(&:file?).
+                    reject{|path| path.to_s =~ /\.git/}
+                end.strip
+
+    cfg_files_arg = cfg_files.collect{|path| Shellwords.escape(path)}.join(" ")
 
     # Perform edit.
     if cfg_files_arg.empty?

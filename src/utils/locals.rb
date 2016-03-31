@@ -39,6 +39,7 @@ module Fizzy::Locals
     def initialize(receiver)
       @receiver = receiver
       @locals   = {}
+      @prefix   = nil
     end
 
     # ┌────────────────────────────────────────────────────────────────────────┐
@@ -49,13 +50,10 @@ module Fizzy::Locals
     def variable(name, *args, **opts)
       name = name.to_s.to_sym
 
-      local = @receiver.get_var(name, **opts.slice(:type, :strict))
+      var = _get_var(name, **opts.slice(:type, :strict))
 
-      @locals[opts.fetch(:as, name).to_sym] = if local.nil?
-                                                opts.fetch(:default, nil)
-                                              else
-                                                local
-                                              end
+      _set_local(opts.fetch(:as, name),
+                 var.nil? ? opts.fetch(:default, nil) : var)
     end
 
     # Create a new computed `local`, based upon other locals.
@@ -65,13 +63,13 @@ module Fizzy::Locals
       error("Invalid local name `#{name}`: it's blank.") if name.empty?
       error("Cannot compute local `#{name}`.") unless block_given?
 
-      @locals[name.to_sym] = @receiver.instance_exec(&block)
+      _set_local(name, @receiver.instance_exec(&block))
     end
 
     # Access the value of a local.
     #
     def local(name)
-      @locals[name.to_sym]
+      @locals[name.to_s.to_sym]
     end
 
     # Access the value of a local or raise an error if it's not defined.
@@ -86,11 +84,28 @@ module Fizzy::Locals
     # passing the locals' values.
     #
     def local?(*names, &block)
-      values = names.collect{|name| local(name)}
-      yield(*values) if values.compact.length == names.length
+      names.collect{|name| local(name)}.compact.length == names.length
+    end
+
+    def prefixed(var, as: nil)
+      error("A block is required") unless block_given?
+      @prefix = {var: var, local: as}
+      yield
+      @prefix = nil
     end
 
     # └────────────────────────────────────────────────────────────────────────┘
+
+    def _get_var(name, **opts)
+      name = @prefix && @prefix[:var] ? "#{@prefix[:var]}#{name}" : name
+      @receiver.get_var(name.to_s.to_sym, **opts)
+    end
+
+    def _set_local(name, value)
+      name = @prefix && @prefix[:local] ? "#{@prefix[:local]}#{name}" : name
+      @locals[name.to_s.to_sym] = value
+    end
+
   end
 
 end

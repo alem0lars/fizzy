@@ -86,13 +86,15 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                     reject{|path| path.to_s =~ /\.git/}
                 end
 
+    puts cfg_files
+
     cfg_files_arg = cfg_files.collect{|path| Shellwords.escape(path)}
                              .join(" ")
                              .strip
 
     # Perform edit.
     if cfg_files_arg.empty?
-      warning("No files matching `#{cfg_name}` have been found.",
+      warning("No files matching `#{options.cfg_name}` have been found.",
               ask_continue: false)
       status = nil
     else

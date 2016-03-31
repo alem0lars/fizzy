@@ -6,14 +6,12 @@
 #
 #   require "helper"
 #
-#   class Fizzy::Tests::Foo < Test::Unit::TestCase
-#     def test_first
-#       # ...
-#     end
+#   describe MyClass
+#     it "should ..." { ... }
 #   end
 #
 
-require "test/unit"
+require "minitest/autorun"
 require "fizzy"
 
 # Setup mocks.
@@ -21,6 +19,3 @@ module Fizzy::Mocks end
 Dir.glob(File.join(File.dirname(__FILE__), "mocks", "*.rb")) do |module_path|
   require module_path
 end
-
-# Setup tests.
-module Fizzy::Tests end

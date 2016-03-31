@@ -46,16 +46,16 @@ module Fizzy::Locals
 
     # Create a new `local` fetching the value from the corresponding `variable`.
     #
-    def variable(name, *args, **options)
+    def variable(name, *args, **opts)
       name = name.to_s.to_sym
 
-      # Read provided options.
-      type       = options.fetch(:type,    nil)
-      local_name = options.fetch(:as,      name)
-      default    = options.fetch(:default, nil)
+      local = @receiver.get_var(name, **opts.slice(:type, :strict))
 
-      local = @receiver.get_var(name, type: type)
-      @locals[local_name.to_sym] = local.nil? ? default : local
+      @locals[opts.fetch(:as, name).to_sym] = if local.nil?
+                                                opts.fetch(:default, nil)
+                                              else
+                                                local
+                                              end
     end
 
     # Create a new computed `local`, based upon other locals.

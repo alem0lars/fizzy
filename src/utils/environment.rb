@@ -39,10 +39,16 @@ module Fizzy::Environment
 
   # Execute a function, based on the underlying operating system.
   #
-  def case_os(osx: lambda {}, linux: lambda {}, windows: lambda {})
-    osx.call     if is_osx?
-    linux.call   if is_linux?
-    windows.call if is_windows?
+  def case_os(osx: nil, linux: nil, windows: nil)
+    if is_osx?
+      osx.respond_to?(:call) ? osx.call : osx
+    elsif is_linux?
+      linux.respond_to?(:call) ? linux.call : linux
+    elsif is_windows?
+      windows.respond_to?(:call) ? windows.call : windows
+    else
+      error("Unrecognized operating system.")
+    end
   end
 
 end

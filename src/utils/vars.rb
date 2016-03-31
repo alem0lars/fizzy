@@ -183,7 +183,7 @@ module Fizzy::Vars
           cur_obj = cur_obj.first
         else
           error("Variabile name diverges: multiple intermediate paths are " +
-                "taken.")
+                "taken (`[#{cur_obj}]`).")
         end
       end
 
@@ -210,7 +210,8 @@ module Fizzy::Vars
                   nxt_obj
                 end
 
-      nxt_obj or break nil
+      break nil if nxt_obj.nil? || (nxt_obj.is_a?(Array) && nxt_obj.empty?)
+      nxt_obj
     end
   end
 

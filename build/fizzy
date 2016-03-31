@@ -105,6 +105,13 @@ Fizzy::CFG.default_fizzy_dir = Pathname.new(
 # Default meta file name.
 Fizzy::CFG.default_meta_name = "meta.yml"
 
+# Variables inheritance.
+Fizzy::CFG.vars = OpenStruct.new(
+  yaml_regexp: /^#\s*=>\s*inherits\s*(:\s+)?(?<parents>.+)\s*<=\s*#\s*/,
+  json_regexp: /^\/\*\s*=>\s*inherits\s*(:\s+)?(?<parents>.+)\s*<=\s*\*\/\s*/,
+  parent_dummy_regexp: /none|nothing/i
+)
+
 # ☞ Exts → Hash ────────────────────────────────────────────────────────────────
 
 class Hash
@@ -1210,6 +1217,15 @@ module Fizzy::Vars
     end
   end
 
+  def _setup_vars(vars_dir_path, name)
+    fmt, content = _read_vars(vars_dir_path, name)
+    error("Invalid vars: `#{name}`.") if fmt == nil || content == nil
+    self_vars    = _parse_vars(fmt, content)
+    parents      = _parse_parents_vars(fmt, content)
+    parents_vars = _merge_parents_vars(vars_dir_path, parents)
+    _merge_with_parents_vars(self_vars, parents_vars)
+  end
+
   def _read_vars(vars_dir_path, name)
     yaml_file_path = find_yaml_path(vars_dir_path.join(name)) unless vars_dir_path.nil? || name.nil?
 
@@ -1219,20 +1235,6 @@ module Fizzy::Vars
       [:json, ENV[name]]
     else
       [nil, nil]
-    end
-  end
-
-  def _parse_parents_vars(fmt, content)
-    dummy_regex = /none|nothing/i
-    parents_regex = case fmt
-    when :yaml then /^#\s*=>\s*inherits\s*(:\s+)?(?<parents>.+)\s*<=\s*#\s*/
-    when :json then /^\/\*\s*=>\s*inherits\s*(:\s+)?(?<parents>.+)\s*<=\s*\*\/\s*/
-    else error("Unrecognized format: `#{fmt}`")
-    end
-    if md = content.match(parents_regex)
-      md[:parents].split(",").map(&:strip).reject { |p| p =~ dummy_regex }
-    else
-      []
     end
   end
 
@@ -1249,6 +1251,21 @@ module Fizzy::Vars
     end
   end
 
+  def _parse_parents_vars(fmt, content)
+    parents_regexp = case fmt
+                     when :yaml then Fizzy::CFG.vars.yaml_regexp
+                     when :json then Fizzy::CFG.vars.json_regexp
+                     else error("Unrecognized format: `#{fmt}`.")
+                     end
+    if md = content.match(parents_regexp)
+      md[:parents].split(",")
+                  .map(&:strip)
+                  .reject{|p| p =~ Fizzy::CFG.vars.parent_dummy_regexp}
+    else
+      []
+    end
+  end
+
   def _merge_with_parents_vars(self_vars, parents_vars)
     parents_vars.deep_merge(self_vars)
   end
@@ -1256,14 +1273,13 @@ module Fizzy::Vars
   def _get_var_collisions(parents_vars)
     collisions = []
     parents_vars.each do |parent_vars|
-      parent_vars_keys = parent_vars.fqkeys
       others_vars = parents_vars - [parent_vars]
       others_vars.each do |other_vars|
         other_vars_keys = other_vars.fqkeys
-        common_keys = other_vars_keys & parent_vars_keys
+        common_keys = other_vars_keys & parent_vars.fqkeys
         common_keys.each do |key|
-          value_a = _get_var(parent_vars, key).first
-          value_b = _get_var(other_vars, key).first
+          value_a = _get_var(parent_vars, key)
+          value_b = _get_var(other_vars, key)
           if value_a != value_b
             collisions << { key: key, value_a: value_a, value_b: value_b }
           end
@@ -1279,26 +1295,18 @@ module Fizzy::Vars
     parents.inject([]) do |acc, parent| # Vars for each parent.
       parent_vars = _setup_vars(vars_dir_path, parent)
       acc << parent_vars
-      collisions = _get_var_collisions(acc)
-      unless collisions.empty?
-        error("Inconsistent variables specification:\n" + collisions.map { |c|
-                "\t→ Collision with key=`#{c[:key]}`: " +
-                "value_a=`#{c[:value_a]}` value_b=`#{c[:value_b]}`"
-              }.join("\n"))
-      end
+      # TODO: Collisions atm compare parents.. this doesn't work well..
+      # collisions = _get_var_collisions(acc)
+      # unless collisions.empty?
+      #   error("Inconsistent variables specification:\n" + collisions.map { |c|
+      #           "\t→ Collision with key=`#{c[:key]}`: " +
+      #           "value_a=`#{c[:value_a]}` value_b=`#{c[:value_b]}`"
+      #         }.join("\n"))
+      # end
       acc
     end.inject({}) do |acc, parent_vars| # Merge them.
       acc.deep_merge(parent_vars)
     end
-  end
-
-  def _setup_vars(vars_dir_path, name)
-    fmt, content = _read_vars(vars_dir_path, name)
-    error("Invalid vars: `#{name}`.") if fmt == nil || content == nil
-    self_vars = _parse_vars(fmt, content)
-    parents = _parse_parents_vars(fmt, content)
-    parents_vars = _merge_parents_vars(vars_dir_path, parents)
-    _merge_with_parents_vars(self_vars, parents_vars)
   end
 
 end
@@ -1842,7 +1850,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     tell("Available variable files:", :cyan)
     avail_vars(paths.cur_cfg_vars).each do |path|
       name = path.basename(path.extname)
-      tell("\t#{colorize(name, :magenta)}")
+      tell("\t→ #{colorize(name, :magenta)}")
     end
   end
 

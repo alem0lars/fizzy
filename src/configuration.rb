@@ -32,3 +32,10 @@ Fizzy::CFG.default_fizzy_dir = Pathname.new(
 
 # Default meta file name.
 Fizzy::CFG.default_meta_name = "meta.yml"
+
+# Variables inheritance.
+Fizzy::CFG.vars = OpenStruct.new(
+  yaml_regexp: /^#\s*=>\s*inherits\s*(:\s+)?(?<parents>.+)\s*<=\s*#\s*/,
+  json_regexp: /^\/\*\s*=>\s*inherits\s*(:\s+)?(?<parents>.+)\s*<=\s*\*\/\s*/,
+  parent_dummy_regexp: /none|nothing/i
+)

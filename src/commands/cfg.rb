@@ -18,7 +18,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     tell("Available variable files:", :cyan)
     avail_vars(paths.cur_cfg_vars).each do |path|
       name = path.basename(path.extname)
-      tell("\t#{colorize(name, :magenta)}")
+      tell("\t→ #{colorize(name, :magenta)}")
     end
   end
 

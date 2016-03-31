@@ -70,7 +70,7 @@ module Fizzy::Git
     cmd << " --recursive" if recursive
     cmd << " #{Shellwords.escape(url)} #{Shellwords.escape(dst_path)}"
 
-    exec_cmd(cmd, as_su: !existing_dir(File.dirname dst_path))
+    exec_cmd(cmd, as_su: !existing_dir(dst_path.dirname))
   end
 
   def git_push(remote: nil, branch: nil)

@@ -1918,7 +1918,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
     # Perform edit.
     if cfg_files_arg.empty?
-      warning("No files matching `#{cfg_name}` have been found.",
+      warning("No files matching `#{options.cfg_name}` have been found.",
               ask_continue: false)
       status = nil
     else

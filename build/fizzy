@@ -1132,19 +1132,19 @@ module Fizzy::Vars
           if strict && !File.exist?(var)
             error("Invalid variable `#{name}`: `#{var}` doesn't exist")
           else
-            Pathname.new(var)
+            Pathname.new(var).expand_path
           end
         when :file, :pth then
           if strict && !File.file?(var)
             error("Invalid variable `#{name}`: `#{var}` isn't a file")
           else
-            Pathname.new(var)
+            Pathname.new(var).expand_path
           end
         when :directory, :dir then
           if strict && !File.directory?(var)
             error("Invalid variable `#{name}`: `#{var}` isn't a directory")
           else
-            Pathname.new(var)
+            Pathname.new(var).expand_path
           end
         else
           error("Unhandled type `#{type}`. If you need support for a new type, " +

@@ -109,7 +109,7 @@ module Fizzy::Vars
           strict ? _ensure_type!(name, var, String) : var.to_s
         when :symbol, :sym
           strict ? _ensure_type!(name, var, Symbol) : var.to_s.to_sym
-        when :integer
+        when :integer, :int
           strict ? _ensure_type!(name, var, Integer) : Integer(var)
         when :boolean, :bool
           if strict

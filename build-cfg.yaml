@@ -6,6 +6,7 @@ sources:
   - configuration
   - exts/string
   - exts/hash
+  - exts/pathname
   - exts/thor
   - core/io
   - grammars/base_lexer

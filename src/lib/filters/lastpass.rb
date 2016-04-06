@@ -8,6 +8,6 @@ As arguments you can pass:
   args = args.split_by_separator
   name = args[0].shell_escape
   what = args[1] || :password
-  what = "--#{what}" unless what.start_with?("--")
-  system("lpass show --color=never #{what} #{name}")
+  what = "--#{what}" unless what.to_s.start_with?("--")
+  `lpass show --color=never #{what} #{name}`
 end

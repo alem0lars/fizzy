@@ -1031,6 +1031,72 @@ module Fizzy::Git
 
 end
 
+# ☞ Core → Typesystem ──────────────────────────────────────────────────────────
+
+module Fizzy::TypeSystem
+
+  # Check/convert type of the provided `value`,
+  # according to the argument `type`.
+  #
+  # The argument `name` is a logical name to be used for the value,
+  # used when logging messages. It can be anything.
+  #
+  # If `strict` is `true`, then no type convertion/normalization is done;
+  # otherwise, try to guess the correct type.
+  #
+  def typize(name, value, type: nil, strict: false)
+    if type.nil? || (type.to_s.end_with?("?") && value.nil?)
+      value
+    else
+      case type.to_s.gsub(/\?$/, "").to_sym
+      when :string, :str
+        strict ? _ensure_type!(name, value, String) : value.to_s
+      when :symbol, :sym
+        strict ? _ensure_type!(name, value, Symbol) : value.to_s.to_sym
+      when :integer, :int
+        strict ? _ensure_type!(name, value, Integer) : Integer(value)
+      when :boolean, :bool
+        if strict
+          _ensure_type!(name, value, TrueClass, FalseClass)
+        else
+          if value.nil?
+            nil
+          elsif value.is_a?(TrueClass) || value.to_s == "true"
+            true
+          elsif value.is_a?(FalseClass) || value.to_s == "false"
+            false
+          else
+            error("Invalid `#{value}` for value `#{name}`: " +
+                  "it can't be converted to a boolean.")
+          end
+        end
+      when :path, :pth then
+        if strict && !File.exist?(value)
+          error("Invalid `#{name}`: `#{value}` doesn't exist")
+        else
+          Pathname.new(value).expand_path
+        end
+      when :file then
+        if strict && !File.file?(value)
+          error("Invalid `#{name}`: `#{value}` isn't a file")
+        else
+          Pathname.new(value).expand_path
+        end
+      when :directory, :dir then
+        if strict && !File.directory?(value)
+          error("Invalid `#{name}`: `#{value}` isn't a directory")
+        else
+          Pathname.new(value).expand_path
+        end
+      else
+        error("Unhandled type `#{type}`. If you need support for a new type, " +
+              "open an issue at `#{Fizzy::CFG.issues_url}`.")
+      end
+    end
+  end
+
+end
+
 # ☞ Core → Vars → Setup ────────────────────────────────────────────────────────
 
 module Fizzy::Vars
@@ -1127,16 +1193,13 @@ end
 module Fizzy::Vars
 
   module Filters
-    def self.filters
-      @filters ||= []
-    end
-
     def self.define(name, description: nil, &block)
-      filters << Filter.new(name, description.strip, &block)
+      @filters ||= []
+      @filters  << Filter.new(name, description.strip, &block)
     end
 
     def self.apply(blob)
-      if filters.find{|f| f.match?(blob)}
+      if filter = (@filters || []).find{|f| f.match?(blob)}
         filter.apply(blob)
       else
         blob
@@ -1157,7 +1220,8 @@ module Fizzy::Vars
       end
 
       def match?(blob)
-        @regexp =~ blob
+        return false unless blob.is_a?(String) || blob.is_a?(Symbol)
+        @regexp =~ blob.to_s
       end
 
       def apply(blob)
@@ -1180,6 +1244,7 @@ module Fizzy::Vars
   class Retriever
 
     include Fizzy::IO
+    include Fizzy::TypeSystem
 
     def initialize(vars)
       @vars = vars
@@ -1211,59 +1276,11 @@ module Fizzy::Vars
     # Accept a list of variables (`vars` argument) and ensure they are correctly
     # typed, according to `type`.
     #
-    # If `strict` is `true`, then no type convertion/normalization is done;
-    # otherwise, try to guess the correct type.
+    # See `Fizzy::TypeSystem#typize` for more details.
     #
     def _typize_var(name, variable, type, strict)
       Array(variable).map do |var|
-        if type.nil? || (type.to_s.end_with?("?") && var.nil?)
-          var
-        else
-          case type.to_s.gsub(/\?$/, "").to_sym
-          when :string, :str
-            strict ? _ensure_type!(name, var, String) : var.to_s
-          when :symbol, :sym
-            strict ? _ensure_type!(name, var, Symbol) : var.to_s.to_sym
-          when :integer, :int
-            strict ? _ensure_type!(name, var, Integer) : Integer(var)
-          when :boolean, :bool
-            if strict
-              _ensure_type!(name, var, TrueClass, FalseClass)
-            else
-              if var.nil?
-                nil
-              elsif var.is_a?(TrueClass) || var.to_s == "true"
-                true
-              elsif var.is_a?(FalseClass) || var.to_s == "false"
-                false
-              else
-                error("Invalid value `#{var}` for variable `#{name}`: " +
-                      "it can't be converted to a boolean.")
-              end
-            end
-          when :path, :pth then
-            if strict && !File.exist?(var)
-              error("Invalid variable `#{name}`: `#{var}` doesn't exist")
-            else
-              Pathname.new(var).expand_path
-            end
-          when :file, :pth then
-            if strict && !File.file?(var)
-              error("Invalid variable `#{name}`: `#{var}` isn't a file")
-            else
-              Pathname.new(var).expand_path
-            end
-          when :directory, :dir then
-            if strict && !File.directory?(var)
-              error("Invalid variable `#{name}`: `#{var}` isn't a directory")
-            else
-              Pathname.new(var).expand_path
-            end
-          else
-            error("Unhandled type `#{type}`. If you need support for a new type, " +
-                  "open an issue at `#{Fizzy::CFG.issues_url}`.")
-          end
-        end
+        typize(name, var, type: type, strict: strict)
       end
     end
 
@@ -1286,47 +1303,57 @@ module Fizzy::Vars
     def _get_var(vars, name, single_match: :force)
       dot_split_regexp = /([^.]+)(?:\.|$)/
 
-      name.to_s.scan(dot_split_regexp).map{|match_group| match_group[0]}
-                   .reject(&:empty?)
-                   .inject(vars) do |cur_obj, name_component|
+      name.to_s
+          .scan(dot_split_regexp)
+          .map{|match_group| match_group[0]}
+          .reject(&:empty?)
+          .inject(vars) do |current_objects, name_component|
 
-        # Intermediate `cur_obj` are lists because every step returns a list.
+        # Intermediate `current_objects` are lists because every step returns
+        # a list.
         # If a step is not-final (i.e. intermediate), we need to be sure there
         # is only one element.
-        if cur_obj.is_a?(Array)
-          if cur_obj.length == 1
-            cur_obj = cur_obj.first
+        if current_objects.is_a?(Array)
+          if current_objects.length == 1
+            current_objects = current_objects.first
           else
             error("Variabile name diverges: multiple intermediate paths are " +
-                  "taken (`[#{cur_obj}]`).")
+                  "taken (`[#{current_objects}]`).")
           end
         end
 
-        # Fill `nxt_obj`.
-        nxt_obj = if cur_obj.has_key?(name_component) # Check for exact match.
-                    Array[cur_obj[name_component]]
+        # Fill `next_objects`.
+        next_objects = if current_objects.has_key?(name_component)
+                    # Exact match.
+                    Array[current_objects[name_component]]
                   else
                     # Check if there are elements with key matching
                     # `name_component` as regexp.
-                    # Returns `nil` if nothing is found.
-                    cur_obj.select do |k, v|
+                    # Return `nil` if nothing is found.
+                    current_objects.select do |k, v|
                       k =~ Regexp.new(/^#{name_component}$/)
                     end.values
                   end
 
-        # Adjust `nxt_obj`, according to `single_match` argument.
-        nxt_obj = if single_match
-                    if single_match == :force && nxt_obj.length != 1
+        # Filter `next_objects`.
+        next_objects = next_objects.map{|e| Fizzy::Vars::Filters.apply(e)}
+
+        # Adjust `next_objects`, according to `single_match` argument.
+        next_objects = if single_match
+                    if single_match == :force && next_objects.length != 1
                       error("Expected a single match for variable `#{name}`, " +
-                            "but instead got `#{nxt_obj.length}`")
+                            "but instead got `#{next_objects.length}`")
                     end
-                    nxt_obj.first
+                    next_objects.first
                   else
-                    nxt_obj
+                    next_objects
                   end
 
-        break nil if nxt_obj.nil? || (nxt_obj.is_a?(Array) && nxt_obj.empty?)
-        Fizzy::Vars::Filters.apply(nxt_obj)
+        if next_objects.nil? ||
+           (next_objects.is_a?(Array) && next_objects.empty?)
+          break nil
+        end
+        next_objects
       end
     end
 
@@ -1417,7 +1444,7 @@ module Fizzy::Locals
   extend Forwardable
   include Fizzy::IO
 
-  def_delegator :@locals_proxy, :local, :local!, :local?, :prefix?
+  def_delegators :@locals_proxy, :local, :local!, :local?, :prefix?
 
   # Entry point for using the DSL defined by `Proxy` class.
   # The DSL is directly accessible inside the provided block.
@@ -1433,6 +1460,7 @@ module Fizzy::Locals
   class Proxy
 
     include Fizzy::IO
+    include Fizzy::TypeSystem
 
     attr_reader :locals
 
@@ -1459,12 +1487,13 @@ module Fizzy::Locals
 
     # Create a new computed `local`, based upon other locals.
     #
-    def computed(name, &block)
+    def computed(name, **typize_opts, &block)
       name = name.to_s.to_sym
       error("Invalid local name `#{name}`: it's blank.") if name.empty?
       error("Cannot compute local `#{name}`.") unless block_given?
-
-      _set_local(name, @receiver.instance_exec(&block))
+      value = @receiver.instance_exec(&block)
+      value = typize(name, value, **typize_opts) if typize_opts.length > 0
+      _set_local(name, value)
     end
 
     # Access the value of a local.
@@ -1504,7 +1533,7 @@ module Fizzy::Locals
     # been defined; otherwise, `false`.
     #
     def prefix?(prefix)
-      @prefix_history.any?{|p| p[:local].to_s.start_with?(prefix)}
+      @prefix_history.any?{|p| p[:local].to_s.start_with?(prefix.to_s)}
     end
 
     # └────────────────────────────────────────────────────────────────────────┘
@@ -1851,6 +1880,22 @@ module Fizzy::MetaElements
 
 end
 
+# ☞ Lib → Filters → Lastpass ───────────────────────────────────────────────────
+
+Fizzy::Vars::Filters.define(:lpass, description: """
+LastPass filter allows to retrieve informations stored in a lastpass account
+As arguments you can pass:
+- #0: A unique name or identifier of the element to be retrieved.
+- #1 [optional]: What information should be retrieved from the element.
+                 Defaults to the element's password.
+""") do |args|
+  args = args.split_by_separator
+  name = args[0].shell_escape
+  what = args[1] || :password
+  what = "--#{what}" unless what.to_s.start_with?("--")
+  `lpass show --color=never #{what} #{name}`
+end
+
 # ☞ Commands → Base ────────────────────────────────────────────────────────────
 
 # Base class for all fizzy commands.
@@ -2030,8 +2075,6 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                     select(&:file?).
                     reject{|path| path.to_s =~ /\.git/}
                 end
-
-    puts cfg_files
 
     cfg_files_arg = cfg_files.collect{|path| path.shell_escape}
                              .join(" ")

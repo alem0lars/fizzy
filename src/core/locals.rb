@@ -19,6 +19,7 @@ module Fizzy::Locals
   class Proxy
 
     include Fizzy::IO
+    include Fizzy::TypeSystem
 
     attr_reader :locals
 
@@ -45,12 +46,13 @@ module Fizzy::Locals
 
     # Create a new computed `local`, based upon other locals.
     #
-    def computed(name, &block)
+    def computed(name, **typize_opts, &block)
       name = name.to_s.to_sym
       error("Invalid local name `#{name}`: it's blank.") if name.empty?
       error("Cannot compute local `#{name}`.") unless block_given?
-
-      _set_local(name, @receiver.instance_exec(&block))
+      value = @receiver.instance_exec(&block)
+      value = typize(name, value, **typize_opts) if typize_opts.length > 0
+      _set_local(name, value)
     end
 
     # Access the value of a local.
@@ -90,7 +92,7 @@ module Fizzy::Locals
     # been defined; otherwise, `false`.
     #
     def prefix?(prefix)
-      @prefix_history.any?{|p| p[:local].to_s.start_with?(prefix)}
+      @prefix_history.any?{|p| p[:local].to_s.start_with?(prefix.to_s)}
     end
 
     # └────────────────────────────────────────────────────────────────────────┘

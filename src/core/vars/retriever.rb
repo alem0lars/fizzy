@@ -2,6 +2,7 @@ module Fizzy::Vars
   class Retriever
 
     include Fizzy::IO
+    include Fizzy::TypeSystem
 
     def initialize(vars)
       @vars = vars
@@ -33,59 +34,11 @@ module Fizzy::Vars
     # Accept a list of variables (`vars` argument) and ensure they are correctly
     # typed, according to `type`.
     #
-    # If `strict` is `true`, then no type convertion/normalization is done;
-    # otherwise, try to guess the correct type.
+    # See `Fizzy::TypeSystem#typize` for more details.
     #
     def _typize_var(name, variable, type, strict)
       Array(variable).map do |var|
-        if type.nil? || (type.to_s.end_with?("?") && var.nil?)
-          var
-        else
-          case type.to_s.gsub(/\?$/, "").to_sym
-          when :string, :str
-            strict ? _ensure_type!(name, var, String) : var.to_s
-          when :symbol, :sym
-            strict ? _ensure_type!(name, var, Symbol) : var.to_s.to_sym
-          when :integer, :int
-            strict ? _ensure_type!(name, var, Integer) : Integer(var)
-          when :boolean, :bool
-            if strict
-              _ensure_type!(name, var, TrueClass, FalseClass)
-            else
-              if var.nil?
-                nil
-              elsif var.is_a?(TrueClass) || var.to_s == "true"
-                true
-              elsif var.is_a?(FalseClass) || var.to_s == "false"
-                false
-              else
-                error("Invalid value `#{var}` for variable `#{name}`: " +
-                      "it can't be converted to a boolean.")
-              end
-            end
-          when :path, :pth then
-            if strict && !File.exist?(var)
-              error("Invalid variable `#{name}`: `#{var}` doesn't exist")
-            else
-              Pathname.new(var).expand_path
-            end
-          when :file, :pth then
-            if strict && !File.file?(var)
-              error("Invalid variable `#{name}`: `#{var}` isn't a file")
-            else
-              Pathname.new(var).expand_path
-            end
-          when :directory, :dir then
-            if strict && !File.directory?(var)
-              error("Invalid variable `#{name}`: `#{var}` isn't a directory")
-            else
-              Pathname.new(var).expand_path
-            end
-          else
-            error("Unhandled type `#{type}`. If you need support for a new type, " +
-                  "open an issue at `#{Fizzy::CFG.issues_url}`.")
-          end
-        end
+        typize(name, var, type: type, strict: strict)
       end
     end
 
@@ -108,47 +61,57 @@ module Fizzy::Vars
     def _get_var(vars, name, single_match: :force)
       dot_split_regexp = /([^.]+)(?:\.|$)/
 
-      name.to_s.scan(dot_split_regexp).map{|match_group| match_group[0]}
-                   .reject(&:empty?)
-                   .inject(vars) do |cur_obj, name_component|
+      name.to_s
+          .scan(dot_split_regexp)
+          .map{|match_group| match_group[0]}
+          .reject(&:empty?)
+          .inject(vars) do |current_objects, name_component|
 
-        # Intermediate `cur_obj` are lists because every step returns a list.
+        # Intermediate `current_objects` are lists because every step returns
+        # a list.
         # If a step is not-final (i.e. intermediate), we need to be sure there
         # is only one element.
-        if cur_obj.is_a?(Array)
-          if cur_obj.length == 1
-            cur_obj = cur_obj.first
+        if current_objects.is_a?(Array)
+          if current_objects.length == 1
+            current_objects = current_objects.first
           else
             error("Variabile name diverges: multiple intermediate paths are " +
-                  "taken (`[#{cur_obj}]`).")
+                  "taken (`[#{current_objects}]`).")
           end
         end
 
-        # Fill `nxt_obj`.
-        nxt_obj = if cur_obj.has_key?(name_component) # Check for exact match.
-                    Array[cur_obj[name_component]]
+        # Fill `next_objects`.
+        next_objects = if current_objects.has_key?(name_component)
+                    # Exact match.
+                    Array[current_objects[name_component]]
                   else
                     # Check if there are elements with key matching
                     # `name_component` as regexp.
-                    # Returns `nil` if nothing is found.
-                    cur_obj.select do |k, v|
+                    # Return `nil` if nothing is found.
+                    current_objects.select do |k, v|
                       k =~ Regexp.new(/^#{name_component}$/)
                     end.values
                   end
 
-        # Adjust `nxt_obj`, according to `single_match` argument.
-        nxt_obj = if single_match
-                    if single_match == :force && nxt_obj.length != 1
+        # Filter `next_objects`.
+        next_objects = next_objects.map{|e| Fizzy::Vars::Filters.apply(e)}
+
+        # Adjust `next_objects`, according to `single_match` argument.
+        next_objects = if single_match
+                    if single_match == :force && next_objects.length != 1
                       error("Expected a single match for variable `#{name}`, " +
-                            "but instead got `#{nxt_obj.length}`")
+                            "but instead got `#{next_objects.length}`")
                     end
-                    nxt_obj.first
+                    next_objects.first
                   else
-                    nxt_obj
+                    next_objects
                   end
 
-        break nil if nxt_obj.nil? || (nxt_obj.is_a?(Array) && nxt_obj.empty?)
-        Fizzy::Vars::Filters.apply(nxt_obj)
+        if next_objects.nil? ||
+           (next_objects.is_a?(Array) && next_objects.empty?)
+          break nil
+        end
+        next_objects
       end
     end
 

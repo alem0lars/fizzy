@@ -86,8 +86,6 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                     reject{|path| path.to_s =~ /\.git/}
                 end
 
-    puts cfg_files
-
     cfg_files_arg = cfg_files.collect{|path| path.shell_escape}
                              .join(" ")
                              .strip

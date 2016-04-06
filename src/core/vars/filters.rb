@@ -1,16 +1,13 @@
 module Fizzy::Vars
 
   module Filters
-    def self.filters
-      @filters ||= []
-    end
-
     def self.define(name, description: nil, &block)
-      filters << Filter.new(name, description.strip, &block)
+      @filters ||= []
+      @filters  << Filter.new(name, description.strip, &block)
     end
 
     def self.apply(blob)
-      if filters.find{|f| f.match?(blob)}
+      if filter = (@filters || []).find{|f| f.match?(blob)}
         filter.apply(blob)
       else
         blob
@@ -31,7 +28,8 @@ module Fizzy::Vars
       end
 
       def match?(blob)
-        @regexp =~ blob
+        return false unless blob.is_a?(String) || blob.is_a?(Symbol)
+        @regexp =~ blob.to_s
       end
 
       def apply(blob)

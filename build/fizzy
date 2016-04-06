@@ -1372,8 +1372,12 @@ module Fizzy::Locals
       names.collect{|name| local(name)}.compact.length == names.length
     end
 
-    def prefixed(var, as: nil)
+    def prefixed(var, as: nil, optional: false)
       error("A block is required") unless block_given?
+      unless @receiver.get_var(var.gsub(/\.$/, ""))
+        return if optional
+        error("Invalid variable prefix: `#{var}`.")
+      end
       @prefix = {var: var, local: as}
       yield
       @prefix = nil

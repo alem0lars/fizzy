@@ -4,22 +4,24 @@ grammars:
 sources:
   - requires
   - configuration
+  - exts/string
   - exts/hash
   - exts/thor
-  - utils/io
+  - core/io
   - grammars/base_lexer
   - <grammars>
-  - utils/environment
-  - utils/execution
-  - utils/filesystem
-  - utils/git
-  - utils/vars/setup
-  - utils/vars/retriever
-  - utils/vars/api
-  - utils/locals
-  - utils/meta_commands
-  - utils/meta_info
-  - utils/meta_elements
+  - core/environment
+  - core/execution
+  - core/filesystem
+  - core/git
+  - core/vars/setup
+  - core/vars/filters
+  - core/vars/retriever
+  - core/vars/api
+  - core/locals
+  - core/meta_commands
+  - core/meta_info
+  - core/meta_elements
   - commands/base
   - commands/cfg
   - commands/inst

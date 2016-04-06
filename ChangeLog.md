@@ -23,6 +23,8 @@
 - Allow to select variables (with `get_var` and derivatives) using regexp
   (e.g. `mercurial.mergetool.(name|cmd)`).
 - Add function `case_os`.
+- Add `filters` feature
+- Add `lpass` filter
 
 ## Current and previous versions
 

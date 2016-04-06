@@ -36,8 +36,8 @@ module Fizzy::Vars
     # If `strict` is `true`, then no type convertion/normalization is done;
     # otherwise, try to guess the correct type.
     #
-    def _typize_var(name, var, type, strict)
-      Array(var).map do |var|
+    def _typize_var(name, variable, type, strict)
+      Array(variable).map do |var|
         if type.nil? || (type.to_s.end_with?("?") && var.nil?)
           var
         else
@@ -148,7 +148,7 @@ module Fizzy::Vars
                   end
 
         break nil if nxt_obj.nil? || (nxt_obj.is_a?(Array) && nxt_obj.empty?)
-        nxt_obj
+        Fizzy::Vars::Filters.apply(nxt_obj)
       end
     end
 

@@ -71,7 +71,7 @@ module Fizzy::Filesystem
     end
     if root_path.file?
       if quiz("`#{root_path}` already exists but is a regular file. Remove")
-        exec_cmd("rm #{Shellwords.escape(root_path)}",
+        exec_cmd("rm #{root_path.shell_escape}",
                  as_su: File.owned?(root_path))
       else
         error("File `#{root_path}` already exists but is needed as fizzy " +
@@ -124,7 +124,7 @@ module Fizzy::Filesystem
     [cfg_path, inst_path].each do |dir_path|
       unless dir_path.directory?
         FileUtils.mkdir_p(dir_path)
-        exec_cmd("chmod a+w #{Shellwords.escape(dir_path)}",
+        exec_cmd("chmod a+w #{dir_path.shell_escape}",
                  as_su: File.owned?(dir_path))
       end
     end

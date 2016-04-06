@@ -42,10 +42,10 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
     meta = get_meta(paths.cur_inst_meta, paths.cur_inst_vars, paths.cur_inst,
                     options.verbose)
 
-    # Install the instance into the system.
+    # 1. Install the instance into the system.
     tell("Installing the configuration instance `#{options.inst_name}` " +
          "into the system.", :blue)
-
+    # 1.1 Install the elements.
     meta["elems"].each do |elem|
       tell("Installing element: `#{elem["name"]}`.", :cyan)
       elements_appliers.each { |applier| applier.call(elem) }
@@ -54,6 +54,7 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
         tell(elem["notes"].split("\n").collect { |s| "  #{s}" }.join("\n"))
       end
     end
+    # 1.2 Install the commands.
     meta["commands"].each do |spec|
       tell("Executing command: `#{spec["name"]}`.", :cyan)
       available_commands[spec["type"]]["executor"].call(spec)

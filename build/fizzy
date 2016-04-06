@@ -112,6 +112,19 @@ Fizzy::CFG.vars = OpenStruct.new(
   parent_dummy_regexp: /none|nothing/i
 )
 
+# ☞ Exts → String ──────────────────────────────────────────────────────────────
+
+class String
+
+  # Escapes the underlying object so that it can be safely used in a Bourne
+  # shell commandline.
+  #
+  def shell_escape
+    Shellwords.shellescape(self)
+  end
+
+end
+
 # ☞ Exts → Hash ────────────────────────────────────────────────────────────────
 
 class Hash
@@ -162,7 +175,7 @@ class Thor
   end
 end
 
-# ☞ Utils → Io ─────────────────────────────────────────────────────────────────
+# ☞ Core → Io ──────────────────────────────────────────────────────────────────
 
 module Fizzy::IO
 
@@ -598,7 +611,7 @@ end
   end   # class LogicParser
   end   # module Fizzy
 
-# ☞ Utils → Environment ────────────────────────────────────────────────────────
+# ☞ Core → Environment ─────────────────────────────────────────────────────────
 
 # Utilities to retrieve informations about the host environment & system.
 #
@@ -655,7 +668,7 @@ module Fizzy::Environment
 
 end
 
-# ☞ Utils → Execution ──────────────────────────────────────────────────────────
+# ☞ Core → Execution ───────────────────────────────────────────────────────────
 
 # Utilities to start and manage programs execution.
 #
@@ -692,7 +705,7 @@ module Fizzy::Execution
 
 end
 
-# ☞ Utils → Filesystem ─────────────────────────────────────────────────────────
+# ☞ Core → Filesystem ──────────────────────────────────────────────────────────
 
 # Utilities to interact with the filesystem.
 #
@@ -767,7 +780,7 @@ module Fizzy::Filesystem
     end
     if root_path.file?
       if quiz("`#{root_path}` already exists but is a regular file. Remove")
-        exec_cmd("rm #{Shellwords.escape(root_path)}",
+        exec_cmd("rm #{root_path.shell_escape}",
                  as_su: File.owned?(root_path))
       else
         error("File `#{root_path}` already exists but is needed as fizzy " +
@@ -820,7 +833,7 @@ module Fizzy::Filesystem
     [cfg_path, inst_path].each do |dir_path|
       unless dir_path.directory?
         FileUtils.mkdir_p(dir_path)
-        exec_cmd("chmod a+w #{Shellwords.escape(dir_path)}",
+        exec_cmd("chmod a+w #{dir_path.shell_escape}",
                  as_su: File.owned?(dir_path))
       end
     end
@@ -843,7 +856,7 @@ module Fizzy::Filesystem
 
 end
 
-# ☞ Utils → Git ────────────────────────────────────────────────────────────────
+# ☞ Core → Git ─────────────────────────────────────────────────────────────────
 
 module Fizzy::Git
 
@@ -890,16 +903,18 @@ module Fizzy::Git
   end
 
   def git_pull(remote: nil, branch: nil, with_submodules: true)
-    error("Invalid remote `#{remote}`.") \
-      if remote && !git_remotes.include?(remote)
-    error("Invalid branch `#{branch}`.") \
-      if branch && !git_branches.include?(branch)
+    if remote && !git_remotes.include?(remote)
+      error("Invalid remote `#{remote}`.")
+    end
+    if branch && !git_branches.include?(branch)
+      error("Invalid branch `#{branch}`.")
+    end
 
     tell("Performing pull.", :blue)
 
     cmd  = "git pull"
-    cmd << " #{Shellwords.escape(remote)}" unless remote.nil?
-    cmd << " #{Shellwords.escape(branch)}" unless branch.nil?
+    cmd << " #{remote.shell_escape}" unless remote.nil?
+    cmd << " #{branch.shell_escape}" unless branch.nil?
 
     status   = exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
     status &&= exec_cmd("git submodule update --recursive",
@@ -915,37 +930,41 @@ module Fizzy::Git
 
     cmd  = "git clone"
     cmd << " --recursive" if recursive
-    cmd << " #{Shellwords.escape(url)} #{Shellwords.escape(dst_path)}"
+    cmd << " #{url.shell_escape} #{dst_path.shell_escape}"
 
     exec_cmd(cmd, as_su: !existing_dir(dst_path.dirname))
   end
 
   def git_push(remote: nil, branch: nil)
-    error("Invalid remote `#{remote}`.") \
-      if remote && !git_remotes.include?(remote)
-    error("Invalid branch `#{branch}`.") \
-      if branch && !git_branches.include?(branch)
+    if remote && !git_remotes.include?(remote)
+      error("Invalid remote `#{remote}`.")
+    end
+    if branch && !git_branches.include?(branch)
+      error("Invalid branch `#{branch}`.")
+    end
 
     tell("Pushing to remote.", :blue)
 
     cmd  = "git push"
-    cmd << " #{Shellwords.escape(remote)}" unless remote.nil?
-    cmd << " #{Shellwords.escape(branch)}" unless branch.nil?
+    cmd << " #{remote.shell_escape}" unless remote.nil?
+    cmd << " #{branch.shell_escape}" unless branch.nil?
 
     exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
   end
 
   def git_fetch(remote: nil, branch: nil)
-    error("Invalid remote `#{remote}`.") \
-      if remote && !git_remotes.include?(remote)
-    error("Invalid branch `#{branch}`.") \
-      if branch && !git_branches.include?(branch)
+    if remote && !git_remotes.include?(remote)
+      error("Invalid remote `#{remote}`.")
+    end
+    if branch && !git_branches.include?(branch)
+      error("Invalid branch `#{branch}`.")
+    end
 
     tell("Fetching from remote.", :blue)
 
     cmd  = "git fetch"
-    cmd << " #{Shellwords.escape(remote)}" unless remote.nil?
-    cmd << " #{Shellwords.escape(branch)}" unless branch.nil?
+    cmd << " #{remote.shell_escape}" unless remote.nil?
+    cmd << " #{branch.shell_escape}" unless branch.nil?
 
     exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
   end
@@ -957,7 +976,7 @@ module Fizzy::Git
     if files.nil?
       cmd << " -A"
     else
-      cmd << files.map { |f| Shellwords.escape(f) }.join(" ")
+      cmd << files.map {|f| f.shell_escape}.join(" ")
     end
 
     exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
@@ -970,7 +989,7 @@ module Fizzy::Git
     if message.nil?
       cmd << " --allow-empty-message"
     else
-      cmd << " -m #{Shellwords.escape(message)}"
+      cmd << " -m #{message.shell_escape}"
     end
 
     exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
@@ -998,7 +1017,7 @@ module Fizzy::Git
 
 end
 
-# ☞ Utils → Vars → Setup ───────────────────────────────────────────────────────
+# ☞ Core → Vars → Setup ────────────────────────────────────────────────────────
 
 module Fizzy::Vars
   class Setup
@@ -1089,7 +1108,59 @@ module Fizzy::Vars
   end
 end
 
-# ☞ Utils → Vars → Retriever ───────────────────────────────────────────────────
+# ☞ Core → Vars → Filters ──────────────────────────────────────────────────────
+
+module Fizzy::Vars
+
+  module Filters
+    def self.filters
+      @filters ||= []
+    end
+
+    def self.define(name, description: nil, &block)
+      filters << Filter.new(name, description.strip, &block)
+    end
+
+    def self.apply(blob)
+      if filters.find{|f| f.match?(blob)}
+        filter.apply(blob)
+      else
+        blob
+      end
+    end
+
+    class Filter
+
+      include Fizzy::IO
+
+      attr_reader :name, :desc
+
+      def initialize(name, desc, &block)
+        @name   = name
+        @desc   = desc
+        @block  = block
+        @regexp = /^<\{\s*(?<name>#{@name})\s*(?<args>\S+)\s*\}>$/
+      end
+
+      def match?(blob)
+        @regexp =~ blob
+      end
+
+      def apply(blob)
+        md = @regexp.match(blob)
+        return if md.nil?
+        args = md[:args]
+        def args.split_by_separator(sep=",")
+          self.split(/(?:\s*[#{sep}]\s*)/)
+        end
+        @block.call(args)
+      end
+    end
+  end
+
+end
+
+# ☞ Core → Vars → Retriever ────────────────────────────────────────────────────
 
 module Fizzy::Vars
   class Retriever
@@ -1129,8 +1200,8 @@ module Fizzy::Vars
     # If `strict` is `true`, then no type convertion/normalization is done;
     # otherwise, try to guess the correct type.
     #
-    def _typize_var(name, var, type, strict)
-      Array(var).map do |var|
+    def _typize_var(name, variable, type, strict)
+      Array(variable).map do |var|
         if type.nil? || (type.to_s.end_with?("?") && var.nil?)
           var
         else
@@ -1241,14 +1312,14 @@ module Fizzy::Vars
                   end
 
         break nil if nxt_obj.nil? || (nxt_obj.is_a?(Array) && nxt_obj.empty?)
-        nxt_obj
+        Fizzy::Vars::Filters.apply(nxt_obj)
       end
     end
 
   end
 end
 
-# ☞ Utils → Vars → Api ─────────────────────────────────────────────────────────
+# ☞ Core → Vars → Api ──────────────────────────────────────────────────────────
 
 module Fizzy::Vars
 
@@ -1325,7 +1396,7 @@ module Fizzy::Vars
 
 end
 
-# ☞ Utils → Locals ─────────────────────────────────────────────────────────────
+# ☞ Core → Locals ──────────────────────────────────────────────────────────────
 
 module Fizzy::Locals
 
@@ -1452,7 +1523,7 @@ module Fizzy::Locals
 
 end
 
-# ☞ Utils → Meta Commands ──────────────────────────────────────────────────────
+# ☞ Core → Meta Commands ───────────────────────────────────────────────────────
 
 # Manage commands declared in the meta file.
 #
@@ -1490,7 +1561,7 @@ module Fizzy::MetaCommands
 
 end
 
-# ☞ Utils → Meta Info ──────────────────────────────────────────────────────────
+# ☞ Core → Meta Info ───────────────────────────────────────────────────────────
 
 # Access informations declared in the meta file.
 #
@@ -1696,7 +1767,7 @@ module Fizzy::MetaInfo
 
 end
 
-# ☞ Utils → Meta Elements ──────────────────────────────────────────────────────
+# ☞ Core → Meta Elements ───────────────────────────────────────────────────────
 
 # Manage elements declared in the meta file.
 #
@@ -1729,7 +1800,7 @@ module Fizzy::MetaElements
           # - `f_noex_dir_path`: Path of the first directory after the prefix
           #                      which points to an existing dir.
           if !parent_dir.directory?
-            exec_cmd("mkdir -p #{Shellwords.escape(parent_dir)}",
+            exec_cmd("mkdir -p #{parent_dir.shell_escape}",
                      as_su: !existing_dir(parent_dir))
           end
         end
@@ -1758,8 +1829,8 @@ module Fizzy::MetaElements
           end
 
           if should_link
-            cmd << " #{Shellwords.escape m["src_path"]}"
-            cmd << " #{Shellwords.escape m["dst_path"]}"
+            cmd << " #{m["src_path"].shell_escape}"
+            cmd << " #{m["dst_path"].shell_escape}"
             exec_cmd(cmd, as_su: !existing_dir(m["dst_path"].dirname))
           end
         end
@@ -1769,8 +1840,8 @@ module Fizzy::MetaElements
           elem["fs_maps"].each do |m|
             tell("Changing permissions of #{m["src_path"]} to " +
                  elem["perms"]) if @verbose
-            exec_cmd("chmod -R #{Shellwords.escape(elem["perms"])} " +
-                     Shellwords.escape(m["src_path"]),
+            exec_cmd("chmod -R #{elem["perms"].shell_escape} " +
+                     m["src_path"].shell_escape,
                      as_su: !File.owned?(m["src_path"]))
           end
         end
@@ -1906,7 +1977,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst: false)
 
     # Perform cleanup.
-    status = exec_cmd("rm -Rf #{Shellwords.escape(paths.root)}") \
+    status = exec_cmd("rm -Rf #{paths.root.shell_escape}") \
       if quiz("Do you want to remove the fizzy root directory `#{paths.root}`")
 
     # Inform user about the cleanup status.
@@ -1962,7 +2033,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
     puts cfg_files
 
-    cfg_files_arg = cfg_files.collect{|path| Shellwords.escape(path)}
+    cfg_files_arg = cfg_files.collect{|path| path.shell_escape}
                              .join(" ")
                              .strip
 
@@ -2131,10 +2202,10 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
     meta = get_meta(paths.cur_inst_meta, paths.cur_inst_vars, paths.cur_inst,
                     options.verbose)
 
-    # Install the instance into the system.
+    # 1. Install the instance into the system.
     tell("Installing the configuration instance `#{options.inst_name}` " +
          "into the system.", :blue)
-
+    # 1.1 Install the elements.
     meta["elems"].each do |elem|
       tell("Installing element: `#{elem["name"]}`.", :cyan)
       elements_appliers.each { |applier| applier.call(elem) }
@@ -2143,6 +2214,7 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
         tell(elem["notes"].split("\n").collect { |s| "  #{s}" }.join("\n"))
       end
     end
+    # 1.2 Install the commands.
     meta["commands"].each do |spec|
       tell("Executing command: `#{spec["name"]}`.", :cyan)
       available_commands[spec["type"]]["executor"].call(spec)

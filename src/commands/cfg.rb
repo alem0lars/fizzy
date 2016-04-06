@@ -32,7 +32,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst: false)
 
     # Perform cleanup.
-    status = exec_cmd("rm -Rf #{Shellwords.escape(paths.root)}") \
+    status = exec_cmd("rm -Rf #{paths.root.shell_escape}") \
       if quiz("Do you want to remove the fizzy root directory `#{paths.root}`")
 
     # Inform user about the cleanup status.
@@ -88,7 +88,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
     puts cfg_files
 
-    cfg_files_arg = cfg_files.collect{|path| Shellwords.escape(path)}
+    cfg_files_arg = cfg_files.collect{|path| path.shell_escape}
                              .join(" ")
                              .strip
 

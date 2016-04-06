@@ -1,6 +1,9 @@
 module Fizzy::Locals
 
+  extend Forwardable
   include Fizzy::IO
+
+  def_delegator :@locals_proxy, :local, :local!, :local?, :prefix?
 
   # Entry point for using the DSL defined by `Proxy` class.
   # The DSL is directly accessible inside the provided block.
@@ -10,23 +13,6 @@ module Fizzy::Locals
     @locals_proxy = Fizzy::Locals::Proxy.new(self)
     @locals_proxy.instance_eval(&block)
   end
-
-  # ┌──────────────────────────────────────────────────────────────────────────┐
-  # ├→ Forward DSL calls to the `Proxy` ───────────────────────────────────────┤
-
-  def local(name)
-    @locals_proxy.local(name)
-  end
-
-  def local!(name)
-    @locals_proxy.local!(name)
-  end
-
-  def local?(*names, &block)
-    @locals_proxy.local?(*names, &block)
-  end
-
-  # └──────────────────────────────────────────────────────────────────────────┘
 
   # DSL used for defining locals.
   #
@@ -104,7 +90,7 @@ module Fizzy::Locals
     # been defined; otherwise, `false`.
     #
     def prefix?(prefix)
-      @prefix_history.any?{|p| p[:local].start_with?(prefix)}
+      @prefix_history.any?{|p| p[:local].to_s.start_with?(prefix)}
     end
 
     # └────────────────────────────────────────────────────────────────────────┘

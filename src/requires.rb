@@ -1,6 +1,7 @@
 # Core modules.
 require "fileutils"
 require "find"
+require "forwardable"
 require "json"
 require "net/http"
 require "ostruct"

@@ -1503,7 +1503,7 @@ module Fizzy::Locals
 
     def prefixed(var, as: nil, optional: false)
       error("A block is required") unless block_given?
-      unless @receiver.get_var(var.gsub(/\.$/, ""))
+      unless @receiver.get_var(var.to_s.gsub(/\.$/, ""))
         return if optional
         error("Invalid variable prefix: `#{var}`.")
       end

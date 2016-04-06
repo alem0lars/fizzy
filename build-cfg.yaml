@@ -13,7 +13,9 @@ sources:
   - utils/execution
   - utils/filesystem
   - utils/git
-  - utils/vars
+  - utils/vars/setup
+  - utils/vars/retriever
+  - utils/vars/api
   - utils/locals
   - utils/meta_commands
   - utils/meta_info

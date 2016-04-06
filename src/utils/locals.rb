@@ -40,6 +40,7 @@ module Fizzy::Locals
       @receiver = receiver
       @locals   = {}
       @prefix   = nil
+      @prefix_history = []
     end
 
     # ┌────────────────────────────────────────────────────────────────────────┐
@@ -94,8 +95,16 @@ module Fizzy::Locals
         error("Invalid variable prefix: `#{var}`.")
       end
       @prefix = {var: var, local: as}
+      @prefix_history << @prefix
       yield
       @prefix = nil
+    end
+
+    # Return `true`, if a prefix starting with the provided `prefix` has
+    # been defined; otherwise, `false`.
+    #
+    def prefix?(prefix)
+      @prefix_history.any?{|p| p[:local].start_with?(prefix)}
     end
 
     # └────────────────────────────────────────────────────────────────────────┘

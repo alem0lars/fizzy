@@ -3,7 +3,7 @@ module Fizzy::Locals
   extend Forwardable
   include Fizzy::IO
 
-  def_delegator :@locals_proxy, :local, :local!, :local?, :prefix?
+  def_delegators :@locals_proxy, :local, :local!, :local?, :prefix?
 
   # Entry point for using the DSL defined by `Proxy` class.
   # The DSL is directly accessible inside the provided block.

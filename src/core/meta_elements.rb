@@ -29,7 +29,7 @@ module Fizzy::MetaElements
           # - `f_noex_dir_path`: Path of the first directory after the prefix
           #                      which points to an existing dir.
           if !parent_dir.directory?
-            exec_cmd("mkdir -p #{Shellwords.escape(parent_dir)}",
+            exec_cmd("mkdir -p #{parent_dir.shell_escape}",
                      as_su: !existing_dir(parent_dir))
           end
         end
@@ -58,8 +58,8 @@ module Fizzy::MetaElements
           end
 
           if should_link
-            cmd << " #{Shellwords.escape m["src_path"]}"
-            cmd << " #{Shellwords.escape m["dst_path"]}"
+            cmd << " #{m["src_path"].shell_escape}"
+            cmd << " #{m["dst_path"].shell_escape}"
             exec_cmd(cmd, as_su: !existing_dir(m["dst_path"].dirname))
           end
         end
@@ -69,8 +69,8 @@ module Fizzy::MetaElements
           elem["fs_maps"].each do |m|
             tell("Changing permissions of #{m["src_path"]} to " +
                  elem["perms"]) if @verbose
-            exec_cmd("chmod -R #{Shellwords.escape(elem["perms"])} " +
-                     Shellwords.escape(m["src_path"]),
+            exec_cmd("chmod -R #{elem["perms"].shell_escape} " +
+                     m["src_path"].shell_escape,
                      as_su: !File.owned?(m["src_path"]))
           end
         end

@@ -43,16 +43,18 @@ module Fizzy::Git
   end
 
   def git_pull(remote: nil, branch: nil, with_submodules: true)
-    error("Invalid remote `#{remote}`.") \
-      if remote && !git_remotes.include?(remote)
-    error("Invalid branch `#{branch}`.") \
-      if branch && !git_branches.include?(branch)
+    if remote && !git_remotes.include?(remote)
+      error("Invalid remote `#{remote}`.")
+    end
+    if branch && !git_branches.include?(branch)
+      error("Invalid branch `#{branch}`.")
+    end
 
     tell("Performing pull.", :blue)
 
     cmd  = "git pull"
-    cmd << " #{Shellwords.escape(remote)}" unless remote.nil?
-    cmd << " #{Shellwords.escape(branch)}" unless branch.nil?
+    cmd << " #{remote.shell_escape}" unless remote.nil?
+    cmd << " #{branch.shell_escape}" unless branch.nil?
 
     status   = exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
     status &&= exec_cmd("git submodule update --recursive",
@@ -68,37 +70,41 @@ module Fizzy::Git
 
     cmd  = "git clone"
     cmd << " --recursive" if recursive
-    cmd << " #{Shellwords.escape(url)} #{Shellwords.escape(dst_path)}"
+    cmd << " #{url.shell_escape} #{dst_path.shell_escape}"
 
     exec_cmd(cmd, as_su: !existing_dir(dst_path.dirname))
   end
 
   def git_push(remote: nil, branch: nil)
-    error("Invalid remote `#{remote}`.") \
-      if remote && !git_remotes.include?(remote)
-    error("Invalid branch `#{branch}`.") \
-      if branch && !git_branches.include?(branch)
+    if remote && !git_remotes.include?(remote)
+      error("Invalid remote `#{remote}`.")
+    end
+    if branch && !git_branches.include?(branch)
+      error("Invalid branch `#{branch}`.")
+    end
 
     tell("Pushing to remote.", :blue)
 
     cmd  = "git push"
-    cmd << " #{Shellwords.escape(remote)}" unless remote.nil?
-    cmd << " #{Shellwords.escape(branch)}" unless branch.nil?
+    cmd << " #{remote.shell_escape}" unless remote.nil?
+    cmd << " #{branch.shell_escape}" unless branch.nil?
 
     exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
   end
 
   def git_fetch(remote: nil, branch: nil)
-    error("Invalid remote `#{remote}`.") \
-      if remote && !git_remotes.include?(remote)
-    error("Invalid branch `#{branch}`.") \
-      if branch && !git_branches.include?(branch)
+    if remote && !git_remotes.include?(remote)
+      error("Invalid remote `#{remote}`.")
+    end
+    if branch && !git_branches.include?(branch)
+      error("Invalid branch `#{branch}`.")
+    end
 
     tell("Fetching from remote.", :blue)
 
     cmd  = "git fetch"
-    cmd << " #{Shellwords.escape(remote)}" unless remote.nil?
-    cmd << " #{Shellwords.escape(branch)}" unless branch.nil?
+    cmd << " #{remote.shell_escape}" unless remote.nil?
+    cmd << " #{branch.shell_escape}" unless branch.nil?
 
     exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
   end
@@ -110,7 +116,7 @@ module Fizzy::Git
     if files.nil?
       cmd << " -A"
     else
-      cmd << files.map { |f| Shellwords.escape(f) }.join(" ")
+      cmd << files.map {|f| f.shell_escape}.join(" ")
     end
 
     exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))
@@ -123,7 +129,7 @@ module Fizzy::Git
     if message.nil?
       cmd << " --allow-empty-message"
     else
-      cmd << " -m #{Shellwords.escape(message)}"
+      cmd << " -m #{message.shell_escape}"
     end
 
     exec_cmd(cmd, as_su: !existing_dir(Pathname.pwd))

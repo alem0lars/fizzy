@@ -25,7 +25,7 @@ module Fizzy::Vars
     def setup_vars(vars_dir_path, name)
       fmt, content = read_vars(vars_dir_path, name)
       error("Invalid vars: `#{name}`.") if fmt == nil || content == nil
-      self_vars    = parse_vars(fmt, content)
+      self_vars    = parse_vars(name, fmt, content)
       parents      = parse_parents_vars(fmt, content)
       parents_vars = merge_parents_vars(vars_dir_path, parents)
       merge_with_parents_vars(self_vars, parents_vars)
@@ -43,14 +43,19 @@ module Fizzy::Vars
       end
     end
 
-    def parse_vars(fmt, content)
+    def parse_vars(name, fmt, content)
       case fmt
-      when :yaml then YAML.load(content) || {}
+      when :yaml
+        begin
+          YAML.load(content) || {}
+        rescue Psych::SyntaxError => e
+          error("Invalid syntax in YAML `#{name}`: #{e.message}")
+        end
       when :json
         begin
           JSON.parse(content)
-        rescue
-          error("Invalid JSON: `#{content}`.")
+        rescue JSON::JSONError => e
+          error("Invalid JSON `#{name}`: #{e.message}.")
         end
       else error("Unrecognized format: `#{fmt}`")
       end

@@ -22,6 +22,7 @@
 - Add command `cfg info`.
 - Allow to select variables (with `get_var` and derivatives) using regexp
   (e.g. `mercurial.mergetool.(name|cmd)`).
+- Add function `xdg_config_home`.
 - Add function `case_os`.
 - Refactor types management in the `typesystem` module.
 - Add `filters` feature.

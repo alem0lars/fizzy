@@ -25,6 +25,7 @@
 - Add function `xdg_config_home`.
 - Add function `case_os`.
 - Refactor types management in the `typesystem` module.
+- Support `ERB` templates inside `vars` definition.
 - Add `filters` feature.
 - Add `lpass` filter.
 

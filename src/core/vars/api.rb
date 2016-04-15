@@ -14,7 +14,7 @@ module Fizzy::Vars
   #
   def setup_vars(vars_dir_path, name)
     info("vars: ", name)
-    @vars = Fizzy::Vars::Setup.new(vars_dir_path, name).run()
+    @vars = Fizzy::Vars::Setup.new(vars_dir_path, name, binding).run()
   end
 
   # See `Fizzy::Vars::Retriever#run`

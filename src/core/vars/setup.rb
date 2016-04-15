@@ -4,7 +4,8 @@ module Fizzy::Vars
     include Fizzy::IO
     include Fizzy::Filesystem
 
-    def initialize(vars_dir_path, name)
+    def initialize(vars_dir_path, name, bindings)
+      @binding = bindings
       @vars_dir_path = vars_dir_path
       @name          = name
     end
@@ -44,6 +45,7 @@ module Fizzy::Vars
     end
 
     def parse_vars(name, fmt, content)
+      content = ERB.new(content).result(@binding)
       case fmt
       when :yaml
         begin

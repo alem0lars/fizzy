@@ -1109,7 +1109,8 @@ module Fizzy::Vars
     include Fizzy::IO
     include Fizzy::Filesystem
 
-    def initialize(vars_dir_path, name)
+    def initialize(vars_dir_path, name, bindings)
+      @binding = bindings
       @vars_dir_path = vars_dir_path
       @name          = name
     end
@@ -1149,6 +1150,7 @@ module Fizzy::Vars
     end
 
     def parse_vars(name, fmt, content)
+      content = ERB.new(content).result(@binding)
       case fmt
       when :yaml
         begin
@@ -1387,7 +1389,7 @@ module Fizzy::Vars
   #
   def setup_vars(vars_dir_path, name)
     info("vars: ", name)
-    @vars = Fizzy::Vars::Setup.new(vars_dir_path, name).run()
+    @vars = Fizzy::Vars::Setup.new(vars_dir_path, name, binding).run()
   end
 
   # See `Fizzy::Vars::Retriever#run`

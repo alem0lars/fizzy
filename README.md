@@ -5,6 +5,10 @@ The hassle free configuration manager
 
 [![Bountysource](https://img.shields.io/bountysource/team/fizzy/activity.svg)]()
 
+## Usage
+
+A end-user guide is planned (see issue #21) but still not available.
+
 ## Installation
 
 ### MacOSX

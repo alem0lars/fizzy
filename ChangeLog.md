@@ -28,6 +28,7 @@
 - Support `ERB` templates inside `vars` definition.
 - Add `filters` feature.
 - Add `lpass` filter.
+* Add `download` meta command.
 
 ## Current and previous versions
 

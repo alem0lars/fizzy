@@ -4,6 +4,10 @@ module Fizzy::Environment
 
   include Fizzy::IO
 
+  def which?(name)
+    find_executable(name.to_s)
+  end
+
   # Return the environment variable matching the provided `name`.
   #
   def get_env(name, default: nil)

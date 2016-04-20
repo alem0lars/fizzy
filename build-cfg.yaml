@@ -7,6 +7,7 @@ sources:
   - exts/string
   - exts/hash
   - exts/pathname
+  - exts/mkmf
   - exts/thor
   - core/io
   - grammars/base_lexer

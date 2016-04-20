@@ -2,7 +2,7 @@
 
 ## Next version
 
-*tbd*
+- Add `which?` utility method, that checks if a executable is available.
 
 ## Current and previous versions
 

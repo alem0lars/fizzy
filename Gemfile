@@ -1,9 +1,6 @@
 source "https://rubygems.org"
 
-# The "real" fizzy dependencies.
-group :production do
-  gem "thor"
-end
+gem "thor"
 
 # External tools used **only** during development.
 group :development do
@@ -17,6 +14,6 @@ group :development do
   gem "minitest"
 
   # Make IRB more powerful!
-  gem "irbtools"
-  gem "irbtools-more"
+  # gem "irbtools"
+  # gem "irbtools-more"
 end

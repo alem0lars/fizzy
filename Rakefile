@@ -1,9 +1,13 @@
 # ┌────────────────────────────────────────────────────────────────────────────┐
 # ├→ Requires ─────────────────────────────────────────────────────────────────┤
 
-require "pathname"
+require "net/http"
 require "yaml"
+require "pathname"
 require "shellwords"
+require "uri"
+
+require "bundler/setup" # For `Bundler.with_clean_env`.
 require "rake/testtask"
 
 # ├────────────────────────────────────────────────────────────────────────────┤
@@ -13,6 +17,7 @@ DEBUG = ENV["FIZZY_DEBUG"] == "true"
 
 ROOT_PATH     = Pathname.new(File.dirname(__FILE__))
 BUILD_PATH    = ROOT_PATH.join("build")
+PKG_PATH      = BUILD_PATH.join("package")
 TMP_PATH      = ROOT_PATH.join("tmp")
 TEST_PATH     = ROOT_PATH.join("test")
 SRC_PATH      = ROOT_PATH.join("src")
@@ -56,8 +61,8 @@ def write_bin(title, content, newlines: [0, 0], mode: "a")
   end
 end
 
-def prepare_build
-  info("Preparing for build")
+def load_build_cfg
+  info("Loading build configuration")
 
   # ☛ Check tmp directory
   error("The temporary directory `#{TMP_PATH}` is reserved") if TMP_PATH.file?
@@ -65,12 +70,9 @@ def prepare_build
   # ☛ Check build directory
   error("The build directory `#{BUILD_PATH}` is reserved") if BUILD_PATH.file?
   BUILD_PATH.mkdir unless BUILD_PATH.directory?
-  # ☛ Check current/old fizzy binaries
-  error("Current fizzy binary is a directory.. WTF?") if BIN_PATH.directory?
-  error("Old fizzy binary is a directory.. WTF?") if OLD_BIN_PATH.directory?
-  OLD_BIN_PATH.delete if OLD_BIN_PATH.file?
-  BIN_RB_PATH.delete  if BIN_RB_PATH.file?
-  BIN_PATH.rename(OLD_BIN_PATH) if BIN_PATH.file?
+  # ☛ Check pkg directory
+  error("The package directory `#{PKG_PATH}` is reserved") if PKG_PATH.file?
+  PKG_PATH.mkdir unless PKG_PATH.directory?
   # ☛ Check source directory
   error("No source directory found") unless SRC_PATH.directory?
   # ☛ Check source files
@@ -79,9 +81,17 @@ def prepare_build
   # ☛ Read build configuration.
   build_cfg = YAML.load_file(BUILD_CFG_PATH.to_s)
 
-  info("Build successfully prepared", success: true)
+  info("Build configuration successfully loaded", success: true)
 
   build_cfg
+end
+
+def cleanup_bin
+  error("Current fizzy binary is a directory.. WTF?") if BIN_PATH.directory?
+  error("Old fizzy binary is a directory.. WTF?") if OLD_BIN_PATH.directory?
+  OLD_BIN_PATH.delete if OLD_BIN_PATH.file?
+  BIN_RB_PATH.delete  if BIN_RB_PATH.file?
+  BIN_PATH.rename(OLD_BIN_PATH) if BIN_PATH.file?
 end
 
 def build_grammars(build_cfg)
@@ -114,9 +124,12 @@ end
 
 desc "Build Fizzy"
 task :build do
-  build_cfg = prepare_build
+  build_cfg = load_build_cfg
 
   info("Build started")
+
+  # ☞ Initial cleanup.
+  cleanup_bin
 
   # ☞ Build grammars.
   build_grammars(build_cfg)
@@ -157,6 +170,126 @@ task :build do
   BIN_RB_PATH.make_symlink(BIN_PATH)
 
   info("Build successfully completed", success: true)
+end
+
+# ├────────────────────────────────────────────────────────────────────────────┤
+# ├→ Task `package` ───────────────────────────────────────────────────────────┤
+
+def runtimes_names
+  build_cfg = load_build_cfg
+  archs = build_cfg["traveling_ruby"]["archs"]
+  traveling_vers = build_cfg["traveling_ruby"]["vers"]
+  ruby_vers = build_cfg["traveling_ruby"]["ruby_vers"]
+
+  runtimes = []
+  archs.each do |os, archs|
+    archs = [nil] if archs.nil?
+    archs.each do |arch|
+      runtimes << runtime_name(traveling_vers, ruby_vers, os, arch)
+    end
+  end
+  runtimes
+end
+
+def runtimes_paths
+  runtimes_names.map{|runtime_name| TMP_PATH.join("#{runtime_name}.tar.gz")}
+end
+
+def runtime_name(traveling_vers, ruby_vers, os, arch)
+  name = "#{traveling_vers}-#{ruby_vers}-#{os}"
+  name << "-#{arch}" if arch
+  name
+end
+
+def download_runtime(runtime_name, dst_path)
+  runtime_archive_name = "#{runtime_name}.tar.gz"
+  src_name = "traveling-ruby-#{runtime_archive_name}"
+  info("Downloading runtime: #{runtime_name}", indent: 1)
+  url = URI.join("https://d6r77u77i8pq3.cloudfront.net/releases/#{src_name}")
+  res = Net::HTTP.get_response(url)
+  if res.is_a?(Net::HTTPSuccess)
+    File.write(dst_path, res.body)
+    info("Runtime successfully downloaded", indent: 1, success: true)
+  else
+    error("Network error: cannot retrieve `#{url}`.")
+  end
+end
+
+def create_package(runtime, runtime_path)
+  package_path = TMP_PATH.join("#{runtime}_tmp")
+  vendor_path = TMP_PATH.join("vendor")
+  dst_path = PKG_PATH.join(runtime_path.basename)
+
+  sh "rm -rf #{package_path}"
+
+  # Add the app.
+  sh "mkdir -p #{package_path}/lib/app"
+  sh "cp #{BIN_PATH} #{package_path}/lib/app/"
+
+  # Add the ruby interpreter.
+  sh "mkdir #{package_path}/lib/ruby"
+  sh "tar -xzf #{runtime_path} -C #{package_path}/lib/ruby"
+
+  # Build gems declared in Gemfile.
+  FileUtils.cp(ROOT_PATH.join("Gemfile"), TMP_PATH)
+  FileUtils.cp(ROOT_PATH.join("Gemfile.lock"), TMP_PATH)
+  Bundler.with_clean_env do
+    sh "cd #{TMP_PATH} && BUNDLE_IGNORE_CONFIG=1 bundle install --path #{vendor_path} --without development"
+  end
+  sh "rm -f #{vendor_path.join("*", "*", "cache", "*")}" # Remove cache files.
+  sh "cp -pR #{vendor_path} #{package_path}/lib/"
+
+  # Add bundler Gemfile.
+  FileUtils.cp(ROOT_PATH.join("Gemfile"), package_path.join("lib", "vendor"))
+  FileUtils.cp(ROOT_PATH.join("Gemfile.lock"), package_path.join("lib", "vendor"))
+  vendor_path.rmdir
+
+  # Add bundler config file.
+  bundle_path = package_path.join("lib", "vendor", ".bundle")
+  bundle_path.mkdir
+  bundle_path.join("config").write([
+    "BUNDLE_PATH: .",
+    "BUNDLE_WITHOUT: development",
+    "BUNDLE_DISABLE_SHARED_GEMS: '1'"
+  ].join("\n"))
+
+  # Add launcher.
+  launcher_path = package_path.join(BIN_PATH.basename)
+  launcher_path.write([
+    "#!/bin/bash",
+    "set -e",
+    # Figure out where this script is located.
+    "SELFDIR=\"`dirname \\\"$0\\\"`\"",
+    "SELFDIR=\"`cd \\\"$SELFDIR\\\" && pwd`\"",
+    # Tell Bundler where the Gemfile and gems are.
+    "export BUNDLE_GEMFILE=\"$SELFDIR/lib/vendor/Gemfile\"",
+    "unset BUNDLE_IGNORE_CONFIG",
+    # Run the actual app using the bundled Ruby interpreter, with Bundler activated.
+    "exec \"$SELFDIR/lib/ruby/bin/ruby\" -rbundler/setup \"$SELFDIR/lib/app/#{BIN_PATH.basename}\""
+  ].join("\n"))
+
+  if !ENV["DIR_ONLY"]
+    # Create an archive containing the created runtime.
+    sh "cd #{package_path} && tar -czf #{dst_path} *"
+    sh "rm -rf #{package_path}"
+  end
+end
+
+# Download archives
+runtimes_names.zip(runtimes_paths).each do |runtime_name, runtime_path|
+  file runtime_path.relative_path_from(ROOT_PATH) do
+    download_runtime(runtime_name, runtime_path)
+  end
+end
+
+task :package => [:build] + runtimes_paths.map{|rp| rp.relative_path_from(ROOT_PATH)} do
+  info("Packaging started")
+
+  runtimes_names.zip(runtimes_paths).each do |runtime_name, runtime_path|
+    create_package(runtime_name, runtime_path)
+  end
+
+  info("Packaging successfully completed", success: true)
 end
 
 # ├────────────────────────────────────────────────────────────────────────────┤

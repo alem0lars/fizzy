@@ -55,7 +55,6 @@ require "shellwords"
 require "strscan"
 require "uri"
 require "yaml"
-require "mkmf"
 
 # Try to require `thor` or raise an exception.
 begin
@@ -173,13 +172,6 @@ class Pathname
     Shellwords.shellescape(self)
   end
 
-end
-
-# ☞ Exts → Mkmf ────────────────────────────────────────────────────────────────
-
-module MakeMakefile::Logging
-  # Turn off output on `mkmf` methods.
-  @quiet = true
 end
 
 # ☞ Exts → Thor ────────────────────────────────────────────────────────────────
@@ -641,8 +633,18 @@ module Fizzy::Environment
 
   include Fizzy::IO
 
+  # Find an executable called `name` in the `$PATH`.
+  # Note: `name` can also be a path pointing to the executable.
+  #
   def which?(name)
-    find_executable(name.to_s)
+    exts = ENV["PATHEXT"] ? ENV["PATHEXT"].split(";") : [""]
+    ENV["PATH"].split(File::PATH_SEPARATOR).each do |path|
+      exts.each do |ext|
+        exe = File.join(path, "#{cmd}#{ext}")
+        return exe if File.executable?(exe) && !File.directory?(exe)
+      end
+    end
+    return nil
   end
 
   # Return the environment variable matching the provided `name`.

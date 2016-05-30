@@ -217,45 +217,61 @@ end
 
 def create_package(runtime, runtime_path)
   package_path = TMP_PATH.join("#{runtime}_tmp")
-  vendor_path = TMP_PATH.join("vendor")
+  package_lib_path = package_path.join("lib")
+  package_app_path = package_lib_path.join("app")
+  package_ruby_path = package_lib_path.join("ruby")
+  package_vendor_path = package_lib_path.join("vendor")
+  package_bundle_path = package_vendor_path.join(".bundle")
+  package_launcher_path = package_path.join(BIN_PATH.basename)
+  gemfile_path = ROOT_PATH.join("Gemfile")
+  gemfile_lock_path = ROOT_PATH.join("Gemfile.lock")
+  tmp_vendor_path = TMP_PATH.join("vendor")
   dst_path = PKG_PATH.join(runtime_path.basename)
 
-  sh "rm -rf #{package_path}"
+  # Remove previous package.
+  package_path.rmtree if package_path.exist?
 
   # Add the app.
-  sh "mkdir -p #{package_path}/lib/app"
-  sh "cp #{BIN_PATH} #{package_path}/lib/app/"
+  package_app_path.mkpath
+  FileUtils.cp(BIN_PATH, package_app_path)
 
   # Add the ruby interpreter.
-  sh "mkdir #{package_path}/lib/ruby"
-  sh "tar -xzf #{runtime_path} -C #{package_path}/lib/ruby"
+  package_ruby_path.mkpath
+  sh "tar -xzf #{runtime_path} -C #{package_ruby_path}"
 
   # Build gems declared in Gemfile.
-  FileUtils.cp(ROOT_PATH.join("Gemfile"), TMP_PATH)
-  FileUtils.cp(ROOT_PATH.join("Gemfile.lock"), TMP_PATH)
+  FileUtils.cp(gemfile_path, TMP_PATH)
+  FileUtils.cp(gemfile_lock_path, TMP_PATH)
   Bundler.with_clean_env do
-    sh "cd #{TMP_PATH} && BUNDLE_IGNORE_CONFIG=1 bundle install --path #{vendor_path} --without development"
+    FileUtils.cd(TMP_PATH) do
+      sh "BUNDLE_IGNORE_CONFIG=1 " +
+         "bundle install " +
+         "--path #{tmp_vendor_path} " +
+         "--without development"
+    end
   end
-  sh "rm -f #{vendor_path.join("*", "*", "cache", "*")}" # Remove cache files.
-  sh "cp -pR #{vendor_path} #{package_path}/lib/"
+  # Remove cache files.
+  Pathname.glob(tmp_vendor_path.join("*", "*", "cache", "*")).each do |path|
+    path.unlink if path.exist?
+  end
+  # Copy gems to destination.
+  FileUtils.cp_r(tmp_vendor_path, package_lib_path, preserve: true)
 
   # Add bundler Gemfile.
-  FileUtils.cp(ROOT_PATH.join("Gemfile"), package_path.join("lib", "vendor"))
-  FileUtils.cp(ROOT_PATH.join("Gemfile.lock"), package_path.join("lib", "vendor"))
-  vendor_path.rmdir
+  FileUtils.cp(gemfile_path, package_vendor_path)
+  FileUtils.cp(gemfile_lock_path, package_vendor_path)
+  tmp_vendor_path.rmtree if tmp_vendor_path.exist?
 
   # Add bundler config file.
-  bundle_path = package_path.join("lib", "vendor", ".bundle")
-  bundle_path.mkdir
-  bundle_path.join("config").write([
+  package_bundle_path.mkdir
+  package_bundle_path.join("config").write([
     "BUNDLE_PATH: .",
     "BUNDLE_WITHOUT: development",
     "BUNDLE_DISABLE_SHARED_GEMS: '1'"
   ].join("\n"))
 
   # Add launcher.
-  launcher_path = package_path.join(BIN_PATH.basename)
-  launcher_path.write([
+  package_launcher_path.write([
     "#!/bin/bash",
     "set -e",
     # Figure out where this script is located.
@@ -270,8 +286,10 @@ def create_package(runtime, runtime_path)
 
   if !ENV["DIR_ONLY"]
     # Create an archive containing the created runtime.
-    sh "cd #{package_path} && tar -czf #{dst_path} *"
-    sh "rm -rf #{package_path}"
+    FileUtils.cd(package_path) do
+      sh "tar -czf #{dst_path} *"
+    end
+    package_path.rmtree if package_path.exist?
   end
 end
 

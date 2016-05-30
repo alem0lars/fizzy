@@ -312,7 +312,7 @@ task :package => [:build] + runtimes_info.map{|r_i| r_i[:rel_path]} do
 
   runtimes_info.each do |runtime_info|
     dst_package_path = PKG_PATH.join([
-      "fizzy-v#{build_cfg["version"]}",
+      "fizzy-portable-v#{build_cfg["version"]}",
       "ruby-v#{runtime_info[:ruby_vers]}",
       runtime_info[:os],
       runtime_info[:arch]

@@ -175,24 +175,30 @@ end
 # ├────────────────────────────────────────────────────────────────────────────┤
 # ├→ Task `package` ───────────────────────────────────────────────────────────┤
 
-def runtimes_names
+def runtimes_info
   build_cfg = load_build_cfg
   archs = build_cfg["traveling_ruby"]["archs"]
   traveling_vers = build_cfg["traveling_ruby"]["vers"]
   ruby_vers = build_cfg["traveling_ruby"]["ruby_vers"]
 
-  runtimes = []
+  runtimes_info = []
   archs.each do |os, archs|
     archs = [nil] if archs.nil?
     archs.each do |arch|
-      runtimes << runtime_name(traveling_vers, ruby_vers, os, arch)
+      name = runtime_name(traveling_vers, ruby_vers, os, arch)
+      path = TMP_PATH.join("#{name}.tar.gz")
+      runtimes_info << {
+        traveling_vers: traveling_vers,
+        ruby_vers: ruby_vers,
+        os: os,
+        arch: arch,
+        name: name,
+        path: path,
+        rel_path: path.relative_path_from(ROOT_PATH)
+      }
     end
   end
-  runtimes
-end
-
-def runtimes_paths
-  runtimes_names.map{|runtime_name| TMP_PATH.join("#{runtime_name}.tar.gz")}
+  runtimes_info
 end
 
 def runtime_name(traveling_vers, ruby_vers, os, arch)
@@ -215,7 +221,7 @@ def download_runtime(runtime_name, dst_path)
   end
 end
 
-def create_package(runtime, runtime_path)
+def create_package(runtime, runtime_path, dst_path)
   package_path = TMP_PATH.join("#{runtime}_tmp")
   package_lib_path = package_path.join("lib")
   package_app_path = package_lib_path.join("app")
@@ -226,7 +232,6 @@ def create_package(runtime, runtime_path)
   gemfile_path = ROOT_PATH.join("Gemfile")
   gemfile_lock_path = ROOT_PATH.join("Gemfile.lock")
   tmp_vendor_path = TMP_PATH.join("vendor")
-  dst_path = PKG_PATH.join(runtime_path.basename)
 
   # Remove previous package.
   package_path.rmtree if package_path.exist?
@@ -294,17 +299,25 @@ def create_package(runtime, runtime_path)
 end
 
 # Download archives
-runtimes_names.zip(runtimes_paths).each do |runtime_name, runtime_path|
-  file runtime_path.relative_path_from(ROOT_PATH) do
-    download_runtime(runtime_name, runtime_path)
+runtimes_info.each do |runtime_info|
+  file runtime_info[:rel_path] do
+    download_runtime(runtime_info[:name], runtime_info[:path])
   end
 end
 
-task :package => [:build] + runtimes_paths.map{|rp| rp.relative_path_from(ROOT_PATH)} do
+task :package => [:build] + runtimes_info.map{|r_i| r_i[:rel_path]} do
   info("Packaging started")
 
-  runtimes_names.zip(runtimes_paths).each do |runtime_name, runtime_path|
-    create_package(runtime_name, runtime_path)
+  build_cfg = load_build_cfg
+
+  runtimes_info.each do |runtime_info|
+    dst_package_path = PKG_PATH.join([
+      "fizzy-v#{build_cfg["version"]}",
+      "ruby-v#{runtime_info[:ruby_vers]}",
+      runtime_info[:os],
+      runtime_info[:arch]
+    ].compact.join("_") + ".tar.gz")
+    create_package(runtime_info[:name], runtime_info[:path], dst_package_path)
   end
 
   info("Packaging successfully completed", success: true)

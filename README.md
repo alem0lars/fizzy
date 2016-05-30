@@ -11,7 +11,31 @@ A end-user guide is planned (see issue #21) but still not available.
 
 ## Installation
 
-### MacOSX
+Fizzy is distributed in two ways:
+
+- **Standalone**: it includes just fizzy, as any other project.
+  This is the *preferred* way to use fizzy in your machines.
+- **Portable**: it includes everything:
+  fizzy, its dependencies, a ruby interpreter.
+  You may want to use this if you don't want to leave any traces,
+  can't use or don't have a Ruby interpreter,
+  don't have permissions to install fizzy dependencies.
+
+### Bundle
+
+First, [download the bundle](https://github.com/alem0lars/fizzy/releases); then:
+
+```shellsession
+$ mkdir fizzy_portable
+$ tar -xzf fizzy-*.tar.gz -C fizzy_portable
+$ cd fizzy_portable
+$ chmod +x ./fizzy
+$ ./fizzy
+```
+
+### Standalone
+
+#### MacOSX (standalone)
 
 If you already haven't tapped the alem0lars HomeBrew repository, tap it:
 ```shellsession
@@ -23,7 +47,7 @@ Install via HomeBrew
 $ brew install fizzy
 ```
 
-### One-liner
+#### One-liner (standalone)
 
 The destination can be everywhere, I suggest `/usr/local/bin` in GNU/Linux
 based systems because it's almost always in the `PATH` environment variable,
@@ -35,7 +59,7 @@ $ curl -sL https://raw.githubusercontent.com/alem0lars/fizzy/master/build/fizzy 
   sudo chmod +x /usr/local/bin/fizzy
 ```
 
-### Others
+#### Others (standalone)
 
 You can provide integration with an existing package system.
 
@@ -72,4 +96,10 @@ $ bundle exec rake -T
 
 ```shellsession
 $ bundle exec rake test
+```
+
+### Create portable packages
+
+```shellsession
+$ bundle exec rake package
 ```

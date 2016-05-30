@@ -4,8 +4,18 @@ module Fizzy::Environment
 
   include Fizzy::IO
 
+  # Find an executable called `name` in the `$PATH`.
+  # Note: `name` can also be a path pointing to the executable.
+  #
   def which?(name)
-    find_executable(name.to_s)
+    exts = ENV["PATHEXT"] ? ENV["PATHEXT"].split(";") : [""]
+    ENV["PATH"].split(File::PATH_SEPARATOR).each do |path|
+      exts.each do |ext|
+        exe = File.join(path, "#{cmd}#{ext}")
+        return exe if File.executable?(exe) && !File.directory?(exe)
+      end
+    end
+    return nil
   end
 
   # Return the environment variable matching the provided `name`.

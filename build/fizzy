@@ -40,7 +40,8 @@
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 
-# ☞ Requires ───────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Requires
 
 # Core modules.
 require "fileutils"
@@ -69,7 +70,8 @@ end
 module Fizzy
 end
 
-# ☞ Configuration ──────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Configuration
 
 Fizzy::CFG = OpenStruct.new
 
@@ -113,7 +115,8 @@ Fizzy::CFG.vars = OpenStruct.new(
   parent_dummy_regexp: /none|nothing/i
 )
 
-# ☞ Exts → String ──────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Exts → String
 
 class String
 
@@ -126,7 +129,8 @@ class String
 
 end
 
-# ☞ Exts → Hash ────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Exts → Hash
 
 class Hash
 
@@ -161,7 +165,8 @@ class Hash
 
 end
 
-# ☞ Exts → Pathname ────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Exts → Pathname
 
 class Pathname
 
@@ -174,7 +179,8 @@ class Pathname
 
 end
 
-# ☞ Exts → Thor ────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Exts → Thor
 
 class Thor
   module Actions
@@ -189,7 +195,8 @@ class Thor
   end
 end
 
-# ☞ Core → Io ──────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Io
 
 module Fizzy::IO
 
@@ -293,7 +300,8 @@ module Fizzy::IO
 
 end
 
-# ☞ Grammars → Base Lexer ──────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Grammars → Base Lexer
 
 class Fizzy::BaseLexer
 
@@ -360,7 +368,8 @@ private
 
 end
 
-# ☞ Lexer ──────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Lexer
 
 class Fizzy::LogicLexer < Fizzy::BaseLexer
 
@@ -389,7 +398,8 @@ private
 
 end
 
-# ☞ Evaluator ──────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Evaluator
 
 class Fizzy::LogicEvaluator
 
@@ -443,7 +453,8 @@ class Fizzy::LogicEvaluator
   end
 end
 
-# ☞ Logic Parser ───────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Logic Parser
 
 #
 # DO NOT MODIFY!!!!
@@ -625,7 +636,8 @@ end
   end   # class LogicParser
   end   # module Fizzy
 
-# ☞ Core → Environment ─────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Environment
 
 # Utilities to retrieve informations about the host environment & system.
 #
@@ -702,7 +714,8 @@ module Fizzy::Environment
 
 end
 
-# ☞ Core → Execution ───────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Execution
 
 # Utilities to start and manage programs execution.
 #
@@ -739,7 +752,8 @@ module Fizzy::Execution
 
 end
 
-# ☞ Core → Filesystem ──────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Filesystem
 
 # Utilities to interact with the filesystem.
 #
@@ -890,7 +904,8 @@ module Fizzy::Filesystem
 
 end
 
-# ☞ Core → Git ─────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Git
 
 module Fizzy::Git
 
@@ -1051,7 +1066,8 @@ module Fizzy::Git
 
 end
 
-# ☞ Core → Typesystem ──────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Typesystem
 
 module Fizzy::TypeSystem
 
@@ -1117,7 +1133,8 @@ module Fizzy::TypeSystem
 
 end
 
-# ☞ Core → Vars → Setup ────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Vars → Setup
 
 module Fizzy::Vars
   class Setup
@@ -1215,7 +1232,8 @@ module Fizzy::Vars
   end
 end
 
-# ☞ Core → Vars → Filters ──────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Vars → Filters
 
 module Fizzy::Vars
 
@@ -1265,7 +1283,8 @@ module Fizzy::Vars
 
 end
 
-# ☞ Core → Vars → Retriever ────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Vars → Retriever
 
 module Fizzy::Vars
   class Retriever
@@ -1387,7 +1406,8 @@ module Fizzy::Vars
   end
 end
 
-# ☞ Core → Vars → Api ──────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Vars → Api
 
 module Fizzy::Vars
 
@@ -1464,7 +1484,8 @@ module Fizzy::Vars
 
 end
 
-# ☞ Core → Locals ──────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Locals
 
 module Fizzy::Locals
 
@@ -1579,7 +1600,8 @@ module Fizzy::Locals
 
 end
 
-# ☞ Core → Meta Commands ───────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Meta Commands
 
 # Manage commands declared in the meta file.
 #
@@ -1641,7 +1663,8 @@ module Fizzy::MetaCommands
 
 end
 
-# ☞ Core → Meta Info ───────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Meta Info
 
 # Access informations declared in the meta file.
 #
@@ -1847,7 +1870,8 @@ module Fizzy::MetaInfo
 
 end
 
-# ☞ Core → Meta Elements ───────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Meta Elements
 
 # Manage elements declared in the meta file.
 #
@@ -1931,7 +1955,8 @@ module Fizzy::MetaElements
 
 end
 
-# ☞ Lib → Filters → Lastpass ───────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Lib → Filters → Lastpass
 
 Fizzy::Vars::Filters.define(:lpass, description: """
 LastPass filter allows to retrieve informations stored in a lastpass account
@@ -1947,7 +1972,8 @@ As arguments you can pass:
   `lpass show --color=never #{what} #{name}`
 end
 
-# ☞ Commands → Base ────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Commands → Base
 
 # Base class for all fizzy commands.
 #
@@ -2037,7 +2063,8 @@ class Fizzy::BaseCommand < Thor
 
 end
 
-# ☞ Commands → Cfg ─────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Commands → Cfg
 
 class Fizzy::CfgCommand < Fizzy::BaseCommand
 
@@ -2250,7 +2277,8 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
 end
 
-# ☞ Commands → Inst ────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Commands → Inst
 
 class Fizzy::InstCommand < Fizzy::BaseCommand
 
@@ -2321,7 +2349,8 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
 
 end
 
-# ☞ Commands → Main ────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Commands → Main
 
 class Fizzy::MainCommand < Fizzy::BaseCommand
 
@@ -2371,7 +2400,8 @@ class Fizzy::MainCommand < Fizzy::BaseCommand
 
 end
 
-# ☞ Main ───────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Main
 
 # Entry point.
 Fizzy::MainCommand.start(ARGV) if $0 == __FILE__

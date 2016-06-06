@@ -16,8 +16,8 @@ rule
 
   exp: LBRACKET exp RBRACKET { @eval.result = val[1] }
 
-     | exp AND exp { @eval.and(val[2]) }
-     | exp OR  exp { @eval.or(val[2])  }
+     | exp AND exp { @eval.and }
+     | exp OR  exp { @eval.or  }
 
      | FEATURE_PREFIX FEATURE_NAME  { @eval.has_feature?(val[1])            }
      | VAR_PREFIX VAR_NAME          { @eval.has_variable?(val[1])           }

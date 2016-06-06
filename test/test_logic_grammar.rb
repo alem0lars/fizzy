@@ -26,37 +26,31 @@ describe Fizzy::LogicParser do
 
   describe "when simple feature" do
     it "should succeed for available features" do
-      skip("not working atm")
       @available_features.each { |feature| assert_parse("f?#{feature}") }
     end
 
     it "should fail for unavailable features" do
-      skip("not working atm")
       @unavailable_features.each { |feature| assert_not_parse("f?#{feature}") }
     end
   end
 
   describe "when simple variable" do
     it "should succeed for available variables" do
-      skip("not working atm")
       @available_variables.each { |variable| assert_parse("v?#{variable}") }
     end
 
     it "should fail for unavailable variables" do
-      skip("not working atm")
       @unavailable_variables.each { |variable| assert_not_parse("v?#{variable}") }
     end
   end
 
   describe "when combined features" do
     it "should succeed for available features" do
-      skip("not working atm")
       assert_parse("f?#{@available_features.sample} && f?#{@available_features.sample}")
       assert_parse("f?#{@unavailable_features.sample} || f?#{@available_features.sample}")
     end
 
     it "should fail for unavailable features" do
-      skip("not working atm")
       assert_not_parse("f?#{@unavailable_features.sample} && f?#{@available_features.sample}")
       assert_not_parse("f?#{@unavailable_features.sample} || f?#{@unavailable_features.sample}")
     end

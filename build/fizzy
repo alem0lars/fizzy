@@ -405,48 +405,54 @@ class Fizzy::LogicEvaluator
 
   include Fizzy::IO
 
-  attr_accessor :result
-
   def initialize(receiver)
-    @receiver = receiver
-    @result   = nil
+    @receiver        = receiver
+    @partial_results = []
+    @result          = nil
   end
 
-  def result=(other)
-    @result = result
-    debug("Initialized `result` to `#{other}`.")
+  def result
+    # In case no operations that transform the partial results
+    # (`@partial_results`) into the final result (`@result`) have been used
+    # (e.g. operations `and`, `or`); return the accumulated partial result.
+    if @result.nil? && @partial_results.length == 1
+      @result = @partial_results.first
+    end
+    # Return the evaluation's result.
+    @result
   end
 
-  def and(other)
-    prev_result_value = @result
-    @result &&= other
-    debug("Performed logical `and` between previous value of result " +
-          "(`#{prev_result_value}`) and `#{other}`: operation evaluated " +
-          "to `#{@result}`.")
+  def result=(initial_result)
+    @result = initial_result
+    debug("Initialized `result` to `#{initial_result}`.")
   end
 
-  def or(other)
-    prev_result_value = @result
-    @result ||= other
-    debug("Performed logical `or` between previous value of result " +
-          "(`#{prev_result_value}`) and `#{other}`: operation evaluated " +
-          "to `#{@result}`.")
+  def and
+    @result = @partial_results.all? { |e| e == true }
+    debug("Performed logical `and` between the stored partial results " +
+          "`#{@partial_results}`: evaluating to `#{@result}`.")
+  end
+
+  def or
+    @result = @partial_results.any? { |e| e == true }
+    debug("Performed logical `or` between the stored partial results " +
+          "`#{@partial_results}`: evaluating to `#{@result}`.")
   end
 
   def has_feature?(name)
-    @result = @receiver.has_feature?(name)
+    @partial_results << @receiver.has_feature?(name)
     debug("Parsed feature `#{name}`: it's #{@result ? "" : "not "}available.")
   end
 
   def has_variable?(name)
-    @result = !@receiver.get_var(name).nil?
+    @partial_results << !@receiver.get_var(name).nil?
     debug("Parsed variable `#{name}` with value " +
           "`#{@receiver.get_var(name)}`: " +
           "it's #{@result ? "" : "not "}available.")
   end
 
   def variable_value?(name, expected_value)
-    @result = @receiver.get_var(name) == expected_value
+    @partial_results << @receiver.get_var(name) == expected_value
     debug("Parsed variable `#{name}` with value " +
           "`#{@receiver.get_var(name)}`: " +
           "it's #{@result ? "" : "not "}equal to `#{expected_value}`.")
@@ -596,14 +602,14 @@ module_eval(<<'.,.,', 'parser.y', 16)
 
 module_eval(<<'.,.,', 'parser.y', 18)
   def _reduce_3(val, _values, result)
-     @eval.and(val[2]) 
+     @eval.and 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 19)
   def _reduce_4(val, _values, result)
-     @eval.or(val[2])  
+     @eval.or  
     result
   end
 .,.,

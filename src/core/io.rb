@@ -98,6 +98,9 @@ module Fizzy::IO
     shell.set_color(*args)
   end
 
+  # ──────────────────────────────────────────────────────────────────────────
+  # ☞ Well-known messages
+
   # Get colorized error symbol.
   #
   def ✘
@@ -109,5 +112,7 @@ module Fizzy::IO
   def ✔
     colorize("✔", :green)
   end
+
+  # ──────────────────────────────────────────────────────────────────────────
 
 end

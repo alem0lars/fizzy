@@ -29,6 +29,9 @@ class Hash
     self.select{|k, _| keys.include?(k)}
   end
 
+  # ────────────────────────────────────────────────────────────────────────────
+  # ☞ Convert keys
+
   # Return a new `Hash` with all keys converted to `String`s.
   #
   def deep_stringify_keys
@@ -94,5 +97,7 @@ class Hash
       object
     end
   end
+
+  # ────────────────────────────────────────────────────────────────────────────
 
 end

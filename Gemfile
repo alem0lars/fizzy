@@ -4,6 +4,7 @@ gem "thor"
 
 # External tools used **only** during development.
 group :development do
+
   # Used to define common tasks.
   gem "rake"
 

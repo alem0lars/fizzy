@@ -30,8 +30,8 @@ module Fizzy::Locals
       @prefix_history = []
     end
 
-    # ┌────────────────────────────────────────────────────────────────────────┐
-    # ├→ DSL definition ───────────────────────────────────────────────────────┤
+    # ──────────────────────────────────────────────────────────────────────────
+    # ☞ DSL definition
 
     # Create a new `local` fetching the value from the corresponding `variable`.
     #
@@ -95,7 +95,7 @@ module Fizzy::Locals
       @prefix_history.any?{|p| p[:local].to_s.start_with?(prefix.to_s)}
     end
 
-    # └────────────────────────────────────────────────────────────────────────┘
+    # ──────────────────────────────────────────────────────────────────────────
 
     def _get_var(name, **opts)
       name = @prefix && @prefix[:var] ? "#{@prefix[:var]}#{name}" : name

@@ -101,16 +101,16 @@ module Fizzy::IO
   # ──────────────────────────────────────────────────────────────────────────
   # ☞ Well-known messages
 
-  # Get colorized error symbol.
-  #
-  def ✘
-    colorize("✘", :red)
-  end
-
   # Get colorized success symbol.
   #
   def ✔
     colorize("✔", :green)
+  end
+
+  # Get colorized error symbol.
+  #
+  def ✘
+    colorize("✘", :red)
   end
 
   # ──────────────────────────────────────────────────────────────────────────

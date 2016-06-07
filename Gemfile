@@ -14,6 +14,7 @@ group :development do
   gem "minitest"
 
   # Make IRB more powerful!
-  # gem "irbtools"
-  # gem "irbtools-more"
+  gem "irbtools"
+  gem "irbtools-more"
+
 end

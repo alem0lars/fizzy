@@ -29,4 +29,70 @@ class Hash
     self.select{|k, _| keys.include?(k)}
   end
 
+  # Return a new `Hash` with all keys converted to `String`s.
+  #
+  def deep_stringify_keys
+    deep_transform_keys{ |key| key.to_s }
+  end
+
+  # Destructively convert all keys to `String`s.
+  #
+  def deep_stringify_keys!
+    deep_transform_keys!{ |key| key.to_s }
+  end
+
+  # Return a new `Hash` with all keys converted to `Symbol`s, as long as they
+  # respond to `to_sym`.
+  #
+  def deep_symbolize_keys
+    deep_transform_keys{ |key| key.to_sym rescue key }
+  end
+
+  # Destructively convert all keys to `Symbol`s, as long as they respond to
+  # `to_sym`.
+  #
+  def deep_symbolize_keys!
+    deep_transform_keys!{ |key| key.to_sym rescue key }
+  end
+
+  # Return a new `Hash` with all keys converted by the block operation.
+  #
+  def deep_transform_keys(&block)
+    deep_transform_keys_in_object(self, &block)
+  end
+
+  # Destructively convert all keys by using the block operation.
+  #
+  def deep_transform_keys!(&block)
+    deep_transform_keys_in_object!(self, &block)
+  end
+
+  private def deep_transform_keys_in_object(object, &block)
+    case object
+    when Hash
+      object.each_with_object({}) do |(key, value), result|
+        result[yield(key)] = deep_transform_keys_in_object(value, &block)
+      end
+    when Array
+      object.map {|e| deep_transform_keys_in_object(e, &block) }
+    else
+      object
+    end
+  end
+
+  private def deep_transform_keys_in_object!(object, &block)
+    case object
+    when Hash
+      object.keys.each do |key|
+        value = object.delete(key)
+        object[yield(key)] = deep_transform_keys_in_object!(value, &block)
+      end
+      object
+    when Array
+      object.map! {|e| deep_transform_keys_in_object!(e, &block)}
+    else
+      object
+    end
+  end
+
 end

@@ -3,7 +3,7 @@ module Fizzy::Vars
   module Filters
     def self.define(name, description: nil, &block)
       @filters ||= []
-      @filters  << Filter.new(name, description.strip, &block)
+      @filters << Filter.new(name, description.strip, &block)
     end
 
     def self.apply(blob)

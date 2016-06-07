@@ -1834,6 +1834,10 @@ module Fizzy::MetaInfo
     meta
   end
 
+  def ✔
+    colorize("✔", :green)
+  end
+
   # Return whether the provided `only` specification is evaluated as an allows
   # and not as a denies.
   #

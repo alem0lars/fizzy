@@ -166,7 +166,7 @@ module Fizzy::MetaInfo
   def selected_by_only?(only, verbose)
     unless only
       selected = true
-      info(" ↳ ", "#{colorize("✔", :green)} (`only` is empty).") if verbose
+      info(" ↳ ", "#{✔} (`only` is empty).") if verbose
     else
       wants_features = only.has_key?("features")
       wants_vars     = only.has_key?("vars")
@@ -190,12 +190,14 @@ module Fizzy::MetaInfo
       selected   = !wants_features && !wants_vars
       selected ||= feat_ok && vars_ok
 
-      info(" ↳ ", "#{colorize("✔", :green)} (`only` is present and " +
-                  "satisfied).") if selected && verbose
+      if selected && verbose
+        info(" ↳ ", "#{✔} (`only` is present and satisfied).")
+      end
     end
 
-    info(" ↳ ", "#{colorize("✘", :red)} (`only` is present and didn't " +
-                "match).") if !selected && verbose
+    if !selected && verbose
+      info(" ↳ ", "#{✘} (`only` is present and didn't match).")
+    end
 
     selected
   end

@@ -98,4 +98,16 @@ module Fizzy::IO
     shell.set_color(*args)
   end
 
+  # Get colorized error symbol.
+  #
+  def ✘
+    colorize("✘", :red)
+  end
+
+  # Get colorized success symbol.
+  #
+  def ✔
+    colorize("✔", :green)
+  end
+
 end

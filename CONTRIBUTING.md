@@ -21,7 +21,7 @@ to abide by the [Code of Conduct](./CODE_OF_CONDUCT.md).
 - Write a [good commit message](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
 - Push to your fork.
 
-## 3: Integrate (pull-request)
+## 3: Integrate changes
 
 - [Submit a pull request](https://github.com/alem0lars/fizzy/compare/).
 - If [Hound](https://houndci.com) catches style violations, fix them.

@@ -60,7 +60,7 @@ module Fizzy::Vars
             error("Invalid JSON `#{name}`: #{e.message}.")
           end
         else error("Unrecognized format: `#{fmt}`")
-      end
+      end.deep_symbolize_keys
     end
 
     def parse_parents_vars(fmt, content)

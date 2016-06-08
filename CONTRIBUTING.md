@@ -13,10 +13,10 @@ to abide by the [Code of Conduct](./CODE_OF_CONDUCT.md).
 
 - Make your change.
 - Write tests.
-- Follow our [Style Guide](./STYLE_GUIDE.md).
+- Follow the [Style Guide](./STYLE_GUIDE.md).
 - Make the tests pass: `rake test`
 - Update the packages: `rake package`
-- Add notes on your change to the `CHANGELOG.md` file,
+- Add notes on your change to the [CHANGELOG.md](./CHANGELOG.md) file,
   in the `Next Version` section.
 - Write a [good commit message](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
 - Push to your fork.

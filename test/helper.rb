@@ -11,6 +11,9 @@
 #   end
 #
 
+# Require gems available only when testing.
+require "awesome_print"
+
 require "minitest/autorun"
 require "fizzy"
 

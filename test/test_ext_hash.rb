@@ -23,7 +23,7 @@ describe Hash do
       expected = {"PERSON" => {"NAME" => "Rob", "AGE" => "28"}}
       actual   = {person: {name: "Rob", age: "28"}}
       assert_equal(expected,
-                   actual.deep_transform_keys{ |key| key.to_s.upcase })
+                   actual.deep_transform_keys{|key| key.to_s.upcase})
     end
   end
 

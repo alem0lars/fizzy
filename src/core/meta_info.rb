@@ -174,17 +174,15 @@ module Fizzy::MetaInfo
       feat_ok = if wants_features
                   only["features"].any? do |feature|
                     case feature
-                    when Array
-                      feature.all? { |f| has_feature?(f) }
-                    else
-                      has_feature?(feature)
+                      when Array then feature.all?{|f| has_feature?(f)}
+                      else            has_feature?(feature)
                     end
                   end
                 else
                   true
                 end
       vars_ok = wants_vars ?
-          only["vars"].any? { |var| !get_var(var, single_match: force).nil? } :
+          only["vars"].any?{|var| !get_var(var, single_match: force).nil?} :
           true
 
       selected   = !wants_features && !wants_vars

@@ -20,24 +20,23 @@ module Fizzy::IO
   def quiz(question, type: :bool)
     answer = shell.ask("#{question.strip}? ", :magenta)
     case type
-    when :bool
-      if answer =~ /y|ye|yes|yeah|ofc/i
-        true
-      elsif answer =~ /n|no|fuck|fuck\s+you|fuck\s+off/i
-        false
-      else
-        tell("Answer misunderstood", :yellow)
-        quiz(question, type: type)
-      end
-    when :string
-      if answer.empty?
-        warning("Empty answer", ask_continue: false)
-        quiz(question, type: type)
-      else
-        answer
-      end
-    else
-      error("Unhandled question type: `#{type}`.")
+      when :bool
+        if answer =~ /y|ye|yes|yeah|ofc/i
+          true
+        elsif answer =~ /n|no|fuck|fuck\s+you|fuck\s+off/i
+          false
+        else
+          tell("Answer misunderstood", :yellow)
+          quiz(question, type: type)
+        end
+      when :string
+        if answer.empty?
+          warning("Empty answer", ask_continue: false)
+          quiz(question, type: type)
+        else
+          answer
+        end
+      else error("Unhandled question type: `#{type}`.")
     end
   end
 

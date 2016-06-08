@@ -1,4 +1,4 @@
-require "helper"
+require "fizzy"
 
 class Fizzy::Mocks::Vars
   include Fizzy::Vars

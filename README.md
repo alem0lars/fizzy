@@ -70,36 +70,15 @@ The dependencies are:
 Then you can drop [fizzy](./fizzy) everywhere (possibly in the system path) and
 make it executable.
 
+## Contributions
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md)
+
 **Contributions are welcome!**
 
-## Development notes
+----
 
-### Setup
+Made with ♥ by Alessandro Molari
 
-Run:
-
-```shellsession
-$ bundle install
-```
-
-### Tasks
-
-The common tasks are defined in the [`Rakefile`](./Rakefile)
-
-To get a list of them:
-
-```shellsession
-$ bundle exec rake -T
-```
-
-### Test source code
-
-```shellsession
-$ bundle exec rake test
-```
-
-### Create portable packages
-
-```shellsession
-$ bundle exec rake package
-```
+- [@alem0lars](https://twitter.com/alem0lars)
+- [molari.alessandro@gmail.com](mailto:molari.alessandro@gmail.com)

@@ -1,0 +1,87 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    awesome_print (1.7.0)
+    binding.repl (3.0.0)
+    binding_of_caller (0.7.2)
+      debug_inspector (>= 0.0.1)
+    bond (0.5.1)
+    cd (1.0.1)
+    clipboard (1.1.0)
+    code (0.9.0)
+      coderay (~> 1.1)
+      method_source (~> 0.8, >= 0.8.2)
+    coderay (1.1.1)
+    debug_inspector (0.0.2)
+    debugging (1.1.0)
+      binding.repl (~> 3.0)
+      paint (>= 0.9, < 2.0)
+    did_you_mean (1.0.1)
+    every_day_irb (2.0.0)
+      cd (~> 1.0)
+    fancy_irb (1.0.2)
+      paint (>= 0.9, < 2.0)
+      unicode-display_width (~> 1.0)
+    ffi (1.9.10)
+    hirb (0.7.3)
+    instance (0.2.0)
+    interactive_editor (0.0.10)
+      spoon (>= 0.0.1)
+    irbtools (2.0.1)
+      binding.repl (~> 3.0)
+      clipboard (~> 1.0, >= 1.0.6)
+      code (~> 0.9)
+      coderay (~> 1.1)
+      debugging (~> 1.1)
+      every_day_irb (~> 2.0)
+      fancy_irb (~> 1.0)
+      hirb (~> 0.7, >= 0.7.3)
+      instance (~> 0.2)
+      interactive_editor (~> 0.0, >= 0.0.10)
+      method_locator (~> 0.0, >= 0.0.4)
+      methodfinder (~> 2.0)
+      ori (~> 0.1.0)
+      os (~> 0.9)
+      paint (>= 0.9, < 2.0)
+      ruby_engine (~> 1.0)
+      ruby_info (~> 1.0)
+      ruby_version (~> 1.0)
+      wirb (~> 2.0)
+    irbtools-more (2.1.0)
+      binding_of_caller (~> 0.7)
+      bond (~> 0.5)
+      did_you_mean (~> 1.0)
+      irbtools (~> 2.0)
+    method_locator (0.0.4)
+    method_source (0.8.2)
+    methodfinder (2.0.0)
+    minitest (5.9.0)
+    ori (0.1.0)
+    os (0.9.6)
+    paint (1.0.1)
+    racc (1.4.14)
+    rake (11.1.2)
+    ruby_engine (1.0.1)
+    ruby_info (1.0.1)
+    ruby_version (1.0.1)
+    spoon (0.0.4)
+      ffi
+    thor (0.19.1)
+    unicode-display_width (1.0.5)
+    wirb (2.0.0)
+      paint (>= 0.9, < 2.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  awesome_print
+  irbtools
+  irbtools-more
+  minitest
+  racc (~> 1.4)
+  rake
+  thor
+
+BUNDLED WITH
+   1.12.5

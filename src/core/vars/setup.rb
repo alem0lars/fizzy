@@ -47,27 +47,27 @@ module Fizzy::Vars
     def parse_vars(name, fmt, content)
       content = ERB.new(content).result(@binding)
       case fmt
-      when :yaml
-        begin
-          YAML.load(content) || {}
-        rescue Psych::SyntaxError => e
-          error("Invalid syntax in YAML `#{name}`: #{e.message}")
-        end
-      when :json
-        begin
-          JSON.parse(content)
-        rescue JSON::JSONError => e
-          error("Invalid JSON `#{name}`: #{e.message}.")
-        end
-      else error("Unrecognized format: `#{fmt}`")
+        when :yaml
+          begin
+            YAML.load(content) || {}
+          rescue Psych::SyntaxError => e
+            error("Invalid syntax in YAML `#{name}`: #{e.message}")
+          end
+        when :json
+          begin
+            JSON.parse(content)
+          rescue JSON::JSONError => e
+            error("Invalid JSON `#{name}`: #{e.message}.")
+          end
+        else error("Unrecognized format: `#{fmt}`")
       end
     end
 
     def parse_parents_vars(fmt, content)
       parents_regexp = case fmt
-                       when :yaml then Fizzy::CFG.vars.yaml_regexp
-                       when :json then Fizzy::CFG.vars.json_regexp
-                       else error("Unrecognized format: `#{fmt}`.")
+                         when :yaml then Fizzy::CFG.vars.yaml_regexp
+                         when :json then Fizzy::CFG.vars.json_regexp
+                         else       error("Unrecognized format: `#{fmt}`.")
                        end
       if md = content.match(parents_regexp)
         md[:parents].split(",")

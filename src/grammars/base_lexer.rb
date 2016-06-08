@@ -35,8 +35,8 @@ private
   # (Re)build the list of tokens.
   # Every token is: `[value, token_name]`.
   def build_tokens
-    @tokens = []
-    @tokens += find_tokens until @base.empty?
+    @tokens  = []
+    @tokens += find_tokens until @base.eos?
     @tokens << [false, false] # Last token, meaning EOS.
     debug("Built tokens: `#{@tokens}`.")
   end

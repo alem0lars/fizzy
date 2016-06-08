@@ -86,9 +86,9 @@ Fizzy::CFG.debug = ENV["FIZZY_DEBUG"] =~ /^(?:true|yes)$/
 
 # The operating-system which fizzy is running on.
 Fizzy::CFG.os = case RUBY_PLATFORM
-                when /darwin/ then :osx
-                when /linux/  then :linux
-                else               :windows
+                  when /darwin/ then :osx
+                  when /linux/  then :linux
+                  else               :windows
                 end
 
 # Remote URL for fizzy static files (must end with a slash).
@@ -99,9 +99,9 @@ Fizzy::CFG.static_files_base_url =
 Fizzy::CFG.default_fizzy_dir = Pathname.new(
   ENV["FIZZY_DIR"] ||
   case Fizzy::CFG.os
-  when :linux   then "/usr/share/fizzy"
-  when :osx     then "~/Library/Application Support/fizzy"
-  when :windows then "~/fizzy"
+    when :linux   then "/usr/share/fizzy"
+    when :osx     then "~/Library/Application Support/fizzy"
+    when :windows then "~/fizzy"
   end
 ).expand_path
 
@@ -163,6 +163,9 @@ class Hash
     self.select{|k, _| keys.include?(k)}
   end
 
+  # ────────────────────────────────────────────────────────────────────────────
+  # ☞ Convert keys
+
   # Return a new `Hash` with all keys converted to `String`s.
   #
   def deep_stringify_keys
@@ -203,31 +206,31 @@ class Hash
 
   private def deep_transform_keys_in_object(object, &block)
     case object
-    when Hash
-      object.each_with_object({}) do |(key, value), result|
-        result[yield(key)] = deep_transform_keys_in_object(value, &block)
-      end
-    when Array
-      object.map {|e| deep_transform_keys_in_object(e, &block) }
-    else
-      object
+      when Hash
+        object.each_with_object({}) do |(key, value), result|
+          result[yield(key)] = deep_transform_keys_in_object(value, &block)
+        end
+      when Array
+        object.map {|e| deep_transform_keys_in_object(e, &block)}
+      else object
     end
   end
 
   private def deep_transform_keys_in_object!(object, &block)
     case object
-    when Hash
-      object.keys.each do |key|
-        value = object.delete(key)
-        object[yield(key)] = deep_transform_keys_in_object!(value, &block)
-      end
-      object
-    when Array
-      object.map! {|e| deep_transform_keys_in_object!(e, &block)}
-    else
-      object
+      when Hash
+        object.keys.each do |key|
+          value = object.delete(key)
+          object[yield(key)] = deep_transform_keys_in_object!(value, &block)
+        end
+        object
+      when Array
+        object.map! {|e| deep_transform_keys_in_object!(e, &block)}
+      else object
     end
   end
+
+  # ────────────────────────────────────────────────────────────────────────────
 
 end
 
@@ -253,6 +256,7 @@ class Thor
 
     # Monkey-patch to retrieve the template currently processed.
     old_template = instance_method(:template)
+    remove_method :template
     define_method :template, ->(source, *args, &blk) do
       $fizzy_cur_template = source
       old_template.bind(self).(source, *args, &blk)
@@ -286,24 +290,23 @@ module Fizzy::IO
   def quiz(question, type: :bool)
     answer = shell.ask("#{question.strip}? ", :magenta)
     case type
-    when :bool
-      if answer =~ /y|ye|yes|yeah|ofc/i
-        true
-      elsif answer =~ /n|no|fuck|fuck\s+you|fuck\s+off/i
-        false
-      else
-        tell("Answer misunderstood", :yellow)
-        quiz(question, type: type)
-      end
-    when :string
-      if answer.empty?
-        warning("Empty answer", ask_continue: false)
-        quiz(question, type: type)
-      else
-        answer
-      end
-    else
-      error("Unhandled question type: `#{type}`.")
+      when :bool
+        if answer =~ /y|ye|yes|yeah|ofc/i
+          true
+        elsif answer =~ /n|no|fuck|fuck\s+you|fuck\s+off/i
+          false
+        else
+          tell("Answer misunderstood", :yellow)
+          quiz(question, type: type)
+        end
+      when :string
+        if answer.empty?
+          warning("Empty answer", ask_continue: false)
+          quiz(question, type: type)
+        else
+          answer
+        end
+      else error("Unhandled question type: `#{type}`.")
     end
   end
 
@@ -423,8 +426,8 @@ private
   # (Re)build the list of tokens.
   # Every token is: `[value, token_name]`.
   def build_tokens
-    @tokens = []
-    @tokens += find_tokens until @base.empty?
+    @tokens  = []
+    @tokens += find_tokens until @base.eos?
     @tokens << [false, false] # Last token, meaning EOS.
     debug("Built tokens: `#{@tokens}`.")
   end
@@ -535,7 +538,7 @@ class Fizzy::LogicEvaluator
   end
 
   def variable_value?(name, expected_value)
-    @partial_results << @receiver.get_var(name) == expected_value
+    @partial_results << (@receiver.get_var(name) == expected_value)
     debug("Parsed variable `#{name}` with value " +
           "`#{@receiver.get_var(name)}`: " +
           "it's #{@result ? "" : "not "}equal to `#{expected_value}`.")
@@ -575,17 +578,17 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 29)
 
 racc_action_table = [
      3,     3,     4,     4,     5,     5,     3,     3,     4,     4,
-     5,     5,     7,     8,    12,    15,     7,     8,    11,    10,
-     6,    16,     7,    17 ]
+     5,     5,     7,     8,     7,    15,     7,     8,    17,     6,
+    10,    11,    12,    16 ]
 
 racc_action_check = [
-     0,     7,     0,     7,     0,     7,     8,     3,     8,     3,
-     8,     3,     9,     9,     6,     9,     2,     2,     5,     4,
-     1,    11,    14,    16 ]
+     7,     8,     7,     8,     7,     8,     3,     0,     3,     0,
+     3,     0,     9,     9,    14,     9,     2,     2,    16,     1,
+     4,     5,     6,    11 ]
 
 racc_action_pointer = [
-    -5,    20,    13,     2,    11,     8,    14,    -4,     1,     9,
-   nil,    19,   nil,   nil,    19,   nil,    12,   nil ]
+     2,    19,    13,     1,    12,    11,    22,    -5,    -4,     9,
+   nil,    21,   nil,   nil,    11,   nil,     7,   nil ]
 
 racc_action_default = [
     -8,    -8,    -1,    -8,    -8,    -8,    -8,    -8,    -8,    -8,
@@ -820,14 +823,11 @@ module Fizzy::Execution
     full_cmd = as_su ? "sudo #{cmd}" : cmd
 
     really_run = case @run_mode
-                 when :normal
-                   true
-                 when :paranoid
-                   quiz("Do you want to run command `#{full_cmd}`")
-                 when :dry
-                   false
-                 else
-                   true
+                   when :normal then true
+                   when :paranoid
+                     quiz("Do you want to run command `#{full_cmd}`")
+                   when :dry then false
+                   else true
                  end
 
     if really_run || @run_mode == :dry
@@ -1146,10 +1146,10 @@ module Fizzy::Git
     md = url.match(regexp)
     return url unless md
     case md[:protocol] || default_protocol
-    when "ssh"   then "git@github.com:#{md[:username]}/#{md[:repository]}"
-    when "https" then "https://github.com/#{md[:username]}/#{md[:repository]}"
-    else error("Invalid protocol for `#{url}`: " +
-               "not in `[#{protocols.join(", ")}]`.")
+      when "ssh"   then "git@github.com:#{md[:username]}/#{md[:repository]}"
+      when "https" then "https://github.com/#{md[:username]}/#{md[:repository]}"
+      else         error("Invalid protocol for `#{url}`: not in " +
+                         "`[#{protocols.join(", ")}]`.")
     end
   end
 
@@ -1174,48 +1174,48 @@ module Fizzy::TypeSystem
       value
     else
       case type.to_s.gsub(/\?$/, "").to_sym
-      when :string, :str
-        strict ? _ensure_type!(name, value, String) : value.to_s
-      when :symbol, :sym
-        strict ? _ensure_type!(name, value, Symbol) : value.to_s.to_sym
-      when :integer, :int
-        strict ? _ensure_type!(name, value, Integer) : Integer(value)
-      when :boolean, :bool
-        if strict
-          _ensure_type!(name, value, TrueClass, FalseClass)
-        else
-          if value.nil?
-            nil
-          elsif value.is_a?(TrueClass) || value.to_s == "true"
-            true
-          elsif value.is_a?(FalseClass) || value.to_s == "false"
-            false
+        when :string, :str
+          strict ? _ensure_type!(name, value, String) : value.to_s
+        when :symbol, :sym
+          strict ? _ensure_type!(name, value, Symbol) : value.to_s.to_sym
+        when :integer, :int
+          strict ? _ensure_type!(name, value, Integer) : Integer(value)
+        when :boolean, :bool
+          if strict
+            _ensure_type!(name, value, TrueClass, FalseClass)
           else
-            error("Invalid `#{value}` for value `#{name}`: " +
-                  "it can't be converted to a boolean.")
+            if value.nil?
+              nil
+            elsif value.is_a?(TrueClass) || value.to_s == "true"
+              true
+            elsif value.is_a?(FalseClass) || value.to_s == "false"
+              false
+            else
+              error("Invalid `#{value}` for value `#{name}`: " +
+                    "it can't be converted to a boolean.")
+            end
           end
-        end
-      when :path, :pth then
-        if strict && !File.exist?(value)
-          error("Invalid `#{name}`: `#{value}` doesn't exist")
+        when :path, :pth then
+          if strict && !File.exist?(value)
+            error("Invalid `#{name}`: `#{value}` doesn't exist")
+          else
+            Pathname.new(value).expand_path
+          end
+        when :file then
+          if strict && !File.file?(value)
+            error("Invalid `#{name}`: `#{value}` isn't a file")
+          else
+            Pathname.new(value).expand_path
+          end
+        when :directory, :dir then
+          if strict && !File.directory?(value)
+            error("Invalid `#{name}`: `#{value}` isn't a directory")
+          else
+            Pathname.new(value).expand_path
+          end
         else
-          Pathname.new(value).expand_path
-        end
-      when :file then
-        if strict && !File.file?(value)
-          error("Invalid `#{name}`: `#{value}` isn't a file")
-        else
-          Pathname.new(value).expand_path
-        end
-      when :directory, :dir then
-        if strict && !File.directory?(value)
-          error("Invalid `#{name}`: `#{value}` isn't a directory")
-        else
-          Pathname.new(value).expand_path
-        end
-      else
-        error("Unhandled type `#{type}`. If you need support for a new type, " +
-              "open an issue at `#{Fizzy::CFG.issues_url}`.")
+          error("Unhandled type `#{type}`. If you need support for a new " +
+                "type, open an issue at `#{Fizzy::CFG.issues_url}`.")
       end
     end
   end
@@ -1274,27 +1274,27 @@ module Fizzy::Vars
     def parse_vars(name, fmt, content)
       content = ERB.new(content).result(@binding)
       case fmt
-      when :yaml
-        begin
-          YAML.load(content) || {}
-        rescue Psych::SyntaxError => e
-          error("Invalid syntax in YAML `#{name}`: #{e.message}")
-        end
-      when :json
-        begin
-          JSON.parse(content)
-        rescue JSON::JSONError => e
-          error("Invalid JSON `#{name}`: #{e.message}.")
-        end
-      else error("Unrecognized format: `#{fmt}`")
+        when :yaml
+          begin
+            YAML.load(content) || {}
+          rescue Psych::SyntaxError => e
+            error("Invalid syntax in YAML `#{name}`: #{e.message}")
+          end
+        when :json
+          begin
+            JSON.parse(content)
+          rescue JSON::JSONError => e
+            error("Invalid JSON `#{name}`: #{e.message}.")
+          end
+        else error("Unrecognized format: `#{fmt}`")
       end
     end
 
     def parse_parents_vars(fmt, content)
       parents_regexp = case fmt
-                       when :yaml then Fizzy::CFG.vars.yaml_regexp
-                       when :json then Fizzy::CFG.vars.json_regexp
-                       else error("Unrecognized format: `#{fmt}`.")
+                         when :yaml then Fizzy::CFG.vars.yaml_regexp
+                         when :json then Fizzy::CFG.vars.json_regexp
+                         else       error("Unrecognized format: `#{fmt}`.")
                        end
       if md = content.match(parents_regexp)
         md[:parents].split(",")
@@ -1329,7 +1329,7 @@ module Fizzy::Vars
   module Filters
     def self.define(name, description: nil, &block)
       @filters ||= []
-      @filters  << Filter.new(name, description.strip, &block)
+      @filters << Filter.new(name, description.strip, &block)
     end
 
     def self.apply(blob)
@@ -1397,29 +1397,27 @@ module Fizzy::Vars
 
       if expand
         case var.length
-        when 0 then nil
-        when 1 then var.first
-        else var
+          when 0 then nil
+          when 1 then var.first
+          else        var
         end
       else
         var
       end
     end
 
-  protected
-
     # Accept a list of variables (`vars` argument) and ensure they are correctly
     # typed, according to `type`.
     #
     # See `Fizzy::TypeSystem#typize` for more details.
     #
-    def _typize_var(name, variable, type, strict)
+    protected def _typize_var(name, variable, type, strict)
       Array(variable).map do |var|
         typize(name, var, type: type, strict: strict)
       end
     end
 
-    def _ensure_type!(name, var, *types)
+    protected def _ensure_type!(name, var, *types)
       if types.any?{|type| var.is_a?(type)}
         var
       else
@@ -1435,7 +1433,7 @@ module Fizzy::Vars
     #
     # This method effectively implements the logic to retrieve variables.
     #
-    def _get_var(vars, name, single_match: :force)
+    protected def _get_var(vars, name, single_match: :force)
       dot_split_regexp = /([^.]+)(?:\.|$)/
 
       name.to_s
@@ -1931,17 +1929,15 @@ module Fizzy::MetaInfo
       feat_ok = if wants_features
                   only["features"].any? do |feature|
                     case feature
-                    when Array
-                      feature.all? { |f| has_feature?(f) }
-                    else
-                      has_feature?(feature)
+                      when Array then feature.all?{|f| has_feature?(f)}
+                      else            has_feature?(feature)
                     end
                   end
                 else
                   true
                 end
       vars_ok = wants_vars ?
-          only["vars"].any? { |var| !get_var(var, single_match: force).nil? } :
+          only["vars"].any?{|var| !get_var(var, single_match: force).nil?} :
           true
 
       selected   = !wants_features && !wants_vars

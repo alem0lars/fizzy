@@ -72,29 +72,27 @@ class Hash
 
   private def deep_transform_keys_in_object(object, &block)
     case object
-    when Hash
-      object.each_with_object({}) do |(key, value), result|
-        result[yield(key)] = deep_transform_keys_in_object(value, &block)
-      end
-    when Array
-      object.map {|e| deep_transform_keys_in_object(e, &block) }
-    else
-      object
+      when Hash
+        object.each_with_object({}) do |(key, value), result|
+          result[yield(key)] = deep_transform_keys_in_object(value, &block)
+        end
+      when Array
+        object.map {|e| deep_transform_keys_in_object(e, &block)}
+      else object
     end
   end
 
   private def deep_transform_keys_in_object!(object, &block)
     case object
-    when Hash
-      object.keys.each do |key|
-        value = object.delete(key)
-        object[yield(key)] = deep_transform_keys_in_object!(value, &block)
-      end
-      object
-    when Array
-      object.map! {|e| deep_transform_keys_in_object!(e, &block)}
-    else
-      object
+      when Hash
+        object.keys.each do |key|
+          value = object.delete(key)
+          object[yield(key)] = deep_transform_keys_in_object!(value, &block)
+        end
+        object
+      when Array
+        object.map! {|e| deep_transform_keys_in_object!(e, &block)}
+      else object
     end
   end
 

@@ -20,9 +20,9 @@ module Fizzy::Vars
 
       if expand
         case var.length
-        when 0 then nil
-        when 1 then var.first
-        else var
+          when 0 then nil
+          when 1 then var.first
+          else        var
         end
       else
         var

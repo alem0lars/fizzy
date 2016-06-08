@@ -49,7 +49,7 @@ class Fizzy::LogicEvaluator
   end
 
   def variable_value?(name, expected_value)
-    @partial_results << @receiver.get_var(name) == expected_value
+    @partial_results << (@receiver.get_var(name) == expected_value)
     debug("Parsed variable `#{name}` with value " +
           "`#{@receiver.get_var(name)}`: " +
           "it's #{@result ? "" : "not "}equal to `#{expected_value}`.")

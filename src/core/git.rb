@@ -148,10 +148,10 @@ module Fizzy::Git
     md = url.match(regexp)
     return url unless md
     case md[:protocol] || default_protocol
-    when "ssh"   then "git@github.com:#{md[:username]}/#{md[:repository]}"
-    when "https" then "https://github.com/#{md[:username]}/#{md[:repository]}"
-    else error("Invalid protocol for `#{url}`: " +
-               "not in `[#{protocols.join(", ")}]`.")
+      when "ssh"   then "git@github.com:#{md[:username]}/#{md[:repository]}"
+      when "https" then "https://github.com/#{md[:username]}/#{md[:repository]}"
+      else         error("Invalid protocol for `#{url}`: not in " +
+                         "`[#{protocols.join(", ")}]`.")
     end
   end
 

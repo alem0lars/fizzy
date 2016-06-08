@@ -3,42 +3,41 @@
 We love pull requests from everyone. By participating in this project, you agree
 to abide by the [Code of Conduct](./CODE_OF_CONDUCT.md).
 
-Fork, then clone the repo:
+- Fork, then clone the repo:
 
-    git clone git@github.com:your-username/fizzy.git
+```shell-session
+$ git clone git@github.com:your-username/fizzy.git
+```
 
-Set up Ruby dependencies via Bundler
+- Set up Ruby dependencies via Bundler:
 
-    bundle install
+```shell-session
+$ bundle install
+```
 
-Make sure the tests pass:
+- Make sure the tests pass:
 
-    rake test
+```shell-session
+$ rake test
+```
 
-Make your change.
-Write tests.
-Follow our [Style Guide](./STYLE_GUIDE.md).
-Make the tests pass:
+- Make your change.
+- Write tests.
+- Follow our [Style Guide](./STYLE_GUIDE.md).
+- Make the tests pass:
 
-    rake test
+```shell-session
+$ rake test
+```
 
-Add notes on your change to the `CHANGELOG.md` file, in the `Next Version`
-section.
+- Add notes on your change to the `CHANGELOG.md` file,
+  in the `Next Version` section.
 
-Write a [good commit message][commit].
-Push to your fork.
-[Submit a pull request][pr].
+- Write a [good commit message](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
+- Push to your fork.
+- [Submit a pull request](https://github.com/alem0lars/fizzy/compare/).
 
-[commit]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
-[pr]: https://github.com/alem0lars/fizzy/compare/
+- If [Hound](https://houndci.com) catches style violations, fix them.
+- Wait for us.
 
-If [Hound] catches style violations,
-fix them.
-
-[hound]: https://houndci.com
-
-Wait for us.
-We try to at least comment on pull requests within one business day.
-We may suggest changes.
-
-Thank you for your contribution!
+**Thank you for your contribution!**

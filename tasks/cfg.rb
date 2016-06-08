@@ -22,7 +22,7 @@ $cfg[:paths][:build].mkpath unless $cfg[:paths][:build].directory?
 $cfg[:paths][:pkg].mkpath   unless $cfg[:paths][:pkg].directory?
 $cfg[:paths][:tmp].mkpath   unless $cfg[:paths][:tmp].directory?
 
-# ☛ Read build configuration.
+# ☞ Read build configuration.
 $cfg = deep_merge($cfg, symbolize(YAML.load_file($cfg[:paths][:build_cfg].to_s)))
 
 def $cfg.debug?

@@ -12,6 +12,11 @@
   - `#deep_transform_keys`
 - Now variables have *symbols has keys* (see `parse_vars(..)`)
   and have indifferent access (see `_get_var(..)`).
+- Add some documents for contributors:
+  - `CODE_OF_CONDUCT.md`
+  - `CONTRIBUTING.md`
+  - `STYLE_GUIDE.md`
+- Integration with [HoundCI](https://houndci.com).
 
 ## Current and previous versions
 

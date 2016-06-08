@@ -4,7 +4,7 @@ def build_grammars
   $cfg[:grammars].each do |grammar_name|
     info("Building grammar `#{grammar_name}`.", indent: 1)
     parser_src_path = $cfg[:paths][:grammars].join(grammar_name, "parser.y")
-    lexer_path  = $cfg[:paths][:grammars].join(grammar_name, "lexer.rb")
+    lexer_path      = $cfg[:paths][:grammars].join(grammar_name, "lexer.rb")
     evaluator_path  = $cfg[:paths][:grammars].join(grammar_name, "evaluator.rb")
     parser_out_path = $cfg[:paths][:tmp].join("#{grammar_name}_parser.rb")
 

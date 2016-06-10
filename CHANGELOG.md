@@ -17,8 +17,12 @@
   - `CODE_OF_CONDUCT.md`
   - `CONTRIBUTING.md`
   - `STYLE_GUIDE.md`
-- Integration with [HoundCI](https://houndci.com).
+- Integration with [Hound CI][houndci].
 
 ## Current and previous versions
 
 See the release notes.
+
+<!-- Link declarations -->
+
+[houndci]: https://houndci.com

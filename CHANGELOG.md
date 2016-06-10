@@ -18,6 +18,7 @@
   - `CONTRIBUTING.md`
   - `STYLE_GUIDE.md`
 - Integration with [Hound CI][houndci].
+- Add logic expressions support for `only` in the meta.
 
 ## Current and previous versions
 

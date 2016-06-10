@@ -3,7 +3,7 @@ Fizzy
 
 The hassle free configuration manager
 
-[![Bountysource](https://img.shields.io/bountysource/team/fizzy/activity.svg)]()
+[![Bountysource][bountysource_image]][bountysource_link]
 
 ## Usage
 
@@ -23,7 +23,7 @@ Fizzy is distributed in two ways:
 
 ### Bundle
 
-First, [download the bundle](https://github.com/alem0lars/fizzy/releases); then:
+First, [download the bundle][download_bundle]; then:
 
 ```shellsession
 $ mkdir fizzy_portable
@@ -64,15 +64,15 @@ $ curl -sL https://raw.githubusercontent.com/alem0lars/fizzy/master/build/fizzy 
 You can provide integration with an existing package system.
 
 The dependencies are:
-* The [ruby](https://www.ruby-lang.org) interpreter (`>= 2.0.0`)
-* The [thor](http://whatisthor.com) [gem](https://rubygems.org/gems/thor)
+* The [ruby][ruby_homepage] interpreter (`>= 2.0.0`)
+* The [thor][thor_homepage] [gem][thor_gem]
 
-Then you can drop [fizzy](./fizzy) everywhere (possibly in the system path) and
-make it executable.
+Then you can drop [fizzy][fizzy_bin] everywhere (possibly in the system path)
+and make it executable.
 
 ## Contributions
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md)
+See [CONTRIBUTING.md][contributing]
 
 **Contributions are welcome!**
 
@@ -80,5 +80,22 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 Made with ♥ by Alessandro Molari
 
-- [@alem0lars](https://twitter.com/alem0lars)
-- [molari.alessandro@gmail.com](mailto:molari.alessandro@gmail.com)
+- [@alem0lars][twitter]
+- [molari.alessandro@gmail.com][send_email]
+
+<!-- Link declarations -->
+
+[bountysource_image]: https://img.shields.io/bountysource/team/fizzy/activity.svg
+[bountysource_link]: https://www.bountysource.com/teams/fizzy
+
+[ruby_homepage]: https://www.ruby-lang.org
+[thor_gem]: https://rubygems.org/gems/thor
+[thor_homepage]: http://whatisthor.com
+
+[fizzy_bin]: ./build/fizzy
+[contributing]: ./CONTRIBUTING.md
+
+[twitter]: https://twitter.com/alem0lars
+[send_email]: mailto:molari.alessandro@gmail.com
+
+[download_bundle]: https://github.com/alem0lars/fizzy/releases

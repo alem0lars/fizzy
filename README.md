@@ -7,7 +7,8 @@ The hassle free configuration manager
 
 ## Usage
 
-The best way to learn how to use fizzy is to read the **Official End-User Guide**:
+The best way to learn how to use fizzy is to read the
+**Official End-User Guide**:
 
 - [**Read online**][read_end_user_guide]
 - [**Download as PDF**][download_pdf_end_user_guide]

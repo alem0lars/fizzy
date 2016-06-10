@@ -14,7 +14,7 @@ rule
 
   target: exp
 
-  exp: LBRACKET exp RBRACKET { @eval.result = val[1] }
+  exp: LBRACKET exp RBRACKET
 
      | exp AND exp { @eval.and }
      | exp OR  exp { @eval.or  }

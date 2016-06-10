@@ -18,41 +18,70 @@ describe Fizzy::LogicParser do
       features: %w(accu aluna andro amun-ra corr_disc the-eme_ward)
     })
 
-    @available_features = %w(accu amun-ra corr_disc the-eme_ward)
-    @unavailable_features = %w(arti amun_ra corr-disc the-eme-ward empath)
-    @available_variables = %w(arte doc-rep flint_beast keep-of_the.lake)
-    @unavailable_variables = %w(accu doc_rep flint-beast keep_of_the.lake ophe)
+    @avail_features = %w(accu amun-ra corr_disc the-eme_ward)
+    @unavail_features = %w(arti amun_ra corr-disc the-eme-ward empath)
+    @avail_vars = %w(arte doc-rep flint_beast keep-of_the.lake)
+    @unavail_vars = %w(accu doc_rep flint-beast keep_of_the.lake ophe)
+  end
+
+  def avail_var
+    "v?#{@avail_vars.sample}"
+  end
+
+  def avail_feature
+    "f?#{@avail_features.sample}"
+  end
+
+  def unavail_var
+    "v?#{@unavail_vars.sample}"
+  end
+
+  def unavail_feature
+    "f?#{@unavail_features.sample}"
   end
 
   describe "when simple feature" do
     it "should succeed for available features" do
-      @available_features.each { |feature| assert_parse("f?#{feature}") }
+      @avail_features.each { |feature| assert_parse("f?#{feature}") }
     end
 
     it "should fail for unavailable features" do
-      @unavailable_features.each { |feature| assert_not_parse("f?#{feature}") }
+      @unavail_features.each { |feature| assert_not_parse("f?#{feature}") }
     end
   end
 
   describe "when simple variable" do
     it "should succeed for available variables" do
-      @available_variables.each { |variable| assert_parse("v?#{variable}") }
+      @avail_vars.each { |variable| assert_parse("v?#{variable}") }
     end
 
     it "should fail for unavailable variables" do
-      @unavailable_variables.each { |variable| assert_not_parse("v?#{variable}") }
+      @unavail_vars.each { |variable| assert_not_parse("v?#{variable}") }
     end
   end
 
   describe "when combined features" do
     it "should succeed for available features" do
-      assert_parse("f?#{@available_features.sample} && f?#{@available_features.sample}")
-      assert_parse("f?#{@unavailable_features.sample} || f?#{@available_features.sample}")
+      assert_parse("#{avail_feature} && #{avail_feature}")
+      assert_parse("#{unavail_feature} || #{avail_feature}")
     end
 
     it "should fail for unavailable features" do
-      assert_not_parse("f?#{@unavailable_features.sample} && f?#{@available_features.sample}")
-      assert_not_parse("f?#{@unavailable_features.sample} || f?#{@unavailable_features.sample}")
+      assert_not_parse("#{unavail_feature} && #{avail_feature}")
+      assert_not_parse("#{unavail_feature} || #{unavail_feature}")
+    end
+  end
+
+  describe "when conditions are nested" do
+    it "should succeed" do
+      # Only variables.
+      assert_parse("#{avail_var} && (#{avail_var} || #{unavail_var})")
+      assert_parse("(#{avail_var} && #{avail_var}) && (#{avail_var} || #{unavail_var})")
+      # Only features.
+      assert_parse("#{avail_feature} && (#{avail_feature} || #{unavail_feature})")
+      assert_parse("(#{avail_feature} && #{avail_feature}) && (#{avail_feature} || #{unavail_feature})")
+      # Both.
+      assert_parse("(#{avail_var} && #{avail_feature}) && (#{unavail_feature} || (#{avail_var} || #{unavail_feature}))")
     end
   end
 

@@ -3,55 +3,63 @@ class Fizzy::LogicEvaluator
   include Fizzy::IO
 
   def initialize(receiver)
-    @receiver        = receiver
-    @partial_results = []
-    @result          = nil
+    @receiver = receiver
+    @stack    = []
   end
 
   def result
-    # In case no operations that transform the partial results
-    # (`@partial_results`) into the final result (`@result`) have been used
-    # (e.g. operations `and`, `or`); return the accumulated partial result.
-    if @result.nil? && @partial_results.length == 1
-      @result = @partial_results.first
-    end
-    # Return the evaluation's result.
-    @result
-  end
-
-  def result=(initial_result)
-    @result = initial_result
-    debug("Initialized `result` to `#{initial_result}`.")
+    res = @stack.first
+    debug("Retrieving result from stack `#{@stack}`: `#{res}`.")
+    res
   end
 
   def and
-    @result = @partial_results.all? { |e| e == true }
-    debug("Performed logical `and` between the stored partial results " +
-          "`#{@partial_results}`: evaluating to `#{@result}`.")
+    arg1 = @stack.pop
+    arg2 = @stack.pop
+    result = (arg1 == true) && (arg2 == true)
+    @stack << result
+    debug("Performed logical `and` between `#{arg1}` and `#{arg2}`, " +
+          "evaluated to `#{result}`.")
+    debug_stack_state
   end
 
   def or
-    @result = @partial_results.any? { |e| e == true }
-    debug("Performed logical `or` between the stored partial results " +
-          "`#{@partial_results}`: evaluating to `#{@result}`.")
+    arg1 = @stack.pop
+    arg2 = @stack.pop
+    result = arg1 == true || arg2 == true
+    @stack << result
+    debug("Performed logical `or` between `#{arg1}` and `#{arg2}`, " +
+          "evaluated to `#{result}`.")
+    debug_stack_state
   end
 
   def has_feature?(name)
-    @partial_results << @receiver.has_feature?(name)
-    debug("Parsed feature `#{name}`: it's #{@result ? "" : "not "}available.")
+    result = @receiver.has_feature?(name)
+    @stack << result
+    debug("Parsed feature `#{name}`: it's #{result ? "" : "not "}available.")
+    debug_stack_state
   end
 
   def has_variable?(name)
-    @partial_results << !@receiver.get_var(name).nil?
-    debug("Parsed variable `#{name}` with value " +
-          "`#{@receiver.get_var(name)}`: " +
-          "it's #{@result ? "" : "not "}available.")
+    var_value = @receiver.get_var(name)
+    result = !var_value.nil?
+    @stack << result
+    debug("Parsed variable `#{name}` with value `#{var_value}`: " +
+          "it's #{result ? "" : "not "}available.")
+    debug_stack_state
   end
 
   def variable_value?(name, expected_value)
-    @partial_results << (@receiver.get_var(name) == expected_value)
-    debug("Parsed variable `#{name}` with value " +
-          "`#{@receiver.get_var(name)}`: " +
-          "it's #{@result ? "" : "not "}equal to `#{expected_value}`.")
+    var_value = @receiver.get_var(name)
+    result = var_value == expected_value
+    @stack << result
+    debug("Parsed variable `#{name}` with value `#{var_value}`: " +
+          "it's #{result ? "" : "not "}equal to `#{expected_value}`.")
+    debug_stack_state
   end
+
+  protected def debug_stack_state
+    debug("Stack state is: `#{@stack}`.")
+  end
+
 end

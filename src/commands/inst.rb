@@ -46,18 +46,18 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
     tell("Installing the configuration instance `#{options.inst_name}` " +
          "into the system.", :blue)
     # 1.1 Install the elements.
-    meta["elems"].each do |elem|
-      tell("Installing element: `#{elem["name"]}`.", :cyan)
+    meta[:elems].each do |elem|
+      tell("Installing element: `#{elem[:name]}`.", :cyan)
       elements_appliers.each { |applier| applier.call(elem) }
-      if elem["notes"]
-        tell("Notes for `#{elem["name"]}`:", :yellow)
-        tell(elem["notes"].split("\n").collect { |s| "  #{s}" }.join("\n"))
+      if elem[:notes]
+        tell("Notes for `#{elem[:name]}`:", :yellow)
+        tell(elem[:notes].split("\n").collect { |s| "  #{s}" }.join("\n"))
       end
     end
     # 1.2 Install the commands.
-    meta["commands"].each do |spec|
-      tell("Executing command: `#{spec["name"]}`.", :cyan)
-      available_commands[spec["type"]]["executor"].call(spec)
+    meta[:commands].each do |spec|
+      tell("Executing command: `#{spec[:name]}`.", :cyan)
+      available_commands[spec[:type]][:executor].call(spec)
     end
 
     # Inform the user about installation status.

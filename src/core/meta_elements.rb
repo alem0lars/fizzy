@@ -12,9 +12,9 @@ module Fizzy::MetaElements
   #
   def elements_appliers
     [ lambda { |elem| # Create parent directories.
-        elem["fs_maps"].each do |m|
-          parent_dir = m["dst_path"].dirname
-          if elem.has_key?("perms")
+        elem[:fs_maps].each do |m|
+          parent_dir = m[:dst_path].dirname
+          if elem.has_key?(:perms)
             l_ex_dir_path = f_noex_dir_path = parent_dir
             while !l_ex_dir_path.directory?
               f_noex_dir_path = l_ex_dir_path
@@ -35,22 +35,22 @@ module Fizzy::MetaElements
         end
       },
       lambda { |elem| # Create a symlink for each elements' `src_path`.
-        elem["fs_maps"].each do |m|
-          tell("  #{m["src_path"]} ← #{m["dst_path"]}") if @verbose
+        elem[:fs_maps].each do |m|
+          tell("  #{m[:src_path]} ← #{m[:dst_path]}") if @verbose
           cmd = "ln -s"
-          should_link = if m["dst_path"].file?
-            if m["dst_path"].realpath != m["src_path"]
+          should_link = if m[:dst_path].file?
+            if m[:dst_path].realpath != m[:src_path]
               cmd << " -f"
-              quiz("The destination file `#{m["dst_path"]}` already " +
+              quiz("The destination file `#{m[:dst_path]}` already " +
                    "exists. Overwrite")
             else
               false
             end
-          elsif m["dst_path"].directory?
-            if quiz("The destination file `#{m["dst_path"]}` is a " +
+          elsif m[:dst_path].directory?
+            if quiz("The destination file `#{m[:dst_path]}` is a " +
                     "directory. Delete it")
-              exec_cmd("rm -Rf #{m["dst_path"]}",
-                       as_su: !existing_dir(m["dst_path"].dirname))
+              exec_cmd("rm -Rf #{m[:dst_path]}",
+                       as_su: !existing_dir(m[:dst_path].dirname))
             end
           else
             # Link does not exist yet.
@@ -58,20 +58,20 @@ module Fizzy::MetaElements
           end
 
           if should_link
-            cmd << " #{m["src_path"].shell_escape}"
-            cmd << " #{m["dst_path"].shell_escape}"
-            exec_cmd(cmd, as_su: !existing_dir(m["dst_path"].dirname))
+            cmd << " #{m[:src_path].shell_escape}"
+            cmd << " #{m[:dst_path].shell_escape}"
+            exec_cmd(cmd, as_su: !existing_dir(m[:dst_path].dirname))
           end
         end
       },
       lambda { |elem| # Change perms of the instantiated files (if specified).
-        if elem.has_key?("perms")
-          elem["fs_maps"].each do |m|
-            tell("Changing permissions of #{m["src_path"]} to " +
-                 elem["perms"]) if @verbose
-            exec_cmd("chmod -R #{elem["perms"].shell_escape} " +
-                     m["src_path"].shell_escape,
-                     as_su: !File.owned?(m["src_path"]))
+        if elem.has_key?(:perms)
+          elem[:fs_maps].each do |m|
+            tell("Changing permissions of #{m[:src_path]} to " +
+                 elem[:perms]) if @verbose
+            exec_cmd("chmod -R #{elem[:perms].shell_escape} " +
+                     m[:src_path].shell_escape,
+                     as_su: !File.owned?(m[:src_path]))
           end
         end
       }

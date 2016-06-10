@@ -32,19 +32,17 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst: false)
 
     # Perform cleanup.
-    if quiz("Do you want to remove the fizzy root directory (`#{paths.root}`)")
-      status = exec_cmd("rm -Rf #{paths.root.shell_escape}")
+    status = if quiz("Remove the fizzy root directory (`#{paths.root}`)")
+      exec_cmd("rm -Rf #{paths.root.shell_escape}")
     else
-      status = nil # Cleanup skipped.
+      nil # Cleanup skipped.
     end
 
     # Inform user about the cleanup status.
-    if status
-      tell("Successfully cleaned: `#{paths.root}`.", :green)
-    elsif status.nil?
-      warning("Cleanup skipped.", ask_continue: false)
-    else
-      error("Failed to cleanup: `#{paths.root}`.", :red)
+    case status
+      when true  then tell("Successfully cleaned: `#{paths.root}`.", :green)
+      when false then error("Failed to cleanup: `#{paths.root}`.", :red)
+      when nil   then warning("Cleanup skipped.", ask_continue: false)
     end
   end
 
@@ -81,12 +79,12 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst:   false,
                             cur_cfg_name: options.cfg_name)
     find_path = (paths.cur_cfg || paths.cfg).join(pattern)
-    if find_path.exist?
-      cfg_files = Array[find_path]
+    cfg_files = if find_path.exist?
+      Array[find_path]
     else
-      cfg_files = Pathname.glob("#{find_path}*", File::FNM_DOTMATCH).to_a
-                          .select(&:file?)
-                          .reject{|path| path.to_s =~ /\.git/}
+      Pathname.glob("#{find_path}*", File::FNM_DOTMATCH).to_a
+              .select(&:file?)
+              .reject{|path| path.to_s =~ /\.git/}
     end
 
     cfg_files_arg = cfg_files.collect{|path| path.shell_escape}
@@ -94,22 +92,20 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                              .strip
 
     # Perform edit.
-    if cfg_files_arg.empty?
+    status = if cfg_files_arg.empty?
       warning("No files matching `#{options.cfg_name}` have been found.",
               ask_continue: false)
-      status = nil
+      nil
     else
       tell("Editing configuration file(s): `#{cfg_files_arg}`.", :cyan)
-      status = system("#{Fizzy::CFG.editor} #{cfg_files_arg}")
+      system("#{Fizzy::CFG.editor} #{cfg_files_arg}")
     end
 
     # Inform user about the editing status.
-    if status
-      tell("Successfully edited: `#{cfg_files_arg}`.", :green)
-    elsif status.nil?
-      warning("Editing skipped.", ask_continue: false)
-    else
-      error("Failed to edit: `#{cfg_files_arg}`.", :red)
+    case status
+      when true  then tell("Successfully edited: `#{cfg_files_arg}`.", :green)
+      when false then error("Failed to edit: `#{cfg_files_arg}`.", :red)
+      when nil   then warning("Editing skipped.", ask_continue: false)
     end
   end
 
@@ -139,18 +135,21 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
           tell "The configuration has the following local changes:\n" +
               "#{colorize(git_local_changes(paths.cur_cfg), :white)}", :cyan
           should_commit = quiz("Do you want to commit them all")
-          if should_commit
+          status = if should_commit
             commit_msg = quiz("Type the commit message", type: :string)
-            status   = git_add
-            status &&= git_commit(message: commit_msg)
+            git_add && git_commit(message: commit_msg)
           else
-            status = false
+            false
           end
         end
         # (Optional) Perform pull.
-        status = git_pull if status && git_should_pull(paths.cur_cfg)
+        if status && git_should_pull(paths.cur_cfg)
+          status = git_pull
+        end
         # (Optional) Perform push.
-        status = git_push if status && git_should_push(paths.cur_cfg)
+        if status && git_should_push(paths.cur_cfg)
+          status = git_push
+        end
       end
       status
     else
@@ -185,18 +184,18 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg,
                     options.verbose)
 
-    info("meta: ", "#{colorize(meta["elems"].count, :green)}/" +
-                   "#{meta["all_elems_count"]} elem(s) selected.")
-    info("meta: ", "#{colorize(meta["excluded_files"].count, :red)}/" +
-                   "#{meta["all_files.count"]} file(s) excluded.")
+    info("meta: ", "#{colorize(meta[:elems].count, :green)}/" +
+                   "#{meta[:all_elems_count]} elem(s) selected.")
+    info("meta: ", "#{colorize(meta[:excluded_files].count, :red)}/" +
+                   "#{meta[:all_files_count]} file(s) excluded.")
     tell
 
     # Create a configuration instance.
     tell("Creating a configuration instance named `#{options.inst_name}` " +
          "from: `#{paths.cur_cfg}`.", :blue)
 
-    exclude_pattern = /\.git|README/
-    meta["excluded_files"].each do |excluded_file|
+    exclude_pattern = Fizzy::CFG.instantiate_exclude_pattern
+    meta[:excluded_files].each do |excluded_file|
       exclude_pattern = /#{exclude_pattern}|#{excluded_file}/
     end
 

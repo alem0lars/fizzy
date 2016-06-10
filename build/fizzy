@@ -115,6 +115,8 @@ Fizzy::CFG.vars = OpenStruct.new(
   parent_dummy_regexp: /none|nothing/i
 )
 
+Fizzy::CFG.instantiate_exclude_pattern = /\.git|README/
+
 # ──────────────────────────────────────────────────────────────────────────────
 # ☞ Exts → String
 
@@ -1771,26 +1773,26 @@ module Fizzy::MetaInfo
   def get_meta(meta_path, vars_path, elems_base_path, verbose)
     tell("Getting meta informations.", :blue)
 
-    meta = YAML.load(File.read(meta_path))
-    meta["all_elems_count"] = meta["elems"].count
+    meta = YAML.load(File.read(meta_path)).deep_symbolize_keys
+    meta[:all_elems_count] = meta[:elems].count
 
     # ──────────────────────────────────────────────────────────────────────────
     # ☞ Step 1: Normalize elements
 
-    elem_erb_excluded_fields = ["only"]
+    elem_erb_excluded_fields = %i(only)
 
-    meta["elems"] = [] unless meta.has_key?("elems")
+    meta[:elems] = [] unless meta.has_key?(:elems)
 
-    meta["elems"] = meta["elems"].each_with_index.collect do |elem, idx|
-      elem_identifier = elem["name"] || "src = #{elem["src"]}"
+    meta[:elems] = meta[:elems].each_with_index.collect do |elem, idx|
+      elem_identifier = elem[:name] || "src = #{elem[:src]}"
       info("\nElement: ", elem_identifier) if verbose
 
       # Step 1.1: Validate `only` and determine if the element is selected.
-      if elem.has_key?("only") && !elem["only"].is_a?(Hash)
+      if elem.has_key?(:only) && !elem[:only].is_a?(Hash)
         error("The configuration element `#{elem_identifier}` has invalid " +
               "`only`: it's not a `Hash`.")
       end
-      selected = selected_by_only?(elem["only"], verbose)
+      selected = selected_by_only?(elem[:only], verbose)
 
       # Step 1.2: Pre-process strings with ERB.
       if selected
@@ -1803,12 +1805,14 @@ module Fizzy::MetaInfo
 
       # Step 1.3: Validate and normalize `name`, `src`, `dst`, `fs_maps`.
       if selected
-        error("Element `#{elem_identifier}` doesn't contain `src`.") \
-          unless elem.has_key?("src")
-        elem["name"] = elem["src"] unless elem.has_key?("name")
-        error("Element `#{elem_identifier}` doesn't contain `dst`.") \
-          unless elem.has_key?("dst")
-        elem["fs_maps"] = []
+        unless elem.has_key?(:src)
+          error("Element `#{elem_identifier}` doesn't contain `src`.")
+        end
+        elem[:name] = elem[:src] unless elem.has_key?(:name)
+        unless elem.has_key?(:dst)
+          error("Element `#{elem_identifier}` doesn't contain `dst`.")
+        end
+        elem[:fs_maps] = []
       end
 
       selected ? elem : nil
@@ -1816,53 +1820,57 @@ module Fizzy::MetaInfo
 
     # Step 1.4: For each active elem, match the `src` field against the
     #           filesystem and determine filesystem mapping (`fs_maps`).
-    meta["elems"].each do |elem|
+    meta[:elems].each do |elem|
       found = false
 
-      Find.find(elems_base_path).
-        select { |ebp| File.file?(ebp) }.
-        each do |subfile_path|
+      Find.find(elems_base_path)
+          .select { |ebp| File.file?(ebp) }
+          .each do |subfile_path|
 
         subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
                            Pathname.new(elems_base_path)).to_s
-        if md = Regexp.new(elem["src"]).match(subfile_rel_path.gsub(/\.tt$/, ''))
+        if md = Regexp.new(elem[:src]).match(subfile_rel_path.gsub(/\.tt$/, ''))
           found = true
-          dst_path = elem["dst"].gsub(/<([0-9]+)>/) do
+          dst_path = elem[:dst].gsub(/<([0-9]+)>/) do
             idx = Integer($1)
             unless (1..md.length) === idx
-              error("Invalid `dst` for element `#{elem["name"]}`: nothing " +
+              error("Invalid `dst` for element `#{elem[:name]}`: nothing " +
                     "captured at index `#{idx}`.")
             else
               md[idx]
             end
           end
-          elem["fs_maps"] << {
-            "src_path" => Pathname.new(subfile_path).expand_path,
-            "dst_path" => Pathname.new(dst_path).expand_path
+          elem[:fs_maps] << {
+            src_path: Pathname.new(subfile_path).expand_path,
+            dst_path: Pathname.new(dst_path).expand_path
           }
         end
       end
 
-      warning("Inconsistency found for elem `#{elem["name"]}`: no file " +
-              "matches src: `#{elem["src"]}`.") unless found
+      unless found
+        warning("Inconsistency found for elem `#{elem[:name]}`: no file " +
+                "matches src: `#{elem[:src]}`.")
+      end
     end
 
     # ──────────────────────────────────────────────────────────────────────────
     # ☞ Step 2: Normalize commands
 
-    command_excluded_erb_fields = ["only"]
+    command_excluded_erb_fields = [:only]
 
-    meta["commands"] = [] unless meta.has_key?("commands")
+    meta[:commands] = [] unless meta.has_key?(:commands)
 
-    meta["commands"] = meta["commands"].each_with_index.collect do |spec, idx|
-      spec["name"] ||= "type = #{spec["type"]}, index = #{idx}"
-      info("\nCommand: ", spec["name"]) if verbose
+    meta[:commands] = meta[:commands].each_with_index.collect do |spec, idx|
+      spec[:name] ||= "type = #{spec[:type]}, index = #{idx}"
+      info("\nCommand: ", spec[:name]) if verbose
 
       # Step 2.1: Validate `only` and determine if the command is selected.
-      error("The command `#{spec["name"]}` has invalid `only`: it's not " +
-            "a `Hash`.") if spec.has_key?("only") && !spec["only"].is_a?(Hash)
+      if spec.has_key?(:only) && !spec[:only].is_a?(Hash)
+        error("The command `#{spec[:name]}` has invalid `only`: it's not " +
+              "a `Hash`.")
+      end
 
-      selected = selected_by_only?(spec["only"], verbose)
+      selected = selected_by_only?(spec[:only], verbose)
 
       if selected
 
@@ -1874,27 +1882,27 @@ module Fizzy::MetaInfo
         end
 
         # Step 2.3: Validate `type`, `validator`, `executor`.
-        if !spec.has_key?("type") ||
-           !available_commands.keys.include?(spec["type"])
-          error("The command `#{spec["name"]}` has invalid `type`: it's " +
+        if !spec.has_key?(:type) ||
+           !available_commands.keys.include?(spec[:type])
+          error("The command `#{spec[:name]}` has invalid `type`: it's " +
                 "not in `#{available_commands.keys}`.")
         end
-        command = available_commands[spec["type"]]
-        if command.has_key?("validator") && !command["validator"].is_a?(Proc)
-          error("Invalid validator for command `#{spec["name"]}`: if " +
+        command = available_commands[spec[:type]]
+        if command.has_key?(:validator) && !command[:validator].is_a?(Proc)
+          error("Invalid validator for command `#{spec[:name]}`: if " +
                 "provided it should be a `Proc`.")
         end
-        if !command.has_key?("executor") || !command["executor"].is_a?(Proc)
-          error("Invalid executor for command `#{spec["name"]}`: it should " +
+        if !command.has_key?(:executor) || !command[:executor].is_a?(Proc)
+          error("Invalid executor for command `#{spec[:name]}`: it should " +
                 "be a `Proc`.")
         end
 
         # Step 2.4: Use type-specific validator if it's defined.
-        if command.has_key?("validator") && (
-             !command["validator"].is_a?(Proc) ||
-             !command["validator"].call(spec)
+        if command.has_key?(:validator) && (
+             !command[:validator].is_a?(Proc) ||
+             !command[:validator].call(spec)
            )
-          error("The validator for command `#{spec["name"]}` didn't pass.")
+          error("The validator for command `#{spec[:name]}` didn't pass.")
         end
       end
 
@@ -1908,13 +1916,13 @@ module Fizzy::MetaInfo
                             .map{|f| Pathname.new(f).expand_path}
                             .select{|f| f.file?})
     src_paths = Set.new(
-      meta["elems"].collect_concat do |elem|
-        elem["fs_maps"].map{|m| m["src_path"]}
+      meta[:elems].collect_concat do |elem|
+        elem[:fs_maps].map{|m| m[:src_path]}
       end)
     vars_files = Pathname.glob(vars_path.join("*"), File::FNM_DOTMATCH)
-    meta["system_files"]    = Set.new(vars_files << meta_path)
-    meta["excluded_files"]  = all_files - src_paths - meta["system_files"]
-    meta["all_files_count"] = all_files.count
+    meta[:system_files]    = Set.new(vars_files << meta_path)
+    meta[:excluded_files]  = all_files - src_paths - meta[:system_files]
+    meta[:all_files_count] = all_files.count
 
     meta
   end
@@ -1927,21 +1935,20 @@ module Fizzy::MetaInfo
       selected = true
       info(" ↳ ", "#{✔} (`only` is empty).") if verbose
     else
-      wants_features = only.has_key?("features")
-      wants_vars     = only.has_key?("vars")
-
-      feat_ok = if wants_features
-                  only["features"].any? do |feature|
-                    case feature
-                      when Array then feature.all?{|f| has_feature?(f)}
-                      else            has_feature?(feature)
-                    end
-                  end
-                else
-                  true
-                end
+      wants_features = only.has_key?(:features)
+      wants_vars     = only.has_key?(:vars)
+      if wants_features
+        feat_ok = only[:features].any? do |feature|
+          case feature
+            when Array then feature.all?{|f| has_feature?(f)}
+            else            has_feature?(feature)
+          end
+        end
+      else
+        feat_ok = true
+      end
       vars_ok = wants_vars ?
-          only["vars"].any?{|var| !get_var(var, single_match: force).nil?} :
+          only[:vars].any?{|var| !get_var(var, single_match: force).nil?} :
           true
 
       selected   = !wants_features && !wants_vars
@@ -1978,9 +1985,9 @@ module Fizzy::MetaElements
   #
   def elements_appliers
     [ lambda { |elem| # Create parent directories.
-        elem["fs_maps"].each do |m|
-          parent_dir = m["dst_path"].dirname
-          if elem.has_key?("perms")
+        elem[:fs_maps].each do |m|
+          parent_dir = m[:dst_path].dirname
+          if elem.has_key?(:perms)
             l_ex_dir_path = f_noex_dir_path = parent_dir
             while !l_ex_dir_path.directory?
               f_noex_dir_path = l_ex_dir_path
@@ -2001,22 +2008,22 @@ module Fizzy::MetaElements
         end
       },
       lambda { |elem| # Create a symlink for each elements' `src_path`.
-        elem["fs_maps"].each do |m|
-          tell("  #{m["src_path"]} ← #{m["dst_path"]}") if @verbose
+        elem[:fs_maps].each do |m|
+          tell("  #{m[:src_path]} ← #{m[:dst_path]}") if @verbose
           cmd = "ln -s"
-          should_link = if m["dst_path"].file?
-            if m["dst_path"].realpath != m["src_path"]
+          should_link = if m[:dst_path].file?
+            if m[:dst_path].realpath != m[:src_path]
               cmd << " -f"
-              quiz("The destination file `#{m["dst_path"]}` already " +
+              quiz("The destination file `#{m[:dst_path]}` already " +
                    "exists. Overwrite")
             else
               false
             end
-          elsif m["dst_path"].directory?
-            if quiz("The destination file `#{m["dst_path"]}` is a " +
+          elsif m[:dst_path].directory?
+            if quiz("The destination file `#{m[:dst_path]}` is a " +
                     "directory. Delete it")
-              exec_cmd("rm -Rf #{m["dst_path"]}",
-                       as_su: !existing_dir(m["dst_path"].dirname))
+              exec_cmd("rm -Rf #{m[:dst_path]}",
+                       as_su: !existing_dir(m[:dst_path].dirname))
             end
           else
             # Link does not exist yet.
@@ -2024,20 +2031,20 @@ module Fizzy::MetaElements
           end
 
           if should_link
-            cmd << " #{m["src_path"].shell_escape}"
-            cmd << " #{m["dst_path"].shell_escape}"
-            exec_cmd(cmd, as_su: !existing_dir(m["dst_path"].dirname))
+            cmd << " #{m[:src_path].shell_escape}"
+            cmd << " #{m[:dst_path].shell_escape}"
+            exec_cmd(cmd, as_su: !existing_dir(m[:dst_path].dirname))
           end
         end
       },
       lambda { |elem| # Change perms of the instantiated files (if specified).
-        if elem.has_key?("perms")
-          elem["fs_maps"].each do |m|
-            tell("Changing permissions of #{m["src_path"]} to " +
-                 elem["perms"]) if @verbose
-            exec_cmd("chmod -R #{elem["perms"].shell_escape} " +
-                     m["src_path"].shell_escape,
-                     as_su: !File.owned?(m["src_path"]))
+        if elem.has_key?(:perms)
+          elem[:fs_maps].each do |m|
+            tell("Changing permissions of #{m[:src_path]} to " +
+                 elem[:perms]) if @verbose
+            exec_cmd("chmod -R #{elem[:perms].shell_escape} " +
+                     m[:src_path].shell_escape,
+                     as_su: !File.owned?(m[:src_path]))
           end
         end
       }
@@ -2191,19 +2198,17 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst: false)
 
     # Perform cleanup.
-    if quiz("Do you want to remove the fizzy root directory (`#{paths.root}`)")
-      status = exec_cmd("rm -Rf #{paths.root.shell_escape}")
+    status = if quiz("Remove the fizzy root directory (`#{paths.root}`)")
+      exec_cmd("rm -Rf #{paths.root.shell_escape}")
     else
-      status = nil # Cleanup skipped.
+      nil # Cleanup skipped.
     end
 
     # Inform user about the cleanup status.
-    if status
-      tell("Successfully cleaned: `#{paths.root}`.", :green)
-    elsif status.nil?
-      warning("Cleanup skipped.", ask_continue: false)
-    else
-      error("Failed to cleanup: `#{paths.root}`.", :red)
+    case status
+      when true  then tell("Successfully cleaned: `#{paths.root}`.", :green)
+      when false then error("Failed to cleanup: `#{paths.root}`.", :red)
+      when nil   then warning("Cleanup skipped.", ask_continue: false)
     end
   end
 
@@ -2240,12 +2245,12 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst:   false,
                             cur_cfg_name: options.cfg_name)
     find_path = (paths.cur_cfg || paths.cfg).join(pattern)
-    if find_path.exist?
-      cfg_files = Array[find_path]
+    cfg_files = if find_path.exist?
+      Array[find_path]
     else
-      cfg_files = Pathname.glob("#{find_path}*", File::FNM_DOTMATCH).to_a
-                          .select(&:file?)
-                          .reject{|path| path.to_s =~ /\.git/}
+      Pathname.glob("#{find_path}*", File::FNM_DOTMATCH).to_a
+              .select(&:file?)
+              .reject{|path| path.to_s =~ /\.git/}
     end
 
     cfg_files_arg = cfg_files.collect{|path| path.shell_escape}
@@ -2253,22 +2258,20 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                              .strip
 
     # Perform edit.
-    if cfg_files_arg.empty?
+    status = if cfg_files_arg.empty?
       warning("No files matching `#{options.cfg_name}` have been found.",
               ask_continue: false)
-      status = nil
+      nil
     else
       tell("Editing configuration file(s): `#{cfg_files_arg}`.", :cyan)
-      status = system("#{Fizzy::CFG.editor} #{cfg_files_arg}")
+      system("#{Fizzy::CFG.editor} #{cfg_files_arg}")
     end
 
     # Inform user about the editing status.
-    if status
-      tell("Successfully edited: `#{cfg_files_arg}`.", :green)
-    elsif status.nil?
-      warning("Editing skipped.", ask_continue: false)
-    else
-      error("Failed to edit: `#{cfg_files_arg}`.", :red)
+    case status
+      when true  then tell("Successfully edited: `#{cfg_files_arg}`.", :green)
+      when false then error("Failed to edit: `#{cfg_files_arg}`.", :red)
+      when nil   then warning("Editing skipped.", ask_continue: false)
     end
   end
 
@@ -2298,18 +2301,21 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
           tell "The configuration has the following local changes:\n" +
               "#{colorize(git_local_changes(paths.cur_cfg), :white)}", :cyan
           should_commit = quiz("Do you want to commit them all")
-          if should_commit
+          status = if should_commit
             commit_msg = quiz("Type the commit message", type: :string)
-            status   = git_add
-            status &&= git_commit(message: commit_msg)
+            git_add && git_commit(message: commit_msg)
           else
-            status = false
+            false
           end
         end
         # (Optional) Perform pull.
-        status = git_pull if status && git_should_pull(paths.cur_cfg)
+        if status && git_should_pull(paths.cur_cfg)
+          status = git_pull
+        end
         # (Optional) Perform push.
-        status = git_push if status && git_should_push(paths.cur_cfg)
+        if status && git_should_push(paths.cur_cfg)
+          status = git_push
+        end
       end
       status
     else
@@ -2344,18 +2350,18 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg,
                     options.verbose)
 
-    info("meta: ", "#{colorize(meta["elems"].count, :green)}/" +
-                   "#{meta["all_elems_count"]} elem(s) selected.")
-    info("meta: ", "#{colorize(meta["excluded_files"].count, :red)}/" +
-                   "#{meta["all_files.count"]} file(s) excluded.")
+    info("meta: ", "#{colorize(meta[:elems].count, :green)}/" +
+                   "#{meta[:all_elems_count]} elem(s) selected.")
+    info("meta: ", "#{colorize(meta[:excluded_files].count, :red)}/" +
+                   "#{meta[:all_files_count]} file(s) excluded.")
     tell
 
     # Create a configuration instance.
     tell("Creating a configuration instance named `#{options.inst_name}` " +
          "from: `#{paths.cur_cfg}`.", :blue)
 
-    exclude_pattern = /\.git|README/
-    meta["excluded_files"].each do |excluded_file|
+    exclude_pattern = Fizzy::CFG.instantiate_exclude_pattern
+    meta[:excluded_files].each do |excluded_file|
       exclude_pattern = /#{exclude_pattern}|#{excluded_file}/
     end
 
@@ -2422,18 +2428,18 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
     tell("Installing the configuration instance `#{options.inst_name}` " +
          "into the system.", :blue)
     # 1.1 Install the elements.
-    meta["elems"].each do |elem|
-      tell("Installing element: `#{elem["name"]}`.", :cyan)
+    meta[:elems].each do |elem|
+      tell("Installing element: `#{elem[:name]}`.", :cyan)
       elements_appliers.each { |applier| applier.call(elem) }
-      if elem["notes"]
-        tell("Notes for `#{elem["name"]}`:", :yellow)
-        tell(elem["notes"].split("\n").collect { |s| "  #{s}" }.join("\n"))
+      if elem[:notes]
+        tell("Notes for `#{elem[:name]}`:", :yellow)
+        tell(elem[:notes].split("\n").collect { |s| "  #{s}" }.join("\n"))
       end
     end
     # 1.2 Install the commands.
-    meta["commands"].each do |spec|
-      tell("Executing command: `#{spec["name"]}`.", :cyan)
-      available_commands[spec["type"]]["executor"].call(spec)
+    meta[:commands].each do |spec|
+      tell("Executing command: `#{spec[:name]}`.", :cyan)
+      available_commands[spec[:type]][:executor].call(spec)
     end
 
     # Inform the user about installation status.

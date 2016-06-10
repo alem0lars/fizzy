@@ -39,3 +39,5 @@ Fizzy::CFG.vars = OpenStruct.new(
   json_regexp: /^\/\*\s*=>\s*inherits\s*(:\s+)?(?<parents>.+)\s*<=\s*\*\/\s*/,
   parent_dummy_regexp: /none|nothing/i
 )
+
+Fizzy::CFG.instantiate_exclude_pattern = /\.git|README/

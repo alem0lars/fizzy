@@ -10,9 +10,9 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
   def details
     # Prepare paths before considering details.
     paths = prepare_storage(options.fizzy_dir,
-                            valid_meta: false,
-                            valid_cfg:  :readonly,
-                            valid_inst: false,
+                            valid_meta:   false,
+                            valid_cfg:    :readonly,
+                            valid_inst:   false,
                             cur_cfg_name: options.cfg_name)
     # Print details.
     tell("Available variable files:", :cyan)
@@ -32,8 +32,11 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst: false)
 
     # Perform cleanup.
-    status = exec_cmd("rm -Rf #{paths.root.shell_escape}") \
-      if quiz("Do you want to remove the fizzy root directory `#{paths.root}`")
+    if quiz("Do you want to remove the fizzy root directory (`#{paths.root}`)")
+      status = exec_cmd("rm -Rf #{paths.root.shell_escape}")
+    else
+      status = nil # Cleanup skipped.
+    end
 
     # Inform user about the cleanup status.
     if status
@@ -78,13 +81,13 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst:   false,
                             cur_cfg_name: options.cfg_name)
     find_path = (paths.cur_cfg || paths.cfg).join(pattern)
-    cfg_files = if find_path.exist?
-                  Array[find_path]
-                else
-                  Pathname.glob("#{find_path}*", File::FNM_DOTMATCH).to_a.
-                    select(&:file?).
-                    reject{|path| path.to_s =~ /\.git/}
-                end
+    if find_path.exist?
+      cfg_files = Array[find_path]
+    else
+      cfg_files = Pathname.glob("#{find_path}*", File::FNM_DOTMATCH).to_a
+                          .select(&:file?)
+                          .reject{|path| path.to_s =~ /\.git/}
+    end
 
     cfg_files_arg = cfg_files.collect{|path| path.shell_escape}
                              .join(" ")

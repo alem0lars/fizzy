@@ -7,7 +7,12 @@ The hassle free configuration manager
 
 ## Usage
 
-A end-user guide is planned (see issue #21) but still not available.
+The best way to learn how to use fizzy is to read the **Official End-User Guide**:
+
+- [**Read online**][read_end_user_guide]
+- [**Download as PDF**][download_pdf_end_user_guide]
+- [**Download as ePUB**][download_epub_end_user_guide]
+- [**Download it as MOBI**][download_mobi_end_user_guide]
 
 ## Installation
 
@@ -85,17 +90,22 @@ Made with ♥ by Alessandro Molari
 
 <!-- Link declarations -->
 
-[bountysource_image]: https://img.shields.io/bountysource/team/fizzy/activity.svg
-[bountysource_link]: https://www.bountysource.com/teams/fizzy
-
-[ruby_homepage]: https://www.ruby-lang.org
-[thor_gem]: https://rubygems.org/gems/thor
-[thor_homepage]: http://whatisthor.com
-
-[fizzy_bin]: ./build/fizzy
-[contributing]: ./CONTRIBUTING.md
-
-[twitter]: https://twitter.com/alem0lars
+[twitter]:    https://twitter.com/alem0lars
 [send_email]: mailto:molari.alessandro@gmail.com
 
+[ruby_homepage]: https://www.ruby-lang.org
+[thor_gem]:      https://rubygems.org/gems/thor
+[thor_homepage]: http://whatisthor.com
+
+[bountysource_image]: https://img.shields.io/bountysource/team/fizzy/activity.svg
+[bountysource_link]:  https://www.bountysource.com/teams/fizzy
+
+[read_end_user_guide]:          https://www.gitbook.com/read/book/alem0lars/fizzy
+[download_pdf_end_user_guide]:  https://www.gitbook.com/download/pdf/book/alem0lars/fizzy
+[download_epub_end_user_guide]: https://www.gitbook.com/download/epub/book/alem0lars/fizzy
+[download_mobi_end_user_guide]: https://www.gitbook.com/download/mobi/book/alem0lars/fizzy
+
 [download_bundle]: https://github.com/alem0lars/fizzy/releases
+
+[fizzy_bin]:    ./build/fizzy
+[contributing]: ./CONTRIBUTING.md

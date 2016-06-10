@@ -103,12 +103,6 @@ module Fizzy::MetaInfo
       spec[:name] ||= "type = #{spec[:type]}, index = #{idx}"
       info("\nCommand: ", spec[:name]) if verbose
 
-      # Step 2.1: Validate `only` and determine if the command is selected.
-      if spec.has_key?(:only) && !spec[:only].is_a?(Hash)
-        error("The command `#{spec[:name]}` has invalid `only`: it's not " +
-              "a `Hash`.")
-      end
-
       selected = selected_by_only?(spec[:only], verbose)
 
       if selected
@@ -166,14 +160,11 @@ module Fizzy::MetaInfo
     meta
   end
 
-  # Return whether the provided `only` specification is evaluated as an allows
-  # and not as a denies.
+  # Return whether the provided `only` specification is evaluated as an allow
+  # (and not as a deny).
   #
   def selected_by_only?(only, verbose)
-    unless only
-      selected = true
-      info(" ↳ ", "#{✔} (`only` is empty).") if verbose
-    else
+    selected = if only.is_a?(Hash) # Evaluate `only` has a Hash.
       wants_features = only.has_key?(:features)
       wants_vars     = only.has_key?(:vars)
       if wants_features
@@ -187,19 +178,28 @@ module Fizzy::MetaInfo
         feat_ok = true
       end
       vars_ok = wants_vars ?
-          only[:vars].any?{|var| !get_var(var, single_match: force).nil?} :
+          only[:vars].any?{|var| !get_var(var, single_match: false).nil?} :
           true
 
-      selected   = !wants_features && !wants_vars
-      selected ||= feat_ok && vars_ok
-
-      if selected && verbose
-        info(" ↳ ", "#{✔} (`only` is present and satisfied).")
-      end
+      (!wants_features && !wants_vars) || (feat_ok && vars_ok)
+    elsif only.is_a?(String) # Evaluate `only` has a logic expression.
+      Fizzy::LogicParser.new.parse(self, only)
+    elsif only.nil? # By default, it's selected.
+      selected = true
+    else
+      error("`#{spec[:name]}` has invalid `only`.")
     end
 
-    if !selected && verbose
-      info(" ↳ ", "#{✘} (`only` is present and didn't match).")
+    if verbose
+      if selected
+        if only.nil?
+          info(" ↳ ", "#{✔} (`only` is empty).")
+        else
+          info(" ↳ ", "#{✔} (`only` is present and satisfied).")
+        end
+      else
+        info(" ↳ ", "#{✘} (`only` didn't match).")
+      end
     end
 
     selected

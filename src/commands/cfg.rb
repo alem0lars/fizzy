@@ -33,7 +33,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
     # Perform cleanup.
     status = if quiz("Remove the fizzy root directory (`#{paths.root}`)")
-      exec_cmd("rm -Rf #{paths.root.shell_escape}")
+      paths.root.rmtree
     else
       nil # Cleanup skipped.
     end

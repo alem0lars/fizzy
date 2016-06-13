@@ -5,17 +5,22 @@ to abide by the [Code of Conduct][code_of_conduct].
 
 ## 1: Prepare
 
-- Fork, then clone the repo: `git clone git@github.com:your-username/fizzy.git`
-- Set up Ruby dependencies via Bundler: `bundle install`
-- Make sure the tests pass: `rake test`
+- Fork, then clone the repo: `git clone git@github.com:your-username/fizzy.git`.
+- Set up Ruby dependencies via Bundler: `bundle install`.
+- Make sure the tests pass: `rake test`.
 
 ## 2: Make changes
 
 - Make your change.
 - Write tests.
 - Follow the [Style Guide][style_guide].
-- Make the tests pass: `rake test`
-- Update the packages: `rake package`
+- Make the tests pass: `rake test`.
+  You can also run tests inside a Docker container, running: `rake docker:test`.
+  To forcibly build the Docker image, you need to set the environment variable
+  `FIZZY_DOCKER_BUILD` to `true`: `FIZZY_DOCKER_BUILD=true rake docker:test`.
+- If you need to open a console inside the Docker container, you can run:
+  `rake docker:console`.
+- Update the packages: `rake package`.
 - Add notes on your change to the [CHANGELOG.md][changelog] file,
   in the `Next Version` section.
 - Write a [good commit message][good_commit_message].

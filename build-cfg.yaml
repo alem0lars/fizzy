@@ -21,6 +21,8 @@ sources:
   - exts/hash
   - exts/pathname
   - exts/thor
+  - misc/abstract_method
+  - misc/typesystem
   - core/io
   - grammars/base_lexer
   - <grammars>
@@ -28,7 +30,6 @@ sources:
   - core/execution
   - core/filesystem
   - core/git
-  - core/typesystem
   - core/vars/setup
   - core/vars/filters
   - core/vars/retriever

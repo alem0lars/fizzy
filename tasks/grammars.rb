@@ -21,7 +21,7 @@ def build_grammars
   unless additional_sources.empty?
     start_index = $cfg[:sources].find_index($cfg[:grammars_source_name])
     unless start_index
-      error("Cannot find `grammar` in `sources` element in `build-cfg.yaml`.")
+      error("Cannot find `grammar` in `sources` element in `#{$cfg[:paths][:metadata]}`.")
     end
     $cfg[:sources].insert(start_index, *additional_sources)
     $cfg[:sources].delete($cfg[:grammars_source_name])

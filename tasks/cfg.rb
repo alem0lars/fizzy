@@ -5,7 +5,7 @@ $cfg = {}
 
 $cfg[:paths] = {}
 $cfg[:paths][:root]      = Pathname.new(File.dirname(File.dirname(__FILE__)))
-$cfg[:paths][:build_cfg] = $cfg[:paths][:root].join("build-cfg.yaml")
+$cfg[:paths][:metadata] = $cfg[:paths][:root].join("metadata.yaml")
 $cfg[:paths][:build]     = $cfg[:paths][:root].join("build")
 $cfg[:paths][:pkg]       = $cfg[:paths][:build].join("package")
 $cfg[:paths][:tmp]       = $cfg[:paths][:root].join("tmp")
@@ -23,7 +23,7 @@ $cfg[:paths][:pkg].mkpath   unless $cfg[:paths][:pkg].directory?
 $cfg[:paths][:tmp].mkpath   unless $cfg[:paths][:tmp].directory?
 
 # ☞ Read build configuration.
-$cfg = deep_merge($cfg, symbolize(YAML.load_file($cfg[:paths][:build_cfg].to_s)))
+$cfg = deep_merge($cfg, symbolize(YAML.load_file($cfg[:paths][:metadata].to_s)))
 
 def $cfg.debug?
   ENV["FIZZY_DEBUG"] == "true"

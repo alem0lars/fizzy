@@ -38,6 +38,9 @@ sources:
   - core/meta_commands
   - core/meta_info
   - core/meta_elements
+  - core/sync/base
+  - core/sync/local
+  - core/sync/git
   - lib/filters/lastpass
   - commands/base
   - commands/cfg

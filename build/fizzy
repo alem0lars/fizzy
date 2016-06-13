@@ -268,6 +268,115 @@ class Thor
 end
 
 # ──────────────────────────────────────────────────────────────────────────────
+# ☞ Misc → Abstract Method
+
+# Exception raised when an abstract method is called.
+#
+class AbstractMethodCalled < StandardError
+end
+
+class Module
+  # Define one or more abstract methods with given names in a class or module.
+  # When called, the abstract method will raise an `AbstractMethodCalled`
+  # exception with a helpful message.
+  #
+  # @example
+  #   class AbstractClass
+  #     abstract_method :foo
+  #   end
+  #
+  #   class ConcreteClass < AbstractClass
+  #     def foo
+  #       42
+  #     end
+  #   end
+  #
+  #   AbstractClass.new.foo # raises AbstractMethodCalled
+  #   ConcreteClass.new.foo # => 42
+  #
+  # @param [Array<Symbol>] names the names of defined abstract methods
+  #
+  def abstract_method(*names)
+    definitor = self
+
+    names.each do |name|
+      define_method name do |*args|
+        raise AbstractMethodCalled,
+              "Called unimplemented abstract method #{self.class}##{name} " +
+              "(defined in #{definitor.class.name.downcase} #{definitor})."
+      end
+    end
+  end
+end
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Misc → Typesystem
+
+module Fizzy::TypeSystem
+
+  # Check/convert type of the provided `value`,
+  # according to the argument `type`.
+  #
+  # The argument `name` is a logical name to be used for the value,
+  # used when logging messages. It can be anything.
+  #
+  # If `strict` is `true`, then no type convertion/normalization is done;
+  # otherwise, try to guess the correct type.
+  #
+  def typize(name, value, type: nil, strict: false)
+    if type.nil? || (type.to_s.end_with?("?") && value.nil?)
+      value
+    else
+      case type.to_s.gsub(/\?$/, "").to_sym
+        when :string, :str
+          strict ? _ensure_type!(name, value, String) : value.to_s
+        when :symbol, :sym
+          strict ? _ensure_type!(name, value, Symbol) : value.to_s.to_sym
+        when :integer, :int
+          strict ? _ensure_type!(name, value, Integer) : Integer(value)
+        when :boolean, :bool
+          if strict
+            _ensure_type!(name, value, TrueClass, FalseClass)
+          else
+            if value.nil?
+              nil
+            elsif value.is_a?(TrueClass) || value.to_s == "true"
+              true
+            elsif value.is_a?(FalseClass) || value.to_s == "false"
+              false
+            else
+              error("Invalid `#{value}` for value `#{name}`: " +
+                    "it can't be converted to a boolean.")
+            end
+          end
+        when :path, :pth then
+          if strict && !File.exist?(value)
+            error("Invalid `#{name}`: `#{value}` doesn't exist")
+          else
+            Pathname.new(value).expand_path
+          end
+        when :file then
+          if strict && !File.file?(value)
+            error("Invalid `#{name}`: `#{value}` isn't a file")
+          else
+            Pathname.new(value).expand_path
+          end
+        when :directory, :dir then
+          if strict && !File.directory?(value)
+            error("Invalid `#{name}`: `#{value}` isn't a directory")
+          else
+            Pathname.new(value).expand_path
+          end
+        else
+          error("Unhandled type `#{type}`. If you need support for a new " +
+                "type, open an issue at `#{Fizzy::CFG.issues_url}`.")
+      end
+    end
+  end
+
+end
+
+# ──────────────────────────────────────────────────────────────────────────────
 # ☞ Core → Io
 
 module Fizzy::IO
@@ -824,7 +933,9 @@ module Fizzy::Execution
   # If `as_su` is `true` the command is executed as super user
   # (i.e. as root, using sudo).
   #
-  def exec_cmd(cmd, as_su: false)
+  def exec_cmd(cmd, as_su: false, chdir: nil)
+    cmd = cmd.map(&:to_s).map(&:shell_escape).join(" ") if cmd.is_a?(Array)
+
     full_cmd = as_su ? "sudo #{cmd}" : cmd
 
     really_run = case @run_mode
@@ -839,9 +950,18 @@ module Fizzy::Execution
       tell(as_su ? "[sudo] #{cmd}" : cmd, :magenta)
     end
 
+    status = nil
     if really_run
-      system(full_cmd) || warning("Command `#{full_cmd}` failed.")
+      if chdir
+        FileUtils.cd(chdir) do
+          status = system(full_cmd)
+        end
+      else
+        status = system(full_cmd)
+      end
+      warning("Command `#{full_cmd}` failed.") unless status
     end
+    status
   end
 
 end
@@ -1155,73 +1275,6 @@ module Fizzy::Git
       when "https" then "https://github.com/#{md[:username]}/#{md[:repository]}"
       else         error("Invalid protocol for `#{url}`: not in " +
                          "`[#{protocols.join(", ")}]`.")
-    end
-  end
-
-end
-
-# ──────────────────────────────────────────────────────────────────────────────
-# ☞ Core → Typesystem
-
-module Fizzy::TypeSystem
-
-  # Check/convert type of the provided `value`,
-  # according to the argument `type`.
-  #
-  # The argument `name` is a logical name to be used for the value,
-  # used when logging messages. It can be anything.
-  #
-  # If `strict` is `true`, then no type convertion/normalization is done;
-  # otherwise, try to guess the correct type.
-  #
-  def typize(name, value, type: nil, strict: false)
-    if type.nil? || (type.to_s.end_with?("?") && value.nil?)
-      value
-    else
-      case type.to_s.gsub(/\?$/, "").to_sym
-        when :string, :str
-          strict ? _ensure_type!(name, value, String) : value.to_s
-        when :symbol, :sym
-          strict ? _ensure_type!(name, value, Symbol) : value.to_s.to_sym
-        when :integer, :int
-          strict ? _ensure_type!(name, value, Integer) : Integer(value)
-        when :boolean, :bool
-          if strict
-            _ensure_type!(name, value, TrueClass, FalseClass)
-          else
-            if value.nil?
-              nil
-            elsif value.is_a?(TrueClass) || value.to_s == "true"
-              true
-            elsif value.is_a?(FalseClass) || value.to_s == "false"
-              false
-            else
-              error("Invalid `#{value}` for value `#{name}`: " +
-                    "it can't be converted to a boolean.")
-            end
-          end
-        when :path, :pth then
-          if strict && !File.exist?(value)
-            error("Invalid `#{name}`: `#{value}` doesn't exist")
-          else
-            Pathname.new(value).expand_path
-          end
-        when :file then
-          if strict && !File.file?(value)
-            error("Invalid `#{name}`: `#{value}` isn't a file")
-          else
-            Pathname.new(value).expand_path
-          end
-        when :directory, :dir then
-          if strict && !File.directory?(value)
-            error("Invalid `#{name}`: `#{value}` isn't a directory")
-          else
-            Pathname.new(value).expand_path
-          end
-        else
-          error("Unhandled type `#{type}`. If you need support for a new " +
-                "type, open an issue at `#{Fizzy::CFG.issues_url}`.")
-      end
     end
   end
 
@@ -2052,6 +2105,321 @@ module Fizzy::MetaElements
         end
       }
     ]
+  end
+
+end
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Sync → Base
+
+module Fizzy::Sync
+
+  def self.available_synchronizers(local_dir_path, remote_url)
+    [ Fizzy::Sync::Git,
+      Fizzy::Sync::Local
+    ].map{|s| s.new(local_dir_path, remote_url)}
+  end
+
+  def self.enabled_synchronizers(local_dir_path, remote_url)
+    available_synchronizers(local_dir_path, remote_url).select{|s| s.enabled?}
+  end
+
+  def self.selected_synchronizer(local_dir_path, remote_url)
+    enabled_synchronizers(local_dir_path, remote_url).first
+  end
+
+  def self.perform(local_dir_path, remote_url)
+    synchronizer = selected_synchronizer(local_dir_path, remote_url)
+
+    status   = true
+    status ||= synchronizer.update_remote if synchronizer.local_changed?
+    status ||= synchronizer.update_local  if synchronizer.remote_changed?
+  end
+end
+
+class Fizzy::Sync::Base
+
+  def initialize(local_dir, remote_url)
+    error("Invalid url: can't be empty.")             if remote_url.nil?
+    error("Invalid local directory: can't be empty.") if local_dir.nil?
+    @remote_url = remote_url
+    @local_dir  = local_dir
+  end
+
+  # Check if the synchronizer is enabled.
+  #
+  abstract_method :enabled?
+
+  # Update local from the remote.
+  #
+  abstract_method :update_local
+
+  # Update remote from local.
+  #
+  abstract_method :update_remote
+
+  # Check if local is changed, and now is different from latest remote state.
+  #
+  abstract_method :local_changed?
+
+  # Check if remote is changed, and now is different from latest local state.
+  #
+  abstract_method :remote_changed?
+
+end
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Sync → Local
+
+class Fizzy::Sync::Local < Fizzy::Sync::Base
+
+  def initialize(local_dir_path, remote_url)
+    super
+  end
+
+end
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Core → Sync → Git
+
+class Fizzy::Sync::Git < Fizzy::Sync::Base
+
+  include Fizzy::IO
+  include Fizzy::Execution
+  include Fizzy::Filesystem
+
+  def initialize(local_dir_path, remote_url)
+    super
+    @remote_normalized_url = normalize_url(@remote_url)
+    @vcs_name = :git
+  end
+
+  # Check if the synchronizer is enabled.
+  #
+  def enabled?
+    return true if local_valid_repo?
+    return true if @remote_url.start_with?("#{@vcs_name}:")
+    false
+  end
+
+  # Update local from remote.
+  #
+  def update_local
+    if local_valid_repo?
+      # Update existing local from remote, i.e. perform `git pull`.
+      tell("Syncing from `origin` to local", :blue)
+      status   = perform_commit
+      status &&= perform_pull
+    else
+      # Update non-existing local from remote, i.e. perform `git clone`.
+      perform_clone
+    end
+  end
+
+  # Update remote from local.
+  #
+  def update_remote
+    tell("Syncing from local to `origin`", :blue)
+    status   = perform_commit
+    status &&= perform_push
+  end
+
+  # Check if local is changed, and now is different from latest remote state.
+  #
+  def local_changed?
+    perform_fetch && should_push?
+  end
+
+  # Check if remote is changed, and now is different from latest local state.
+  #
+  def remote_changed?
+    perform_fetch && should_pull?
+  end
+
+  # Normalize the remote git URL.
+  #
+  protected def normalize_url(url, default_protocol: :ssh)
+    protocols = %i(https ssh)
+    url = url.gsub(/^#{@vcs_name}:/, "") # Remove VCS name prefix (optional).
+    regexp = %r{
+      ^
+      (?<protocol>#{protocols.map{|p| "#{p}:"}.join("|")})?
+      (?<username>[a-z0-9\-_]+)
+      \/
+      (?<repository>[a-z0-9\-_]+)
+      $
+    }xi
+    md = url.match(regexp)
+    return url unless md
+    case (md[:protocol] || default_protocol.to_s).to_sym
+      when :ssh   then "git@github.com:#{md[:username]}/#{md[:repository]}"
+      when :https then "https://github.com/#{md[:username]}/#{md[:repository]}"
+      else        error("Invalid protocol for `#{url}`: not in " +
+                        "`[#{protocols.join(", ")}]`.")
+    end
+  end
+
+  # Check if the local directory holds a valid git repository.
+  #
+  protected def local_valid_repo?
+    @local_dir_path.directory? && @local_dir_path.join(".git").directory?
+  end
+
+  # Get the Working Tree (local) changes.
+  #
+  protected def working_tree_changes
+    FileUtils.cd(@local_dir_path) do
+      return `git status -uall --porcelain`.strip
+    end
+  end
+
+  # Check if there are some changes in the Working Tree.
+  #
+  protected def working_tree_changes?
+    !working_tree_changes.empty?
+  end
+
+  # Get a `Hash` containing information about the local and remote repository.
+  #
+  protected def info
+    FileUtils.cd(@local_dir_path) do
+      return {
+        local:  `git rev-parse @`.strip,
+        remote: `git rev-parse @{u}`.strip,
+        base:   `git merge-base @ @{u}`.strip
+      }
+    end
+  end
+
+  # Check if a `pull` operation is needed.
+  #
+  protected def should_pull?
+    info[:remote] != info[:base]
+  end
+
+  # Check if a `push` operation is needed.
+  #
+  protected def should_push?(git_root_path)
+    info[:local] != info[:base]
+  end
+
+  # Get the list of the available remote git repositories.
+  #
+  protected def remotes
+    FileUtils.cd(@local_dir_path) do
+      return `git remote`.split(/\W+/).reject(&:empty?)
+    end
+  end
+
+  # Get the list of the available git branches.
+  #
+  protected def branches
+    FileUtils.cd(@local_dir_path) do
+      return `git branch`.split(/\W+/).reject(&:empty?)
+    end
+  end
+
+  # Add the changes from the Working Tree to the stage.
+  #
+  protected def perform_add(files: nil, interactive: false)
+    error("Invalid files `#{files}`.") unless files.nil? || files.is_a?(Array)
+
+    cmd  = ["git add"]
+    cmd << "-i"  if interactive
+    cmd << "-A"  if files.nil?
+    cmd << files unless files.nil?
+
+    exec_cmd(cmd, as_su: !existing_dir(@local_dir_path), chdir: @local_dir_path)
+  end
+
+  # Commit the changes in the Working Tree.
+  #
+  protected def perform_commit
+    status = false
+    if working_tree_changes?
+      tell "The configuration has the following local changes:\n" +
+           "#{colorize(working_tree_changes, :white)}", :cyan
+      if quiz("Do you want to commit them all")
+        commit_msg = quiz("Type the commit message", type: :string)
+        status = perform_add # Add from Working Tree to stage.
+        if status
+          tell("Performing commit", :blue)
+
+          cmd  = ["git", "commit", "-a"]
+          cmd << "--allow-empty-message"      if message.nil?
+          cmd += ["-m", message.shell_escape] unless message.nil?
+
+          status = exec_cmd(cmd,
+                            as_su: !existing_dir(@local_dir_path),
+                            chdir: @local_dir_path)
+        end
+      end
+    end
+    status
+  end
+
+  protected def perform_fetch(remote: nil, branch: nil)
+    error("Invalid remote `#{remote}`.") if remote && !remotes.include?(remote)
+    error("Invalid branch `#{branch}`.") if branch && !branches.include?(branch)
+
+    tell("Fetching information from remote", :blue)
+
+    cmd  = ["git", "fetch"]
+    cmd << remote.shell_escape unless remote.nil?
+    cmd << branch.shell_escape unless branch.nil?
+
+    exec_cmd(cmd, as_su: !existing_dir(@local_dir_path), chdir: @local_dir_path)
+  end
+
+  protected def perform_clone(recursive: true)
+    tell("Syncing from remote repository: `#{@remote_normalized_url}`", :blue)
+
+    cmd  = ["git", "clone"]
+    cmd << "--recursive" if recursive
+    cmd << @remote_normalized_url.shell_escape
+    cmd << @local_dir_path.shell_escape
+
+    exec_cmd(cmd, as_su: !existing_dir(@local_dir_path), chdir: @local_dir_path)
+  end
+
+  # Pull from the provided `remote` in the provided `branch`.
+  #
+  protected def perform_pull(remote: nil, branch: nil, with_submodules: true)
+    error("Invalid remote `#{remote}`") if remote && !remotes.include?(remote)
+    error("Invalid branch `#{branch}`") if branch && !branches.include?(branch)
+
+    tell("Performing pull", :blue)
+
+    cmd  = ["git", "pull"]
+    cmd << remote.shell_escape unless remote.nil?
+    cmd << branch.shell_escape unless branch.nil?
+
+    status = exec_cmd(cmd,
+                      as_su: !existing_dir(@local_dir_path),
+                      chdir: @local_dir_path)
+
+    if with_submodules
+      status &&= exec_cmd(%w(git submodule update --recursive),
+                          as_su: !existing_dir(@local_dir_path),
+                          chdir: @local_dir_path)
+    end
+
+    status
+  end
+
+  # Push to the provided `remote` in the provided `branch`.
+  #
+  protected def git_push(remote: nil, branch: nil)
+    error("Invalid remote `#{remote}`") if remote && !remotes.include?(remote)
+    error("Invalid branch `#{branch}`") if branch && !branches.include?(branch)
+
+    tell("Pushing to remote", :blue)
+
+    cmd  = ["git", "push"]
+    cmd << remote.shell_escape unless remote.nil?
+    cmd << branch.shell_escape unless branch.nil?
+
+    exec_cmd(cmd, as_su: !existing_dir(@local_dir_path), chdir: @local_dir_path)
   end
 
 end

@@ -1,10 +1,8 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# ☞ Command-line arguments
+# ☞ Environment variables
 
-def std_args
-  args = ARGV[1..-1]
-  args.each { |a| task a.to_sym do ; end } # Prevent unknown task errors.
-  args
+def truthy_env_var?(name)
+  ENV[name.to_s] =~ /\A(true|t|yes|y)\z/i
 end
 
 # ──────────────────────────────────────────────────────────────────────────────

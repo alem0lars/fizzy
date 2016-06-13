@@ -10,12 +10,15 @@ require "uri"
 require "bundler/setup" # For `Bundler.with_clean_env`.
 require "rake/testtask"
 
+require "awesome_print"
+
 $:.unshift(File.dirname(__FILE__))
 require "tasks/funcs"
 require "tasks/cfg"
 require "tasks/bin_utils"
 require "tasks/grammars"
 require "tasks/package"
+require "tasks/docker"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # ☞ Task `default`
@@ -64,6 +67,7 @@ task :build do
   $cfg[:paths][:bin].chmod 0775
 
   # ☞ Link to a `.rb` file (mainly used for testing purposes).
+  $cfg[:paths][:bin_rb].unlink if $cfg[:paths][:bin_rb].symlink?
   $cfg[:paths][:bin_rb].make_symlink($cfg[:paths][:bin])
 
   info("Build successfully completed", success: true)
@@ -79,7 +83,7 @@ runtimes_info.each do |runtime_info|
   end
 end
 
-task :package => [:build] + runtimes_info.map{|r_i| r_i[:rel_path]} do
+task package: [:build] + runtimes_info.map{|r_i| r_i[:rel_path]} do
   info("Packaging started")
 
   runtimes_info.each do |runtime_info|
@@ -96,7 +100,9 @@ end
 
 task run: :build do |t, args|
   cmd = $cfg[:paths][:bin].to_s
-  args = std_args.map { |arg| Shellwords.escape(arg) }.join(" ")
+  cmd_env_var_name = "CMD"
+  debug("Reading command from environment variable: `#{cmd_env_var_name}`.")
+  args = ENV[cmd_env_var_name] || error("Invalid command: not provided")
 
   if args.empty?
     exec(cmd)
@@ -120,5 +126,27 @@ task test: :build
 # ☞ Task `console`
 
 task console: :build do
-  system("irb -I . -r build/fizzy")
+  sh("irb -I . -r build/fizzy")
+end
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Tasks inside `docker`
+
+namespace :docker do
+  desc "Prepare docker container for fizzy"
+  task :prepare do
+    if !docker_image?("fizzy") || truthy_env_var?("FIZZY_DOCKER_BUILD")
+      docker_build("fizzy")
+    end
+  end
+
+  desc "Test fizzy inside the docker container"
+  task test: :prepare do
+    docker_run("fizzy", "rake test")
+  end
+
+  desc "Start a console inside the docker container"
+  task console: :prepare do
+    docker_run("fizzy", "/bin/bash")
+  end
 end

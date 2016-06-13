@@ -9,6 +9,8 @@ module Fizzy::Execution
   # (i.e. as root, using sudo).
   #
   def exec_cmd(cmd, as_su: false)
+    cmd = cmd.join(" ") if cmd.is_a?(Array)
+
     full_cmd = as_su ? "sudo #{cmd}" : cmd
 
     really_run = case @run_mode

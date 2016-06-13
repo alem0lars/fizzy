@@ -1,17 +1,17 @@
 module Fizzy::Sync
 
-  def self.available_synchronizers(local_dir_path, remote_url)
-    [ Fizzy::Sync::Git,
-      Fizzy::Sync::Local
-    ].map{|s| s.new(local_dir_path, remote_url)}
+  def self.available
+    [ Fizzy::Sync::Local,
+      Fizzy::Sync::Git
+    ]
   end
 
-  def self.enabled_synchronizers(local_dir_path, remote_url)
-    available_synchronizers(local_dir_path, remote_url).select{|s| s.enabled?}
+  def self.enabled(local_dir_path, remote_url)
+    available.map{|e| e.new(local_dir_path, remote_url)}.select{|e| e.enabled?}
   end
 
-  def self.selected_synchronizer(local_dir_path, remote_url)
-    enabled_synchronizers(local_dir_path, remote_url).first
+  def self.selected(local_dir_path, remote_url)
+    enabled(local_dir_path, remote_url).first
   end
 
   def self.perform(local_dir_path, remote_url)
@@ -25,16 +25,18 @@ end
 
 class Fizzy::Sync::Base
 
-  def initialize(local_dir, remote_url)
+  def initialize(local_dir_path, remote_url)
+    error("Invalid local directory: can't be empty.") if local_dir_path.nil?
     error("Invalid url: can't be empty.")             if remote_url.nil?
-    error("Invalid local directory: can't be empty.") if local_dir.nil?
-    @remote_url = remote_url
-    @local_dir  = local_dir
+    @local_dir_path = local_dir_path
+    @remote_url     = remote_url
   end
 
   # Check if the synchronizer is enabled.
   #
-  abstract_method :enabled?
+  def enabled?
+    self.class == Fizzy::Sync.available.last
+  end
 
   # Update local from the remote.
   #

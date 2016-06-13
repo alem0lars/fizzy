@@ -6,16 +6,14 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
   def initialize(local_dir_path, remote_url)
     super
-    @remote_normalized_url = normalize_url(@remote_url)
     @vcs_name = :git
+    @remote_normalized_url = normalize_url(@remote_url)
   end
 
   # Check if the synchronizer is enabled.
   #
   def enabled?
-    return true if local_valid_repo?
-    return true if @remote_url.start_with?("#{@vcs_name}:")
-    false
+    local_valid_repo? || @remote_url.start_with?("#{@vcs_name}:") || super
   end
 
   # Update local from remote.
@@ -156,10 +154,11 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
       tell "The configuration has the following local changes:\n" +
            "#{colorize(working_tree_changes, :white)}", :cyan
       if quiz("Do you want to commit them all")
-        commit_msg = quiz("Type the commit message", type: :string)
         status = perform_add # Add from Working Tree to stage.
         if status
           tell("Performing commit", :blue)
+
+          message = quiz("Type the commit message", type: :string)
 
           cmd  = ["git", "commit", "-a"]
           cmd << "--allow-empty-message"      if message.nil?

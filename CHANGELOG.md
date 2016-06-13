@@ -19,7 +19,7 @@
   - `STYLE_GUIDE.md`
 - Integration with [Hound CI][houndci].
 - Add logic expressions support for `only` in the meta.
-- **Docker support**, with a custom Docker image (defined in the `Dockerfile`)
+- *Docker support*, with a custom Docker image (defined in the `Dockerfile`)
   that automatically builds `fizzy` upon building the image.
   Also, a `rake` namespace called `docker` were added to group Docker-related
   tasks:

@@ -8,8 +8,8 @@ module Fizzy::Execution
   # If `as_su` is `true` the command is executed as super user
   # (i.e. as root, using sudo).
   #
-  def exec_cmd(cmd, as_su: false)
-    cmd = cmd.join(" ") if cmd.is_a?(Array)
+  def exec_cmd(cmd, as_su: false, chdir: nil)
+    cmd = cmd.map(&:to_s).map(&:shell_escape).join(" ") if cmd.is_a?(Array)
 
     full_cmd = as_su ? "sudo #{cmd}" : cmd
 
@@ -25,9 +25,18 @@ module Fizzy::Execution
       tell(as_su ? "[sudo] #{cmd}" : cmd, :magenta)
     end
 
+    status = nil
     if really_run
-      system(full_cmd) || warning("Command `#{full_cmd}` failed.")
+      if chdir
+        FileUtils.cd(chdir) do
+          status = system(full_cmd)
+        end
+      else
+        status = system(full_cmd)
+      end
+      warning("Command `#{full_cmd}` failed.") unless status
     end
+    status
   end
 
 end

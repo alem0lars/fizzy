@@ -1,4 +1,7 @@
 {
-  "language": "en",
-  "plugins": []
+    "language": "en",
+    "plugins": [
+        "advanced-emoji"
+    ],
+    "pluginsConfig": {}
 }

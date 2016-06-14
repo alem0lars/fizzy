@@ -2,7 +2,8 @@
     "language": "en",
     "plugins": [
         "anchors",
-        "anchor-navigation"
+        "anchor-navigation",
+        "asciinema"
     ],
     "pluginsConfig": {}
 }

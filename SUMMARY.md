@@ -1,5 +1,4 @@
 # Summary
 
-* [frontpage](README.md)
+* [Frontpage](README.md)
 * [Introduction](introduction.md)
-

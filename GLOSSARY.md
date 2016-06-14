@@ -1,3 +1,7 @@
+<!--
+  - How glossary work: https://github.com/GitbookIO/gitbook/blob/master/docs/lexicon.md
+-->
+
 ## Instantiate
 
 Refers to the action that creates a particular configuration instance from an configuration.

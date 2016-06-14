@@ -1,0 +1,3 @@
+# Stuff to be added
+
+- When sync, the directory has the same owner as the parent directory. So if you want fizzy local directory to be owned by root (for security reasons) the parent directory should be owned by root; if you want the fizzy dir to be owned by user `alem0lars`, the parent dir should be owned by alem0lars, etc...

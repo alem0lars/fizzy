@@ -3,7 +3,7 @@
     "plugins": [
         "anchors",
         "anchor-navigation",
-        "asciinema"
+        "-asciinema"
     ],
     "pluginsConfig": {}
 }

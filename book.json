@@ -1,7 +1,6 @@
 {
     "language": "en",
     "plugins": [
-        "anchor-navigation",
         "asciinema"
     ],
     "pluginsConfig": {}

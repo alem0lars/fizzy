@@ -1,7 +1,8 @@
 {
     "language": "en",
     "plugins": [
-        "anchors"
+        "anchors",
+        "anchor-navigation"
     ],
     "pluginsConfig": {}
 }

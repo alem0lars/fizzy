@@ -1,7 +1,7 @@
 {
     "language": "en",
     "plugins": [
-        "advanced-emoji"
+        "anchors"
     ],
     "pluginsConfig": {}
 }

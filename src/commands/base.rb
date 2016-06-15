@@ -7,7 +7,6 @@ class Fizzy::BaseCommand < Thor
   include Fizzy::Environment
   include Fizzy::Execution
   include Fizzy::Filesystem
-  include Fizzy::Git
   include Fizzy::IO
   include Fizzy::Vars
   include Fizzy::Locals

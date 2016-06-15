@@ -6,22 +6,23 @@ gem "thor"
 group :development do
 
   # Define tasks.
-  gem "rake"
+  gem "rake", require: false
 
   # Generate ruby code from the grammars definitions.
-  gem "racc", "~> 1.4"
+  gem "racc", "~> 1.4", require: false
 
   # Testing framework.
-  gem "minitest"
+  gem "minitest", require: false
 
   # Improve IRB, adding some features.
-  gem "irbtools"
-  gem "irbtools-more"
+  gem "irbtools",      require: false
+  gem "irbtools-more", require: false
 
   # Print inspected Ruby objects; useful when debugging.
   gem "awesome_print"
 
   # Generate API documentation.
   gem "yard"
+  gem "kramdown"
 
 end

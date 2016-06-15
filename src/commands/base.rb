@@ -15,7 +15,7 @@ class Fizzy::BaseCommand < Thor
   include Fizzy::MetaElements
   include Fizzy::MetaCommands
 
-  # Common options, shared among many commands.
+  # Common options, shared by many commands.
   #
   SHARED_OPTIONS = {
     verbose: {
@@ -66,7 +66,7 @@ class Fizzy::BaseCommand < Thor
 
     include Fizzy::IO
 
-    # Get a shared option.
+    # @return a shared option.
     #
     def shared_option(name, required: false)
       args = SHARED_OPTIONS[name].dup

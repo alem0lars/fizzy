@@ -41,13 +41,18 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Check if local is changed, and now is different from latest remote state.
   #
   def local_changed?
-    perform_fetch && should_push?
+    return true if local_valid_repo?
+    return true if working_tree_changes?
+    return true if perform_fetch && should_push?
+    false
   end
 
   # Check if remote is changed, and now is different from latest local state.
   #
   def remote_changed?
-    perform_fetch && should_pull?
+    return true unless local_valid_repo?
+    return true if perform_fetch && should_pull?
+    false
   end
 
   # Normalize the remote git URL.
@@ -113,7 +118,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
   # Check if a `push` operation is needed.
   #
-  protected def should_push?(git_root_path)
+  protected def should_push?
     info[:local] != info[:base]
   end
 
@@ -138,7 +143,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   protected def perform_add(files: nil, interactive: false)
     error("Invalid files `#{files}`.") unless files.nil? || files.is_a?(Array)
 
-    cmd  = ["git add"]
+    cmd  = ["git", "add"]
     cmd << "-i"  if interactive
     cmd << "-A"  if files.nil?
     cmd << files unless files.nil?
@@ -149,27 +154,29 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Commit the changes in the Working Tree.
   #
   protected def perform_commit
-    status = false
+    status = true
+
     if working_tree_changes?
       tell "The configuration has the following local changes:\n" +
            "#{colorize(working_tree_changes, :white)}", :cyan
       if quiz("Do you want to commit them all")
-        status = perform_add # Add from Working Tree to stage.
+        status &&= perform_add # Add from Working Tree to stage.
         if status
           tell("Performing commit", :blue)
 
           message = quiz("Type the commit message", type: :string)
 
           cmd  = ["git", "commit", "-a"]
-          cmd << "--allow-empty-message"      if message.nil?
-          cmd += ["-m", message.shell_escape] unless message.nil?
+          cmd << "--allow-empty-message" if     message.nil?
+          cmd += ["-m", message]         unless message.nil?
 
-          status = exec_cmd(cmd,
-                            as_su: !existing_dir(@local_dir_path),
-                            chdir: @local_dir_path)
+          status &&= exec_cmd(cmd,
+                              as_su: !existing_dir(@local_dir_path),
+                              chdir: @local_dir_path)
         end
       end
     end
+
     status
   end
 
@@ -189,12 +196,15 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   protected def perform_clone(recursive: true)
     tell("Syncing from remote repository: `#{@remote_normalized_url}`", :blue)
 
+    parent_dir = @local_dir_path.dirname
+    name = @local_dir_path.basename
+
     cmd  = ["git", "clone"]
     cmd << "--recursive" if recursive
     cmd << @remote_normalized_url.shell_escape
-    cmd << @local_dir_path.shell_escape
+    cmd << name.shell_escape
 
-    exec_cmd(cmd, as_su: !existing_dir(@local_dir_path), chdir: @local_dir_path)
+    exec_cmd(cmd, as_su: !existing_dir(parent_dir), chdir: parent_dir)
   end
 
   # Pull from the provided `remote` in the provided `branch`.
@@ -203,20 +213,24 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     error("Invalid remote `#{remote}`") if remote && !remotes.include?(remote)
     error("Invalid branch `#{branch}`") if branch && !branches.include?(branch)
 
-    tell("Performing pull", :blue)
+    status = true
 
-    cmd  = ["git", "pull"]
-    cmd << remote.shell_escape unless remote.nil?
-    cmd << branch.shell_escape unless branch.nil?
+    if should_pull?
+      tell("Performing pull", :blue)
 
-    status = exec_cmd(cmd,
-                      as_su: !existing_dir(@local_dir_path),
-                      chdir: @local_dir_path)
+      cmd  = ["git", "pull"]
+      cmd << remote.shell_escape unless remote.nil?
+      cmd << branch.shell_escape unless branch.nil?
 
-    if with_submodules
-      status &&= exec_cmd(%w(git submodule update --recursive),
-                          as_su: !existing_dir(@local_dir_path),
-                          chdir: @local_dir_path)
+      status = exec_cmd(cmd,
+                        as_su: !existing_dir(@local_dir_path),
+                        chdir: @local_dir_path)
+
+      if with_submodules
+        status &&= exec_cmd(%w(git submodule update --recursive),
+                            as_su: !existing_dir(@local_dir_path),
+                            chdir: @local_dir_path)
+      end
     end
 
     status
@@ -224,17 +238,25 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
   # Push to the provided `remote` in the provided `branch`.
   #
-  protected def git_push(remote: nil, branch: nil)
+  protected def perform_push(remote: nil, branch: nil)
     error("Invalid remote `#{remote}`") if remote && !remotes.include?(remote)
     error("Invalid branch `#{branch}`") if branch && !branches.include?(branch)
 
-    tell("Pushing to remote", :blue)
+    status = true
 
-    cmd  = ["git", "push"]
-    cmd << remote.shell_escape unless remote.nil?
-    cmd << branch.shell_escape unless branch.nil?
+    if should_push?
+      tell("Pushing to remote", :blue)
 
-    exec_cmd(cmd, as_su: !existing_dir(@local_dir_path), chdir: @local_dir_path)
+      cmd  = ["git", "push"]
+      cmd << remote.shell_escape unless remote.nil?
+      cmd << branch.shell_escape unless branch.nil?
+
+      status &&= exec_cmd(cmd,
+                          as_su: !existing_dir(@local_dir_path),
+                          chdir: @local_dir_path)
+    end
+
+    status
   end
 
 end

@@ -15,11 +15,12 @@ module Fizzy::Sync
   end
 
   def self.perform(local_dir_path, remote_url)
-    synchronizer = selected_synchronizer(local_dir_path, remote_url)
+    synchronizer = selected(local_dir_path, remote_url)
 
     status   = true
-    status ||= synchronizer.update_remote if synchronizer.local_changed?
-    status ||= synchronizer.update_local  if synchronizer.remote_changed?
+    status &&= synchronizer.update_remote if synchronizer.local_changed?
+    status &&= synchronizer.update_local  if synchronizer.remote_changed?
+    status
   end
 end
 
@@ -32,9 +33,23 @@ class Fizzy::Sync::Base
     @remote_url     = remote_url
   end
 
-  # Check if the synchronizer is enabled.
+  # Check if the current synchronizer is enabled.
+  #
+  # Note: inheritors should call the `super` method.
+  #
+  # Example:
+  #
+  #   def enabled?
+  #     my_policy || super
+  #   end
   #
   def enabled?
+    default?
+  end
+
+  # Check if the current synchronizer is the default synchronizer.
+  #
+  def default?
     self.class == Fizzy::Sync.available.last
   end
 

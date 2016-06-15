@@ -122,39 +122,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             cur_cfg_name: options.cfg_name)
 
     # Perform sync.
-    sync_result = if paths.cur_cfg.directory?
-      tell("Syncing from origin", :blue)
-      status = nil
-      FileUtils.cd(paths.cur_cfg) do
-        # Perform fetch, because we need to know if there are remote changes,
-        # so we need to know the updated remote commit hash.
-        tell("Fetching informations from origin.", :cyan)
-        status = git_fetch
-        # (Optional) Perform commit.
-        if status && git_has_local_changes(paths.cur_cfg)
-          tell "The configuration has the following local changes:\n" +
-              "#{colorize(git_local_changes(paths.cur_cfg), :white)}", :cyan
-          should_commit = quiz("Do you want to commit them all")
-          status = if should_commit
-            commit_msg = quiz("Type the commit message", type: :string)
-            git_add && git_commit(message: commit_msg)
-          else
-            false
-          end
-        end
-        # (Optional) Perform pull.
-        if status && git_should_pull(paths.cur_cfg)
-          status = git_pull
-        end
-        # (Optional) Perform push.
-        if status && git_should_push(paths.cur_cfg)
-          status = git_push
-        end
-      end
-      status
-    else
-      git_clone(options.cfg_url, paths.cur_cfg)
-    end
+    sync_result = Fizzy::Sync.perform(paths.cur_cfg, options.cfg_url)
 
     # Inform user about sync status.
     if sync_result

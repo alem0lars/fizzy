@@ -29,7 +29,6 @@ sources:
   - core/environment
   - core/execution
   - core/filesystem
-  - core/git
   - core/vars/setup
   - core/vars/filters
   - core/vars/retriever

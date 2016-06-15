@@ -1,0 +1,11 @@
+--markup-provider kramdown
+--markup markdown
+--main README.md
+
+src/**/*.rb
+-
+LICENSE
+CHANGELOG.md
+CONTRIBUTING.md
+STYLE_GUIDE.md
+CODE_OF_CONDUCT.md

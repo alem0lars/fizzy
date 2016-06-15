@@ -1,5 +1,13 @@
+# Ignore temp stuff.
 /tmp
+
+# Ignore OS-specific stuff.
 .DS_Store
 
+# Ignore build artifacts.
 /build/*
 !/build/fizzy
+
+# Ignore documentation artifacts.
+/.yardoc
+/doc

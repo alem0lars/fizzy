@@ -12,7 +12,13 @@ module Fizzy::MetaInfo
   def get_meta(meta_path, vars_path, elems_base_path, verbose)
     tell("Getting meta informations.", :blue)
 
-    meta = YAML.load(File.read(meta_path)).deep_symbolize_keys
+    begin
+      meta = YAML.load(File.read(meta_path)).deep_symbolize_keys
+    rescue Psych::SyntaxError => exc
+      error("Failed to parse meta file: `#{meta_path}`. " +
+            "Reason: `#{exc.message}`.")
+    end
+
     meta[:all_elems_count] = meta[:elems].count
 
     # ──────────────────────────────────────────────────────────────────────────
@@ -100,6 +106,7 @@ module Fizzy::MetaInfo
     meta[:commands] = [] unless meta.has_key?(:commands)
 
     meta[:commands] = meta[:commands].each_with_index.collect do |spec, idx|
+      spec[:type] = spec[:type].to_sym
       spec[:name] ||= "type = #{spec[:type]}, index = #{idx}"
       info("\nCommand: ", spec[:name]) if verbose
 
@@ -110,7 +117,9 @@ module Fizzy::MetaInfo
         # Step 2.2: Pre-process strings with ERB.
         spec.each do |key, value|
           unless command_excluded_erb_fields.include?(key)
-            spec[key] = ERB.new(value).result(binding)
+            if value.is_a?(String)
+              spec[key] = ERB.new(value).result(binding)
+            end
           end
         end
 

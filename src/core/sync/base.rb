@@ -1,8 +1,12 @@
 module Fizzy::Sync
 
+  class << self
+    include Fizzy::IO
+  end
+
   def self.available
-    [ Fizzy::Sync::Local,
-      Fizzy::Sync::Git
+    [ Fizzy::Sync::Git,
+      Fizzy::Sync::Local
     ]
   end
 
@@ -16,6 +20,7 @@ module Fizzy::Sync
 
   def self.perform(local_dir_path, remote_url)
     synchronizer = selected(local_dir_path, remote_url)
+    tell("Using synchronizer: `#{colorize(synchronizer.name, :magenta)}`", :cyan)
 
     status   = true
     status &&= synchronizer.update_remote if synchronizer.local_changed?
@@ -26,11 +31,13 @@ end
 
 class Fizzy::Sync::Base
 
-  def initialize(local_dir_path, remote_url)
+  attr_reader :name
+
+  def initialize(name, local_dir_path, remote_url)
     error("Invalid local directory: can't be empty.") if local_dir_path.nil?
-    error("Invalid url: can't be empty.")             if remote_url.nil?
+    error("Invalid synchronizer name.") if name.nil?
+    @name = name
     @local_dir_path = local_dir_path
-    @remote_url     = remote_url
   end
 
   # Check if the current synchronizer is enabled.

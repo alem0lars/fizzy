@@ -697,17 +697,17 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 29)
 
 racc_action_table = [
      3,     3,     4,     4,     5,     5,     3,     3,     4,     4,
-     5,     5,     7,     8,     7,    15,     7,     8,    17,     6,
-    10,    11,    12,    16 ]
+     5,     5,     7,     8,     6,    15,     7,     8,    10,    11,
+    12,    16,     7,    17 ]
 
 racc_action_check = [
-     7,     8,     7,     8,     7,     8,     3,     0,     3,     0,
-     3,     0,     9,     9,    14,     9,     2,     2,    16,     1,
-     4,     5,     6,    11 ]
+     0,     3,     0,     3,     0,     3,     7,     8,     7,     8,
+     7,     8,     9,     9,     1,     9,     2,     2,     4,     5,
+     6,    11,    14,    16 ]
 
 racc_action_pointer = [
-     2,    19,    13,     1,    12,    11,    22,    -5,    -4,     9,
-   nil,    21,   nil,   nil,    11,   nil,     7,   nil ]
+    -5,    14,    13,    -4,    10,     9,    20,     1,     2,     9,
+   nil,    19,   nil,   nil,    19,   nil,    12,   nil ]
 
 racc_action_default = [
     -8,    -8,    -1,    -8,    -8,    -8,    -8,    -8,    -8,    -8,
@@ -1954,9 +1954,13 @@ end
 
 module Fizzy::Sync
 
+  class << self
+    include Fizzy::IO
+  end
+
   def self.available
-    [ Fizzy::Sync::Local,
-      Fizzy::Sync::Git
+    [ Fizzy::Sync::Git,
+      Fizzy::Sync::Local
     ]
   end
 
@@ -1970,6 +1974,7 @@ module Fizzy::Sync
 
   def self.perform(local_dir_path, remote_url)
     synchronizer = selected(local_dir_path, remote_url)
+    tell("Using synchronizer: `#{colorize(synchronizer.name, :magenta)}`", :cyan)
 
     status   = true
     status &&= synchronizer.update_remote if synchronizer.local_changed?
@@ -1980,11 +1985,13 @@ end
 
 class Fizzy::Sync::Base
 
-  def initialize(local_dir_path, remote_url)
+  attr_reader :name
+
+  def initialize(name, local_dir_path, remote_url)
     error("Invalid local directory: can't be empty.") if local_dir_path.nil?
-    error("Invalid url: can't be empty.")             if remote_url.nil?
+    error("Invalid synchronizer name.") if name.nil?
+    @name = name
     @local_dir_path = local_dir_path
-    @remote_url     = remote_url
   end
 
   # Check if the current synchronizer is enabled.
@@ -2031,14 +2038,17 @@ end
 class Fizzy::Sync::Local < Fizzy::Sync::Base
 
   def initialize(local_dir_path, remote_url)
-    super
-    @remote_path = Pathname.new(@remote_url)
+    super(:local, local_dir_path, remote_url)
+    @remote_path = @remote_url.nil? ? nil : Pathname.new(@remote_url)
   end
 
   # Check if the synchronizer is enabled.
   #
   def enabled?
-    @remote_path.directory? || super
+    local_valid_repo? ||
+      !@remote_url.nil? && @remote_url.directory? ||
+      !@remote_url.nil? && @remote_url.start_with?("#{@vcs_name}:") ||
+      super
   end
 
   # Update local from the remote.
@@ -2065,6 +2075,12 @@ class Fizzy::Sync::Local < Fizzy::Sync::Base
     # TODO
   end
 
+  # Check if the local directory holds a valid local repository.
+  #
+  def local_valid_repo?
+    @local_dir_path.directory?
+  end
+
 end
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -2077,15 +2093,16 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   include Fizzy::Filesystem
 
   def initialize(local_dir_path, remote_url)
-    super
-    @vcs_name = :git
+    super(:git, local_dir_path, remote_url)
     @remote_normalized_url = normalize_url(@remote_url)
   end
 
   # Check if the synchronizer is enabled.
   #
   def enabled?
-    local_valid_repo? || @remote_url.start_with?("#{@vcs_name}:") || super
+    local_valid_repo? ||
+      !@remote_url.nil? && @remote_url.start_with?("#{@name}:") ||
+      super
   end
 
   # Update local from remote.
@@ -2134,8 +2151,9 @@ protected
   # Normalize the remote git URL.
   #
   def normalize_url(url, default_protocol: :ssh)
+    return nil if url.nil?
     protocols = %i(https ssh)
-    url = url.gsub(/^#{@vcs_name}:/, "") # Remove VCS name prefix (optional).
+    url = url.gsub(/^#{@name}:/, "") # Remove VCS name prefix (optional).
     regexp = %r{
       ^
       (?<protocol>#{protocols.map{|p| "#{p}:"}.join("|")})?
@@ -2279,6 +2297,7 @@ protected
 
   def perform_clone(recursive: true)
     tell("Syncing from remote repository: `#{@remote_normalized_url}`", :blue)
+    error("Invalid url: can't be empty.") if @remote_normalized_url.nil?
 
     parent_dir = @local_dir_path.dirname
     name = @local_dir_path.basename

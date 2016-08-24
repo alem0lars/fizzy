@@ -82,6 +82,10 @@ See [CONTRIBUTING.md][contributing]
 
 **Contributions are welcome!**
 
+## Pointers
+
+* IRC channel: `#fizzy` at freenode
+
 ----
 
 Made with ♥ by Alessandro Molari

@@ -85,6 +85,7 @@ See [CONTRIBUTING.md][contributing]
 ## Pointers
 
 * IRC channel: `#fizzy` at freenode
+* Slack: team `fizzy-cfg`: [https://fizzy-cfg.slack.com](https://fizzy-cfg.slack.com)
 
 ----
 

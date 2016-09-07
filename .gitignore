@@ -12,6 +12,9 @@
 /.yardoc
 /doc
 
+# Ignore debugging artifacts.
+/.byebug_history
+
 # Ignore bundler stuff.
 /.bundle
 

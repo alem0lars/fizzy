@@ -21,6 +21,8 @@ sources:
   - exts/hash
   - exts/pathname
   - exts/thor
+  - misc/caller
+  - misc/must
   - misc/abstract_method
   - misc/typesystem
   - core/io

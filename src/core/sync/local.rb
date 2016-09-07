@@ -8,10 +8,9 @@ class Fizzy::Sync::Local < Fizzy::Sync::Base
   # Check if the synchronizer is enabled.
   #
   def enabled?
-    local_valid_repo? ||
-      !@remote_url.nil? && @remote_url.directory? ||
-      !@remote_url.nil? && @remote_url.start_with?("#{@vcs_name}:") ||
-      super
+      ( super ||
+        !@remote_path.nil? && @remote_path.directory? ||
+        local_valid_repo?)
   end
 
   # Update local from the remote.

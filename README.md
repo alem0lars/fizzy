@@ -82,6 +82,11 @@ See [CONTRIBUTING.md][contributing]
 
 **Contributions are welcome!**
 
+## Pointers
+
+* IRC channel: `#fizzy` at freenode
+* Slack team `fizzy-cfg`: [https://fizzy-cfg.slack.com](https://fizzy-cfg.slack.com)
+
 ----
 
 Made with ♥ by Alessandro Molari

@@ -1,14 +1,17 @@
 class Fizzy::Sync::Local < Fizzy::Sync::Base
 
   def initialize(local_dir_path, remote_url)
-    super
-    @remote_path = Pathname.new(@remote_url)
+    super(:local, local_dir_path, remote_url)
+    @remote_path = @remote_url.nil? ? nil : Pathname.new(@remote_url)
   end
 
   # Check if the synchronizer is enabled.
   #
   def enabled?
-    @remote_path.directory? || super
+    local_valid_repo? ||
+      !@remote_url.nil? && @remote_url.directory? ||
+      !@remote_url.nil? && @remote_url.start_with?("#{@vcs_name}:") ||
+      super
   end
 
   # Update local from the remote.
@@ -33,6 +36,12 @@ class Fizzy::Sync::Local < Fizzy::Sync::Base
   #
   def remote_changed?
     # TODO
+  end
+
+  # Check if the local directory holds a valid local repository.
+  #
+  def local_valid_repo?
+    @local_dir_path.directory?
   end
 
 end

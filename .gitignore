@@ -11,3 +11,13 @@
 # Ignore documentation artifacts.
 /.yardoc
 /doc
+
+# Ignore bundler stuff.
+/.bundle
+
+# Ignore stuff specific for `gh-pages-source` branch.
+/.sass-cache
+/.cache
+/website
+/bower_components
+

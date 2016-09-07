@@ -5,15 +5,16 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   include Fizzy::Filesystem
 
   def initialize(local_dir_path, remote_url)
-    super
-    @vcs_name = :git
+    super(:git, local_dir_path, remote_url)
     @remote_normalized_url = normalize_url(@remote_url)
   end
 
   # Check if the synchronizer is enabled.
   #
   def enabled?
-    local_valid_repo? || @remote_url.start_with?("#{@vcs_name}:") || super
+    local_valid_repo? ||
+      !@remote_url.nil? && @remote_url.start_with?("#{@name}:") ||
+      super
   end
 
   # Update local from remote.
@@ -62,8 +63,9 @@ protected
   # Normalize the remote git URL.
   #
   def normalize_url(url, default_protocol: :ssh)
+    return nil if url.nil?
     protocols = %i(https ssh)
-    url = url.gsub(/^#{@vcs_name}:/, "") # Remove VCS name prefix (optional).
+    url = url.gsub(/^#{@name}:/, "") # Remove VCS name prefix (optional).
     regexp = %r{
       ^
       (?<protocol>#{protocols.map{|p| "#{p}:"}.join("|")})?
@@ -207,6 +209,7 @@ protected
 
   def perform_clone(recursive: true)
     tell("Syncing from remote repository: `#{@remote_normalized_url}`", :blue)
+    error("Invalid url: can't be empty.") if @remote_normalized_url.nil?
 
     parent_dir = @local_dir_path.dirname
     name = @local_dir_path.basename

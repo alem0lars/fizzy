@@ -29,6 +29,9 @@
   tasks:
   - `rake docker:test`
   - `rake docker`
+- Add `must`, used for implementing pre-conditions / post-conditions
+- Add `Fizzy::Caller` class, used to retrieve information about the
+  caller.
 
 ## Current and previous versions
 

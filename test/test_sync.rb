@@ -2,10 +2,6 @@ require "helper"
 
 describe Fizzy::Sync do
 
-  let :running_in_docker do
-    system("awk -F/ '$2 == \"docker\"' /proc/self/cgroup 2&>/dev/null | read")
-  end
-
   describe "#available" do
     it "should contain available synchronizers" do
       synchronizers = Fizzy::Sync.available

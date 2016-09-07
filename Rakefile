@@ -156,9 +156,8 @@ end
 namespace :docker do
   desc "Prepare docker container for fizzy"
   task :prepare do
-    if !docker_image?("fizzy") || truthy_env_var?("FIZZY_DOCKER_BUILD")
-      docker_build("fizzy")
-    end
+    image_name = "fizzy"
+    docker_build(image_name)
   end
 
   desc "Test fizzy inside the docker container"

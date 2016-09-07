@@ -22,3 +22,9 @@ module Fizzy::Mocks end
 Dir.glob(File.join(File.dirname(__FILE__), "mocks", "*.rb")) do |module_path|
   require module_path
 end
+
+# Setup testing utilities.
+module Fizzy::TestUtils end
+Dir.glob(File.join(File.dirname(__FILE__), "utils", "*.rb")) do |module_path|
+  require module_path
+end

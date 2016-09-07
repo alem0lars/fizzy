@@ -6,6 +6,7 @@ GEM
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
     bond (0.5.1)
+    byebug (9.0.5)
     cd (1.0.1)
     clipboard (1.1.1)
     code (0.9.0)
@@ -78,6 +79,7 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
+  byebug
   irbtools
   irbtools-more
   kramdown

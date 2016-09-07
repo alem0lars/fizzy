@@ -12,9 +12,9 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Check if the synchronizer is enabled.
   #
   def enabled?
-    local_valid_repo? ||
+    ( super ||
       !@remote_url.nil? && @remote_url.start_with?("#{@name}:") ||
-      super
+      local_valid_repo?)
   end
 
   # Update local from remote.
@@ -22,7 +22,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def update_local
     if local_valid_repo?
       # Update existing local from remote, i.e. perform `git pull`.
-      tell("Syncing from `origin` to local", :blue)
+      tell "Syncing from `origin` to local", :blue
       status   = perform_commit
       status &&= perform_pull
     else
@@ -34,7 +34,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Update remote from local.
   #
   def update_remote
-    tell("Syncing from local to `origin`", :blue)
+    tell "Syncing from local to `origin`", :blue
     status   = perform_commit
     status &&= perform_push
   end
@@ -42,19 +42,19 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Check if local is changed, and now is different from latest remote state.
   #
   def local_changed?
-    tell("Checking if local repository is changed", :blue)
+    tell "Checking if local repository is changed", :blue
     return false unless local_valid_repo?
-    return true if working_tree_changes?
-    return true if perform_fetch && should_push?
+    return true  if     working_tree_changes?
+    return true  if     perform_fetch && should_push?
     false
   end
 
   # Check if remote is changed, and now is different from latest local state.
   #
   def remote_changed?
-    tell("Checking if remote repository is changed", :blue)
+    tell "Checking if remote repository is changed", :blue
     return true unless local_valid_repo?
-    return true if perform_fetch && should_pull?
+    return true if     perform_fetch && should_pull?
     false
   end
 
@@ -94,7 +94,7 @@ protected
   # Get the Working Tree (local) changes.
   #
   def working_tree_changes
-    error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+    error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
       return `git status -uall --porcelain`.strip
     end
@@ -109,7 +109,7 @@ protected
   # Get a `Hash` containing information about the local and remote repository.
   #
   def info
-    error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+    error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
       return {
         local:  `git rev-parse @`.strip,
@@ -134,7 +134,7 @@ protected
   # Get the list of the available remote git repositories.
   #
   def remotes
-    error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+    error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
       return `git remote`.split(/\W+/).reject(&:empty?)
     end
@@ -143,7 +143,7 @@ protected
   # Get the list of the available git branches.
   #
   def branches
-    error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+    error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
       return `git branch`.split(/\W+/).reject(&:empty?)
     end
@@ -152,11 +152,11 @@ protected
   # Add the changes from the Working Tree to the stage.
   #
   def perform_add(files: nil, interactive: false)
-    error("Invalid files `#{files}`.") unless files.nil? || files.is_a?(Array)
+    error "Invalid files `#{files}`." unless files.nil? || files.is_a?(Array)
 
     cmd  = ["git", "add"]
-    cmd << "-i"  if interactive
-    cmd << "-A"  if files.nil?
+    cmd << "-i"  if     interactive
+    cmd << "-A"  if     files.nil?
     cmd << files unless files.nil?
 
     error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
@@ -171,7 +171,7 @@ protected
     if working_tree_changes?
       tell "The configuration has the following local changes:\n" +
            "#{colorize(working_tree_changes, :white)}", :cyan
-      if quiz("Do you want to commit them all")
+      if quiz "Do you want to commit them all"
         status &&= perform_add # Add from Working Tree to stage.
         if status
           tell("Performing commit", :blue)
@@ -182,7 +182,7 @@ protected
           cmd << "--allow-empty-message" if     message.nil?
           cmd += ["-m", message]         unless message.nil?
 
-          error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+          error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
           status &&= exec_cmd(cmd,
                               as_su: !existing_dir(@local_dir_path),
                               chdir: @local_dir_path)

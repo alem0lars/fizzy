@@ -25,4 +25,7 @@ group :development do
   gem "yard"
   gem "kramdown"
 
+  # Debugger.
+  gem "byebug"
+
 end

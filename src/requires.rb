@@ -11,6 +11,7 @@ require "shellwords"
 require "strscan"
 require "uri"
 require "yaml"
+require "debug_inspector"
 
 # Try to require `thor` or raise an exception.
 begin

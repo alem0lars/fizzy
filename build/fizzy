@@ -56,6 +56,7 @@ require "shellwords"
 require "strscan"
 require "uri"
 require "yaml"
+require "debug_inspector"
 
 # Try to require `thor` or raise an exception.
 begin
@@ -265,6 +266,113 @@ class Thor
     end
 
   end
+end
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Misc → Caller
+
+class Fizzy::Caller
+
+  def self.value(name, depth=1)
+    RubyVM::DebugInspector.open do |inspector|
+      eval(name.to_s, inspector.frame_binding(depth + 2))
+    end
+  end
+
+  def self.info(depth=1)
+    parse_caller(caller(depth + 2).first)
+  end
+
+  def self.method_name(depth=1)
+    parse_caller(caller(depth + 2).first)[:method]
+  end
+
+  def self.parse_caller(at)
+    if /^(.+?):(\d+)(?::in `(.*)')?/ =~ at
+      file   = Regexp.last_match[1]
+      line   = Regexp.last_match[2].to_i
+      method = Regexp.last_match[3]
+      {file: file, line: line, method: method}
+    end
+  end
+
+end
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ☞ Misc → Must
+
+class Object
+
+  def must(name,
+           value: nil,
+           be: nil,
+           ge: nil, gt: nil, le: nil, lt: nil)
+
+    unless value
+      begin
+        value = Fizzy::Caller.value(name)
+      rescue NameError
+        error "Unknown variable named `#{name}`"
+      end
+    end
+
+    if !be.nil?
+      # 1: type condition.
+      if be.is_a?(Class) && !value.is_a?(be)
+        error "Invalid `#{name}` (value=`#{value}`): must be a `#{be}`"
+      end
+
+      # 2: not nil condition.
+      error "Invalid `#{name}`: must be not nil" if be == :not_nil && value.nil?
+    end
+
+    # 3.1: greater-or-equal-than condition.
+    if !ge.nil?
+      must name, value, be: Number
+      must :ge,  ge,    be: Number
+      unless value >= ge
+        error "Invalid `#{name}`: `#{value}` must be greater or equal than `#{ge}`"
+      end
+    end
+
+    # 3.2: greater-than condition.
+    if !gt.nil?
+      must name, value, be: Number
+      must :gt,  gt,    be: Number
+      unless value > gt
+        error "Invalid `#{name}`: `#{value}` must be greater than `#{gt}`"
+      end
+    end
+
+    # 3.3: lesser-or-equal-than condition.
+    if !le.nil?
+      must name, value, be: Number
+      must :le,  le,    be: Number
+      unless value <= le
+        error "Invalid `#{name}`: `#{value}` must be lesser or equal than `#{le}`"
+      end
+    end
+
+    # 3.4: lesser-than condition.
+    if !lt.nil?
+      must name, value, be: Number
+      must :lt,  lt,    be: Number
+      unless value < lt
+        error "Invalid `#{name}`: `#{value}` must be lesser than `#{lt}`"
+      end
+    end
+
+    # 3: ad-hoc condition.
+    if block_given?
+      result = yield(name, value)
+      if result.is_a?(Array)
+        error "Invalid `#{name}`: #{result[1]}" unless result[0]
+      else
+        error "Invalid `#{name}`: wrong value `#{value}`" unless result
+      end
+    end
+  end
+
 end
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -697,17 +805,17 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 29)
 
 racc_action_table = [
      3,     3,     4,     4,     5,     5,     3,     3,     4,     4,
-     5,     5,     7,     8,     6,    15,     7,     8,    10,    11,
-    12,    16,     7,    17 ]
+     5,     5,     7,     8,     7,    15,     7,     8,    17,     6,
+    10,    11,    12,    16 ]
 
 racc_action_check = [
-     0,     3,     0,     3,     0,     3,     7,     8,     7,     8,
-     7,     8,     9,     9,     1,     9,     2,     2,     4,     5,
-     6,    11,    14,    16 ]
+     7,     8,     7,     8,     7,     8,     3,     0,     3,     0,
+     3,     0,     9,     9,    14,     9,     2,     2,    16,     1,
+     4,     5,     6,    11 ]
 
 racc_action_pointer = [
-    -5,    14,    13,    -4,    10,     9,    20,     1,     2,     9,
-   nil,    19,   nil,   nil,    19,   nil,    12,   nil ]
+     2,    19,    13,     1,    12,    11,    22,    -5,    -4,     9,
+   nil,    21,   nil,   nil,    11,   nil,     7,   nil ]
 
 racc_action_default = [
     -8,    -8,    -1,    -8,    -8,    -8,    -8,    -8,    -8,    -8,
@@ -1959,9 +2067,16 @@ module Fizzy::Sync
   end
 
   def self.available
-    [ Fizzy::Sync::Git,
-      Fizzy::Sync::Local
+    [ Fizzy::Sync::Local,
+      Fizzy::Sync::Git
     ]
+  end
+
+  def self.others(subject)
+    subject = subject.class unless subject.is_a?(Class)
+    result = available
+    result.delete(subject)
+    result
   end
 
   def self.enabled(local_dir_path, remote_url)
@@ -1985,13 +2100,17 @@ end
 
 class Fizzy::Sync::Base
 
+  include Fizzy::IO
+
   attr_reader :name
 
-  def initialize(name, local_dir_path, remote_url)
-    error("Invalid local directory: can't be empty.") if local_dir_path.nil?
-    error("Invalid synchronizer name.") if name.nil?
-    @name = name
+  def initialize(synchronizer_name, local_dir_path, remote_url)
+    must :synchronizer_name, be: :not_nil
+    must :local_dir_path,    be: Pathname
+
+    @name           = synchronizer_name
     @local_dir_path = local_dir_path
+    @remote_url     = remote_url
   end
 
   # Check if the current synchronizer is enabled.
@@ -2005,7 +2124,13 @@ class Fizzy::Sync::Base
   #   end
   #
   def enabled?
-    default?
+    return false if !@remote_url.nil? &&
+                    Fizzy::Sync.others(self).any? { |e|
+                      @remote_url.start_with?("#{e.name}:")
+                    }
+    return true if default? && Fizzy::Sync.others(self).
+      map  { |e| e.new(@local_dir_path, @remote_url) }.
+      all? { |e| !e.enabled? }
   end
 
   # Check if the current synchronizer is the default synchronizer.
@@ -2045,10 +2170,9 @@ class Fizzy::Sync::Local < Fizzy::Sync::Base
   # Check if the synchronizer is enabled.
   #
   def enabled?
-    local_valid_repo? ||
-      !@remote_url.nil? && @remote_url.directory? ||
-      !@remote_url.nil? && @remote_url.start_with?("#{@vcs_name}:") ||
-      super
+      ( super ||
+        !@remote_path.nil? && @remote_path.directory? ||
+        local_valid_repo?)
   end
 
   # Update local from the remote.
@@ -2100,9 +2224,9 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Check if the synchronizer is enabled.
   #
   def enabled?
-    local_valid_repo? ||
+    ( super ||
       !@remote_url.nil? && @remote_url.start_with?("#{@name}:") ||
-      super
+      local_valid_repo?)
   end
 
   # Update local from remote.
@@ -2110,7 +2234,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def update_local
     if local_valid_repo?
       # Update existing local from remote, i.e. perform `git pull`.
-      tell("Syncing from `origin` to local", :blue)
+      tell "Syncing from `origin` to local", :blue
       status   = perform_commit
       status &&= perform_pull
     else
@@ -2122,7 +2246,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Update remote from local.
   #
   def update_remote
-    tell("Syncing from local to `origin`", :blue)
+    tell "Syncing from local to `origin`", :blue
     status   = perform_commit
     status &&= perform_push
   end
@@ -2130,19 +2254,19 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Check if local is changed, and now is different from latest remote state.
   #
   def local_changed?
-    tell("Checking if local repository is changed", :blue)
+    tell "Checking if local repository is changed", :blue
     return false unless local_valid_repo?
-    return true if working_tree_changes?
-    return true if perform_fetch && should_push?
+    return true  if     working_tree_changes?
+    return true  if     perform_fetch && should_push?
     false
   end
 
   # Check if remote is changed, and now is different from latest local state.
   #
   def remote_changed?
-    tell("Checking if remote repository is changed", :blue)
+    tell "Checking if remote repository is changed", :blue
     return true unless local_valid_repo?
-    return true if perform_fetch && should_pull?
+    return true if     perform_fetch && should_pull?
     false
   end
 
@@ -2182,7 +2306,7 @@ protected
   # Get the Working Tree (local) changes.
   #
   def working_tree_changes
-    error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+    error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
       return `git status -uall --porcelain`.strip
     end
@@ -2197,7 +2321,7 @@ protected
   # Get a `Hash` containing information about the local and remote repository.
   #
   def info
-    error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+    error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
       return {
         local:  `git rev-parse @`.strip,
@@ -2222,7 +2346,7 @@ protected
   # Get the list of the available remote git repositories.
   #
   def remotes
-    error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+    error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
       return `git remote`.split(/\W+/).reject(&:empty?)
     end
@@ -2231,7 +2355,7 @@ protected
   # Get the list of the available git branches.
   #
   def branches
-    error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+    error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
       return `git branch`.split(/\W+/).reject(&:empty?)
     end
@@ -2240,11 +2364,11 @@ protected
   # Add the changes from the Working Tree to the stage.
   #
   def perform_add(files: nil, interactive: false)
-    error("Invalid files `#{files}`.") unless files.nil? || files.is_a?(Array)
+    error "Invalid files `#{files}`." unless files.nil? || files.is_a?(Array)
 
     cmd  = ["git", "add"]
-    cmd << "-i"  if interactive
-    cmd << "-A"  if files.nil?
+    cmd << "-i"  if     interactive
+    cmd << "-A"  if     files.nil?
     cmd << files unless files.nil?
 
     error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
@@ -2259,7 +2383,7 @@ protected
     if working_tree_changes?
       tell "The configuration has the following local changes:\n" +
            "#{colorize(working_tree_changes, :white)}", :cyan
-      if quiz("Do you want to commit them all")
+      if quiz "Do you want to commit them all"
         status &&= perform_add # Add from Working Tree to stage.
         if status
           tell("Performing commit", :blue)
@@ -2270,7 +2394,7 @@ protected
           cmd << "--allow-empty-message" if     message.nil?
           cmd += ["-m", message]         unless message.nil?
 
-          error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+          error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
           status &&= exec_cmd(cmd,
                               as_su: !existing_dir(@local_dir_path),
                               chdir: @local_dir_path)

@@ -49,14 +49,7 @@ RUN apt-get install -qq -y --no-install-recommends                             \
 		xz-utils
 # ─────────────────────────────────────────────────────────────────────────────┘
 
-# ────────────────────────────────────────────────────────────── Setup fizzy ──┐
-RUN curl -sL                                                                   \
-    https://raw.githubusercontent.com/alem0lars/fizzy/master/build/fizzy       \
-  | tee /usr/local/bin/fizzy > /dev/null                                       \
- && chmod +x /usr/local/bin/fizzy
-# ─────────────────────────────────────────────────────────────────────────────┘
-
-# ─────────────────────────────────────────────────────────────── Setup ruby ──┐
+# ─────────────────────────────────────────────────────────── Setup ruby (1) ──┐
 ENV RUBY_MAJOR=2.3                                                             \
     RUBY_VERSION=2.3.1                                                         \
     RUBY_DOWNLOAD_SHA1=c39b4001f7acb4e334cb60a0f4df72d434bef711                \
@@ -107,7 +100,19 @@ ENV BUNDLE_PATH="$GEM_HOME"                                                    \
 ENV PATH $BUNDLE_BIN:$PATH
 RUN mkdir -p  "$GEM_HOME" "$BUNDLE_BIN"                                        \
  && chmod 777 "$GEM_HOME" "$BUNDLE_BIN"
+# ─────────────────────────────────────────────────────────────────────────────┘
 
+# ────────────────────────────────────────────────────────────── Setup fizzy ──┐
+# Install fizzy dependencies.
+RUN gem install thor
+# Install fizzy.
+RUN curl -sL                                                                   \
+    https://raw.githubusercontent.com/alem0lars/fizzy/master/build/fizzy       \
+  | tee /usr/local/bin/fizzy > /dev/null                                       \
+ && chmod +x /usr/local/bin/fizzy
+# ─────────────────────────────────────────────────────────────────────────────┘
+
+# ─────────────────────────────────────────────────────────── Setup ruby (2) ──┐
 # Configure ruby.
 RUN fizzy cfg s -C ruby -U https://github.com/alem0lars/configs-ruby
 RUN fizzy qi -V docker-test-box -C ruby -I ruby

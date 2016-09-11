@@ -272,38 +272,6 @@ end
 
 class Fizzy::Caller
 
-  def self.caller_binding
-    cc = nil     # must be present to work within lambda
-    count = 0    # counter of returns
-
-    set_trace_func lambda { |event, file, lineno, id, binding, klass|
-      # First return gets to the caller of this method
-      # (which already know its own binding).
-      # Second return gets to the caller of the caller.
-      # That's we want!
-      if count == 2
-        set_trace_func nil
-        # Will return the binding to the callcc below.
-        cc.call binding
-      elsif event == "return"
-        count += 1
-      end
-    }
-    # First time it'll set the cc and return nil to the caller.
-    # So it's important to the caller to return again
-    # if it gets nil, then we get the second return.
-    # Second time it'll return the binding.
-    return callcc { |cont| cc = cont }
-  end
-
-  def self.value(name, depth=1)
-    return unless bnd = self.caller_binding
-    return eval(name, bnd)
-    # RubyVM::DebugInspector.open do |inspector|
-    #   eval(name.to_s, inspector.frame_binding(depth + 2))
-    # end
-  end
-
   def self.info(depth=1)
     parse_caller(caller(depth + 2).first)
   end
@@ -329,17 +297,9 @@ end
 class Object
 
   def must(name,
-           value: nil,
+           value,
            be: nil,
            ge: nil, gt: nil, le: nil, lt: nil)
-
-    unless value
-      begin
-        value = Fizzy::Caller.value(name)
-      rescue NameError
-        error "Unknown variable named `#{name}`"
-      end
-    end
 
     if !be.nil?
       # 1: type condition.
@@ -2129,11 +2089,11 @@ class Fizzy::Sync::Base
 
   attr_reader :name
 
-  def initialize(synchronizer_name, local_dir_path, remote_url)
-    must :synchronizer_name, be: :not_nil
-    must :local_dir_path,    be: Pathname
+  def initialize(name, local_dir_path, remote_url)
+    must "synchronizer name",    name,           be: :not_nil
+    must "local directory path", local_dir_path, be: Pathname
 
-    @name           = synchronizer_name
+    @name           = name
     @local_dir_path = local_dir_path
     @remote_url     = remote_url
   end

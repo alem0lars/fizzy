@@ -42,11 +42,11 @@ class Fizzy::Sync::Base
 
   attr_reader :name
 
-  def initialize(synchronizer_name, local_dir_path, remote_url)
-    must :synchronizer_name, be: :not_nil
-    must :local_dir_path,    be: Pathname
+  def initialize(name, local_dir_path, remote_url)
+    must "synchronizer name",    name,           be: :not_nil
+    must "local directory path", local_dir_path, be: Pathname
 
-    @name           = synchronizer_name
+    @name           = name
     @local_dir_path = local_dir_path
     @remote_url     = remote_url
   end

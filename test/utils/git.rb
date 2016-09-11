@@ -1,6 +1,6 @@
 module Fizzy::TestUtils::Git
 
-  def create_repo(repo_name)
+  def create_repo!(repo_name)
     base_dir_path = ENV["GIT_REPOS_DIR"] || Dir.mktmpdir
     repo_dir_path = Pathname.new(base_dir_path).join("#{repo_name}.git")
 
@@ -11,4 +11,10 @@ module Fizzy::TestUtils::Git
     end
   end
 
+  def destroy_repo!(repo_name)
+    base_dir_path = ENV["GIT_REPOS_DIR"] || Dir.mktmpdir
+    repo_dir_path = Pathname.new(base_dir_path).join("#{repo_name}.git")
+
+    repo_dir_path.rm_rf
+  end
 end

@@ -56,7 +56,6 @@ require "shellwords"
 require "strscan"
 require "uri"
 require "yaml"
-require "debug_inspector"
 
 # Try to require `thor` or raise an exception.
 begin
@@ -273,10 +272,36 @@ end
 
 class Fizzy::Caller
 
+  def self.caller_binding
+    cc = nil     # must be present to work within lambda
+    count = 0    # counter of returns
+
+    set_trace_func lambda { |event, file, lineno, id, binding, klass|
+      # First return gets to the caller of this method
+      # (which already know its own binding).
+      # Second return gets to the caller of the caller.
+      # That's we want!
+      if count == 2
+        set_trace_func nil
+        # Will return the binding to the callcc below.
+        cc.call binding
+      elsif event == "return"
+        count += 1
+      end
+    }
+    # First time it'll set the cc and return nil to the caller.
+    # So it's important to the caller to return again
+    # if it gets nil, then we get the second return.
+    # Second time it'll return the binding.
+    return callcc { |cont| cc = cont }
+  end
+
   def self.value(name, depth=1)
-    RubyVM::DebugInspector.open do |inspector|
-      eval(name.to_s, inspector.frame_binding(depth + 2))
-    end
+    return unless bnd = self.caller_binding
+    return eval(name, bnd)
+    # RubyVM::DebugInspector.open do |inspector|
+    #   eval(name.to_s, inspector.frame_binding(depth + 2))
+    # end
   end
 
   def self.info(depth=1)

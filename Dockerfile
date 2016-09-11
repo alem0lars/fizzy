@@ -44,9 +44,10 @@ RUN apt-get install -qq -y --no-install-recommends                             \
 		libxslt-dev                                                                \
 		libyaml-dev                                                                \
 		make                                                                       \
-		patch                                                                      \
+    patch                                                                      \
     sharutils                                                                  \
-		xz-utils
+    sudo                                                                       \
+    xz-utils
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ─────────────────────────────────────────────────────────── Setup ruby (1) ──┐
@@ -57,18 +58,10 @@ ENV RUBY_MAJOR=2.3                                                             \
 
 ENV BUNDLER_VERSION 1.12.5
 
-# Skip installing gem documentation.
-RUN mkdir -p /usr/local/etc                                                    \
- && {                                                                          \
-   echo 'install: --no-document';                                              \
-	 echo 'update: --no-document';                                               \
- } >> /usr/local/etc/gemrc
-
 # Install ruby dependencies.
 RUN apt-get -qq install -y                                                     \
     bison                                                                      \
-		libgdbm-dev                                                                \
-		ruby
+		libgdbm-dev
 
 # Install ruby.
 RUN set -ex                                                                    \
@@ -84,14 +77,10 @@ RUN set -ex                                                                    \
  && ./configure --disable-install-doc                                          \
  && make -j"$(nproc)"                                                          \
  && make install                                                               \
- && apt-get purge -y --auto-remove $buildDeps                                  \
  && gem update --system $RUBYGEMS_VERSION                                      \
  && rm -r /usr/src/ruby
 
-RUN gem install bundler --version "$BUNDLER_VERSION"
-
-# Install things globally, for great justice and don't create `.bundle` in all
-# our apps.
+# Install things globally and don't create `.bundle` in all our apps.
 ENV GEM_HOME /usr/local/bundle
 ENV BUNDLE_PATH="$GEM_HOME"                                                    \
     BUNDLE_BIN="$GEM_HOME/bin"                                                 \
@@ -100,6 +89,9 @@ ENV BUNDLE_PATH="$GEM_HOME"                                                    \
 ENV PATH $BUNDLE_BIN:$PATH
 RUN mkdir -p  "$GEM_HOME" "$BUNDLE_BIN"                                        \
  && chmod 777 "$GEM_HOME" "$BUNDLE_BIN"
+ 
+ # Install bundler.
+ RUN gem install bundler --version "$BUNDLER_VERSION"
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ────────────────────────────────────────────────────────────── Setup fizzy ──┐
@@ -114,8 +106,9 @@ RUN curl -sL                                                                   \
 
 # ─────────────────────────────────────────────────────────── Setup ruby (2) ──┐
 # Configure ruby.
-RUN fizzy cfg s -C ruby -U https://github.com/alem0lars/configs-ruby
-RUN fizzy qi -V docker-test-box -C ruby -I ruby
+# TODO uncomment when `--no-ask` is implemented
+# RUN fizzy cfg s -C ruby -U https:alem0lars/configs-ruby
+# RUN fizzy qi -V docker-test-box -C ruby -I ruby
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ──────────────────────────────────────────────────────────────── Setup ssh ──┐
@@ -124,11 +117,11 @@ RUN /etc/my_init.d/00_regen_ssh_host_keys.sh -f                                \
  && rm -f /etc/service/sshd/down
 # Enable the insecure key permanently.
 # In clients you can then login to the docker container by running:
-#   $ docker ps                                        # find the container <ID>
-#   $ docker inspect -f "{{ .NetworkSettings.IPAddress }}" <ID>  # find the <IP>
+#   $ docker ps # find the container <ID>
+#   $ docker inspect -f "{{ .NetworkSettings.IPAddress }}" <ID> # find the <IP>
 #   $ curl -o insecure_key -fSL https://github.com/phusion/baseimage-docker/raw/master/image/services/sshd/keys/insecure_key
 #   $ chmod 600 insecure_key
-#   $ ssh -i insecure_key root@<IP>         # login to the container through ssh
+#   $ ssh -i insecure_key root@<IP> # login to the container through ssh
 RUN /usr/sbin/enable_insecure_key
 # Expose sshd standard ports.
 EXPOSE 22

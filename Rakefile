@@ -144,10 +144,10 @@ namespace :doc do
 end
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ☞ Task `console`
+# ☞ Task `repl`
 
-task console: :build do
-  sh("irb -I . -r build/fizzy")
+task repl: :build do
+  sh("irb -I . -r irbtools -r irbtools/more -r build/fizzy")
 end
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -168,5 +168,9 @@ namespace :docker do
   desc "Start a console inside the docker container"
   task console: :prepare do
     docker_run("fizzy", "/bin/bash")
+  end
+
+  task repl: :prepare do
+    docker_run("fizzy", "irb -I . -r irbtools -r irbtools/more -r build/fizzy")
   end
 end

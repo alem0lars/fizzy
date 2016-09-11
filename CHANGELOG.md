@@ -10,6 +10,7 @@
   - `#deep_symbolize_keys`
   - `#deep_stringify_keys`
   - `#deep_transform_keys`
+- Add `Hash` extension to get some key/value pairs: `sample(n)`
 - Migrate meta keys *from strings to symbols*
 - Migrate variables keys *from strings to symbols* (see `parse_vars(..)`)
   and have indifferent access (see `_get_var(..)`).

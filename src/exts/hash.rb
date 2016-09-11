@@ -1,5 +1,10 @@
 class Hash
 
+  # Extract `n` sample key/value pairs from the underlying `Hash`.
+  def sample(n=1)
+    Hash[self.to_a.sample(n)]
+  end
+
   # Perform recursive merge of the current `Hash` (`self`) with the provided one
   # (the `second` argument).
   #

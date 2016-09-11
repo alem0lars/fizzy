@@ -8,7 +8,7 @@ MAINTAINER Alessandro Molari <molari.alessandro@gmail.com> (alem0lars)
 RUN apt-get -qq update                                                         \
  && apt-get -qq upgrade
 
-# Install basic packages
+# Install basic packages.
 RUN apt-get install -qq -y --no-install-recommends                             \
 		autoconf                                                                   \
 		automake                                                                   \
@@ -49,6 +49,13 @@ RUN apt-get install -qq -y --no-install-recommends                             \
 		xz-utils
 # ─────────────────────────────────────────────────────────────────────────────┘
 
+# ────────────────────────────────────────────────────────────── Setup fizzy ──┐
+RUN curl -sL                                                                   \
+    https://raw.githubusercontent.com/alem0lars/fizzy/master/build/fizzy       \
+  | tee /usr/local/bin/fizzy > /dev/null                                       \
+ && chmod +x /usr/local/bin/fizzy
+# ─────────────────────────────────────────────────────────────────────────────┘
+
 # ─────────────────────────────────────────────────────────────── Setup ruby ──┐
 ENV RUBY_MAJOR=2.3                                                             \
     RUBY_VERSION=2.3.1                                                         \
@@ -57,20 +64,20 @@ ENV RUBY_MAJOR=2.3                                                             \
 
 ENV BUNDLER_VERSION 1.12.5
 
-# Skip installing gem documentation
+# Skip installing gem documentation.
 RUN mkdir -p /usr/local/etc                                                    \
  && {                                                                          \
    echo 'install: --no-document';                                              \
 	 echo 'update: --no-document';                                               \
  } >> /usr/local/etc/gemrc
 
-# Install ruby dependencies
+# Install ruby dependencies.
 RUN apt-get -qq install -y                                                     \
     bison                                                                      \
 		libgdbm-dev                                                                \
 		ruby
 
-# Install ruby
+# Install ruby.
 RUN set -ex                                                                    \
  && curl -fSL -o ruby.tar.gz "http://cache.ruby-lang.org/pub/ruby/$RUBY_MAJOR/ruby-$RUBY_VERSION.tar.gz" \
  && echo "$RUBY_DOWNLOAD_SHA1 *ruby.tar.gz" | sha1sum -c -                     \
@@ -91,7 +98,7 @@ RUN set -ex                                                                    \
 RUN gem install bundler --version "$BUNDLER_VERSION"
 
 # Install things globally, for great justice and don't create `.bundle` in all
-# our apps
+# our apps.
 ENV GEM_HOME /usr/local/bundle
 ENV BUNDLE_PATH="$GEM_HOME"                                                    \
     BUNDLE_BIN="$GEM_HOME/bin"                                                 \
@@ -100,13 +107,17 @@ ENV BUNDLE_PATH="$GEM_HOME"                                                    \
 ENV PATH $BUNDLE_BIN:$PATH
 RUN mkdir -p  "$GEM_HOME" "$BUNDLE_BIN"                                        \
  && chmod 777 "$GEM_HOME" "$BUNDLE_BIN"
+
+# Configure ruby.
+RUN fizzy cfg s -C ruby -U https://github.com/alem0lars/configs-ruby
+RUN fizzy qi -V docker-test-box -C ruby -I ruby
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ──────────────────────────────────────────────────────────────── Setup ssh ──┐
-# Enable sshd
+# Enable sshd.
 RUN /etc/my_init.d/00_regen_ssh_host_keys.sh -f                                \
  && rm -f /etc/service/sshd/down
-# Enable the insecure key permanently
+# Enable the insecure key permanently.
 # In clients you can then login to the docker container by running:
 #   $ docker ps                                        # find the container <ID>
 #   $ docker inspect -f "{{ .NetworkSettings.IPAddress }}" <ID>  # find the <IP>
@@ -114,24 +125,27 @@ RUN /etc/my_init.d/00_regen_ssh_host_keys.sh -f                                \
 #   $ chmod 600 insecure_key
 #   $ ssh -i insecure_key root@<IP>         # login to the container through ssh
 RUN /usr/sbin/enable_insecure_key
-# Expose sshd standard ports
+# Expose sshd standard ports.
 EXPOSE 22
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ──────────────────────────────────────────────────────────────── Setup git ──┐
 ENV GIT_REPOS_DIR="${HOME}/repos/git"
 
-# Install git packages
-RUN apt-get -qq install \
-    git-sh \
+# Install git packages.
+RUN apt-get -qq install                                                        \
+    git-sh                                                                     \
     git
-# Setup a git user and SSH
-RUN groupadd -g 987 git && useradd -g git -u 987 -d /git -m -r -s /usr/bin/git-shell git
-# Set a long random password to unlock the git user account
-RUN usermod -p `dd if=/dev/urandom bs=1 count=30 | uuencode -m - | head -2 | tail -1` git
-#
+# Setup a git user and ssh.
+RUN groupadd -g 987 git                                                        \
+ && useradd -g git -u 987 -d /git -m -r -s /usr/bin/git-shell git
+# Set a long random password to unlock the git user account.
+RUN usermod -p                                                                 \
+    `dd if=/dev/urandom bs=1 count=30 | uuencode -m - | head -2 | tail -1`     \
+    git
+# Prepare directory that will hold testing git repositories.
 RUN mkdir -p "${GIT_REPOS_DIR}"
-# Remove the annoying `/etc/motd`
+# Remove the annoying `/etc/motd`.
 RUN rm -rf /etc/update-motd.d /etc/motd /etc/motd.dynamic
 RUN ln -fs /dev/null /run/motd.dynamic
 # ─────────────────────────────────────────────────────────────────────────────┘

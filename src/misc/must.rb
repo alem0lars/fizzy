@@ -1,17 +1,9 @@
 class Object
 
   def must(name,
-           value: nil,
+           value,
            be: nil,
            ge: nil, gt: nil, le: nil, lt: nil)
-
-    unless value
-      begin
-        value = Fizzy::Caller.value(name)
-      rescue NameError
-        error "Unknown variable named `#{name}`"
-      end
-    end
 
     if !be.nil?
       # 1: type condition.

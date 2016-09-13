@@ -17,6 +17,12 @@ require "awesome_print"
 require "minitest/autorun"
 require "fizzy"
 
+# Enable code coverage.
+require "simplecov"
+SimpleCov.start
+require "codecov"
+SimpleCov.formatter = SimpleCov::Formatter::Codecov
+
 # Setup mocks.
 module Fizzy::Mocks end
 Dir.glob(File.join(File.dirname(__FILE__), "mocks", "*.rb")) do |module_path|

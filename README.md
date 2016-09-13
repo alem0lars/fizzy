@@ -3,7 +3,7 @@ Fizzy
 
 The hassle free configuration manager
 
-[![Bountysource][bountysource_image]][bountysource_link] [![Gitbook status](gitbook_status_image)](gitbook_status_link)
+[![Bountysource][bountysource_image]][bountysource_link] [![Gitbook status][gitbook_status_image]][gitbook_status_link]
 
 ## Usage
 

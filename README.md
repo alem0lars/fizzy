@@ -3,7 +3,7 @@ Fizzy
 
 The hassle free configuration manager
 
-[![Bountysource][bountysource_image]][bountysource_link]
+[![Bountysource][bountysource_image]][bountysource_link] [![Gitbook status](gitbook_status_image)](gitbook_status_link)
 
 ## Usage
 
@@ -105,6 +105,9 @@ Made with ♥ by Alessandro Molari
 
 [bountysource_image]: https://img.shields.io/bountysource/team/fizzy/activity.svg
 [bountysource_link]:  https://www.bountysource.com/teams/fizzy
+
+[gitbook_status_image]: https://www.gitbook.io/button/status/book/roachhd/master-markdown
+[gitbook_status_link]:  https://www.gitbook.io/book/roachhd/master-markdown/activity
 
 [read_end_user_guide]:          https://www.gitbook.com/read/book/alem0lars/fizzy
 [download_pdf_end_user_guide]:  https://www.gitbook.com/download/pdf/book/alem0lars/fizzy

@@ -28,4 +28,5 @@ group :development do
   # Debugger.
   gem "byebug"
 
+  gem "codecov", require: false
 end

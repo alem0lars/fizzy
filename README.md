@@ -6,6 +6,7 @@ The hassle free configuration manager
 [![Bountysource][bountysource_image]][bountysource_link]
 [![Gitbook status][gitbook_status_image]][gitbook_status_link]
 [![Build Status][travis_status_image]][travis_status_link]
+[![CodeCov][codecov_image]][codecov_link]
 
 ## Usage
 
@@ -113,6 +114,9 @@ Made with ♥ by Alessandro Molari
 
 [travis_status_image]: https://travis-ci.org/alem0lars/fizzy.svg?branch=master
 [travis_status_link]:  https://travis-ci.org/alem0lars/fizzy
+
+[codecov_image]: https://codecov.io/gh/alem0lars/fizzy/branch/master/graph/badge.svg
+[codecov_link]:  https://codecov.io/gh/alem0lars/fizzy
 
 [read_end_user_guide]:          https://www.gitbook.com/read/book/alem0lars/fizzy
 [download_pdf_end_user_guide]:  https://www.gitbook.com/download/pdf/book/alem0lars/fizzy

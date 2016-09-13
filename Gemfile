@@ -28,6 +28,7 @@ group :development do
   # Debugger.
   gem "byebug"
 
+  # Code coverage.
   gem "simplecov", require: false
   gem "codecov",   require: false
 end

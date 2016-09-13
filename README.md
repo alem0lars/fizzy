@@ -107,7 +107,7 @@ Made with ♥ by Alessandro Molari
 [bountysource_image]: https://img.shields.io/bountysource/team/fizzy/activity.svg
 [bountysource_link]:  https://www.bountysource.com/teams/fizzy
 
-[gitbook_status_image]: https://www.gitbook.io/button/status/book/alem0lars/fizzy
+[gitbook_status_image]: https://www.gitbook.com/button/status/book/alem0lars/fizzy
 [gitbook_status_link]:  https://www.gitbook.io/book/alem0lars/fizzy/activity
 
 [read_end_user_guide]:          https://www.gitbook.com/read/book/alem0lars/fizzy

@@ -11,6 +11,7 @@
 # Ignore documentation artifacts.
 /.yardoc
 /doc
+/coverage
 
 # Ignore debugging artifacts.
 /.byebug_history
@@ -23,4 +24,3 @@
 /.cache
 /website
 /bower_components
-

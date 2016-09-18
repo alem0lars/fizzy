@@ -3,6 +3,14 @@ ENV HOME /root
 
 MAINTAINER Alessandro Molari <molari.alessandro@gmail.com> (alem0lars)
 
+# ─────────────────────────────────────────────────────── Start dependencies ──┐
+# Enable sshd.
+RUN rm -f /etc/service/sshd/down                                               \
+ && /etc/my_init.d/00_regen_ssh_host_keys.sh -f
+# Use baseimage-docker's init system
+CMD ["/sbin/my_init"]
+# ─────────────────────────────────────────────────────────────────────────────┘
+
 # ────────────────────────────────────────────── Setup basic system packages ──┐
 # Update repos and upgrade packages.
 RUN apt-get -qq update                                                         \
@@ -89,7 +97,7 @@ ENV BUNDLE_PATH="$GEM_HOME"                                                    \
 ENV PATH $BUNDLE_BIN:$PATH
 RUN mkdir -p  "$GEM_HOME" "$BUNDLE_BIN"                                        \
  && chmod 777 "$GEM_HOME" "$BUNDLE_BIN"
- 
+
  # Install bundler.
  RUN gem install bundler --version "$BUNDLER_VERSION"
 # ─────────────────────────────────────────────────────────────────────────────┘
@@ -112,9 +120,6 @@ RUN curl -sL                                                                   \
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ──────────────────────────────────────────────────────────────── Setup ssh ──┐
-# Enable sshd.
-RUN /etc/my_init.d/00_regen_ssh_host_keys.sh -f                                \
- && rm -f /etc/service/sshd/down
 # Enable the insecure key permanently.
 # In clients you can then login to the docker container by running:
 #   $ docker ps # find the container <ID>
@@ -123,13 +128,13 @@ RUN /etc/my_init.d/00_regen_ssh_host_keys.sh -f                                \
 #   $ chmod 600 insecure_key
 #   $ ssh -i insecure_key root@<IP> # login to the container through ssh
 RUN /usr/sbin/enable_insecure_key
-# Expose sshd standard ports.
-EXPOSE 22
+# Allow to perform ssh from inside.
+RUN mkdir -p "${HOME}/.ssh"                                                    \
+ && curl -o "${HOME}/.ssh/id_rsa" -fSL "https://github.com/phusion/baseimage-docker/raw/master/image/services/sshd/keys/insecure_key" \
+ && chmod 600 "${HOME}/.ssh/id_rsa"
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ──────────────────────────────────────────────────────────────── Setup git ──┐
-ENV GIT_REPOS_DIR="${HOME}/repos/git"
-
 # Install git packages.
 RUN apt-get -qq install                                                        \
     git-sh                                                                     \
@@ -141,11 +146,14 @@ RUN groupadd -g 987 git                                                        \
 RUN usermod -p                                                                 \
     `dd if=/dev/urandom bs=1 count=30 | uuencode -m - | head -2 | tail -1`     \
     git
-# Prepare directory that will hold testing git repositories.
-RUN mkdir -p "${GIT_REPOS_DIR}"
 # Remove the annoying `/etc/motd`.
 RUN rm -rf /etc/update-motd.d /etc/motd /etc/motd.dynamic
 RUN ln -fs /dev/null /run/motd.dynamic
+# Configure local git client.
+# TODO: Replace with fizzy config (when `--no-ask` is implemented).
+RUN git config --global push.default simple                                    \
+ && git config --global user.name root                                         \
+ && git config --global user.email root@localhost.localdomain
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ────────────────────────────────────────────────────────────────── Cleanup ──┐
@@ -153,16 +161,19 @@ RUN apt-get clean                                                              \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 # ─────────────────────────────────────────────────────────────────────────────┘
 
-# ─────────────────────────────────────────────────────── Start dependencies ──┐
-# Use baseimage-docker's init system
-CMD ["/sbin/my_init"]
-# ─────────────────────────────────────────────────────────────────────────────┘
-
 # ──────────────────────────────────────────────────────────────── Setup app ──┐
 ENV APP_DIR="${HOME}/fizzy"
-
-COPY . "$APP_DIR"
+# ──────────────────────────── (trick to allow caching) install dependencies ──┤
+WORKDIR /tmp
+ADD ./Gemfile      Gemfile
+ADD ./Gemfile.lock Gemfile.lock
+RUN bundle install
+RUN rm ./Gemfile                                                               \
+ && rm ./Gemfile.lock
+# ────────────────────────────────────────────────────── add & build the app ──┤
+ADD . "$APP_DIR"
 WORKDIR "${APP_DIR}"
+# Trigger bundler to use the right location.
 RUN bundle install
 RUN rake build
 # ─────────────────────────────────────────────────────────────────────────────┘

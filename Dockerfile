@@ -1,61 +1,52 @@
-FROM phusion/baseimage:latest
+FROM alpine:latest
 ENV HOME /root
 
 MAINTAINER Alessandro Molari <molari.alessandro@gmail.com> (alem0lars)
 
-# ─────────────────────────────────────────────────────── Start dependencies ──┐
-# Enable sshd.
-RUN rm -f /etc/service/sshd/down                                               \
- && /etc/my_init.d/00_regen_ssh_host_keys.sh -f
-# Use baseimage-docker's init system
-CMD ["/sbin/my_init"]
-# ─────────────────────────────────────────────────────────────────────────────┘
-
 # ────────────────────────────────────────────── Setup basic system packages ──┐
-# Update repos and upgrade packages.
-RUN apt-get -qq update                                                         \
- && apt-get -qq upgrade
+RUN apk update
+
+# Install common libraries.
+RUN apk add --no-cache                                                         \
+    curl-dev                                                                   \
+    db-dev                                                                     \
+    geoip-dev                                                                  \
+    glib-dev                                                                   \
+    krb5-dev                                                                   \
+    libevent-dev                                                               \
+    libffi-dev                                                                 \
+    libbz2                                                                     \
+    libxml2-dev                                                                \
+    libxslt-dev                                                                \
+    libssl1.0                                                                  \
+    libtool                                                                    \
+    libwebp-dev                                                                \
+    libjpeg-turbo-dev                                                          \
+    libpng-dev                                                                 \
+		libpq                                                                      \
+    ncurses-dev                                                                \
+    readline-dev                                                               \
+    sqlite-dev                                                                 \
+    yaml-dev
+
+# 		libc6-dev                                                                  \
+# 		liblzma-dev                                                                \
+# 		libmagickcore-dev                                                          \
+# 		libmagickwand-dev                                                          \
+# 		libmysqlclient-dev                                                         \
 
 # Install basic packages.
-RUN apt-get install -qq -y --no-install-recommends                             \
+RUN apk add --no-cache                                                         \
 		autoconf                                                                   \
 		automake                                                                   \
-		bzip2                                                                      \
     ca-certificates                                                            \
     curl                                                                       \
-		file                                                                       \
-		g++                                                                        \
-		gcc                                                                        \
-    libbz2-dev                                                                 \
-		libc6-dev                                                                  \
-		libcurl4-openssl-dev                                                       \
-		libdb-dev                                                                  \
-		libevent-dev                                                               \
-		libffi-dev                                                                 \
-		libgeoip-dev                                                               \
-		libglib2.0-dev                                                             \
-		libjpeg-dev                                                                \
-		libkrb5-dev                                                                \
-		liblzma-dev                                                                \
-		libmagickcore-dev                                                          \
-		libmagickwand-dev                                                          \
-		libmysqlclient-dev                                                         \
-		libncurses-dev                                                             \
-		libpng-dev                                                                 \
-		libpq-dev                                                                  \
-		libreadline-dev                                                            \
-		libsqlite3-dev                                                             \
-		libssl-dev                                                                 \
-		libtool                                                                    \
-		libwebp-dev                                                                \
-		libxml2-dev                                                                \
-		libxslt-dev                                                                \
-		libyaml-dev                                                                \
-		make                                                                       \
-    patch                                                                      \
-    sharutils                                                                  \
-    sudo                                                                       \
-    xz-utils
+    file                                                                       \
+    g++                                                                        \
+    gcc                                                                        \
+    make                                                                       \
+    xz                                                                         \
+    zsh
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ─────────────────────────────────────────────────────────── Setup ruby (1) ──┐
@@ -67,9 +58,9 @@ ENV RUBY_MAJOR=2.3                                                             \
 ENV BUNDLER_VERSION 1.12.5
 
 # Install ruby dependencies.
-RUN apt-get -qq install -y                                                     \
+RUN apk add --no-cache                                                         \
     bison                                                                      \
-		libgdbm-dev
+		gdbm-dev
 
 # Install ruby.
 RUN set -ex                                                                    \
@@ -90,16 +81,16 @@ RUN set -ex                                                                    \
 
 # Install things globally and don't create `.bundle` in all our apps.
 ENV GEM_HOME /usr/local/bundle
-ENV BUNDLE_PATH="$GEM_HOME"                                                    \
-    BUNDLE_BIN="$GEM_HOME/bin"                                                 \
+ENV BUNDLE_PATH="${GEM_HOME}"                                                    \
+    BUNDLE_BIN="${GEM_HOME}/bin"                                                 \
     BUNDLE_SILENCE_ROOT_WARNING=1                                              \
     BUNDLE_APP_CONFIG="$GEM_HOME"
 ENV PATH $BUNDLE_BIN:$PATH
-RUN mkdir -p  "$GEM_HOME" "$BUNDLE_BIN"                                        \
- && chmod 777 "$GEM_HOME" "$BUNDLE_BIN"
+RUN mkdir -p  "${GEM_HOME}" "${BUNDLE_BIN}"                                        \
+ && chmod 777 "${GEM_HOME}" "${BUNDLE_BIN}"
 
- # Install bundler.
- RUN gem install bundler --version "$BUNDLER_VERSION"
+# Install bundler.
+RUN gem install bundler --version "${BUNDLER_VERSION}"
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ────────────────────────────────────────────────────────────── Setup fizzy ──┐
@@ -119,25 +110,25 @@ RUN curl -sL                                                                   \
 # RUN fizzy qi -V docker-test-box -C ruby -I ruby
 # ─────────────────────────────────────────────────────────────────────────────┘
 
-# ──────────────────────────────────────────────────────────────── Setup ssh ──┐
-# Enable the insecure key permanently.
-# In clients you can then login to the docker container by running:
-#   $ docker ps # find the container <ID>
-#   $ docker inspect -f "{{ .NetworkSettings.IPAddress }}" <ID> # find the <IP>
-#   $ curl -o insecure_key -fSL https://github.com/phusion/baseimage-docker/raw/master/image/services/sshd/keys/insecure_key
-#   $ chmod 600 insecure_key
-#   $ ssh -i insecure_key root@<IP> # login to the container through ssh
-RUN /usr/sbin/enable_insecure_key
-# Allow to perform ssh from inside.
-RUN mkdir -p "${HOME}/.ssh"                                                    \
- && curl -o "${HOME}/.ssh/id_rsa" -fSL "https://github.com/phusion/baseimage-docker/raw/master/image/services/sshd/keys/insecure_key" \
- && chmod 600 "${HOME}/.ssh/id_rsa"
-# ─────────────────────────────────────────────────────────────────────────────┘
+# # ──────────────────────────────────────────────────────────────── Setup ssh ──┐
+# # Enable the insecure key permanently.
+# # In clients you can then login to the docker container by running:
+# #   $ docker ps # find the container <ID>
+# #   $ docker inspect -f "{{ .NetworkSettings.IPAddress }}" <ID> # find the <IP>
+# #   $ curl -o insecure_key -fSL https://github.com/phusion/baseimage-docker/raw/master/image/services/sshd/keys/insecure_key
+# #   $ chmod 600 insecure_key
+# #   $ ssh -i insecure_key root@<IP> # login to the container through ssh
+# RUN /usr/sbin/enable_insecure_key
+# # Allow to perform ssh from inside.
+# RUN mkdir -p "${HOME}/.ssh"                                                    \
+#  && curl -o "${HOME}/.ssh/id_rsa" -fSL "https://github.com/phusion/baseimage-docker/raw/master/image/services/sshd/keys/insecure_key" \
+#  && chmod 600 "${HOME}/.ssh/id_rsa"
+# # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ──────────────────────────────────────────────────────────────── Setup git ──┐
 # Install git packages.
-RUN apt-get -qq install                                                        \
-    git-sh                                                                     \
+RUN apk add --no-cache                                                         \
+    git-daemon                                                                 \
     git
 # Setup a git user and ssh.
 RUN groupadd -g 987 git                                                        \
@@ -154,11 +145,6 @@ RUN ln -fs /dev/null /run/motd.dynamic
 RUN git config --global push.default simple                                    \
  && git config --global user.name root                                         \
  && git config --global user.email root@localhost.localdomain
-# ─────────────────────────────────────────────────────────────────────────────┘
-
-# ────────────────────────────────────────────────────────────────── Cleanup ──┐
-RUN apt-get clean                                                              \
- && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ──────────────────────────────────────────────────────────────── Setup app ──┐

@@ -4,10 +4,11 @@ ENV HOME /root
 MAINTAINER Alessandro Molari <molari.alessandro@gmail.com> (alem0lars)
 
 # ────────────────────────────────────────────── Setup basic system packages ──┐
-RUN apk update
+RUN apk update \
+ && apk upgrade
 
 # Install common libraries.
-RUN apk add --no-cache                                                         \
+RUN apk add --update --no-cache                                                \
     curl-dev                                                                   \
     db-dev                                                                     \
     geoip-dev                                                                  \
@@ -36,7 +37,7 @@ RUN apk add --no-cache                                                         \
 # 		libmysqlclient-dev                                                         \
 
 # Install basic packages.
-RUN apk add --no-cache                                                         \
+RUN apk add --update --no-cache                                                \
 		autoconf                                                                   \
 		automake                                                                   \
     ca-certificates                                                            \
@@ -45,6 +46,7 @@ RUN apk add --no-cache                                                         \
     g++                                                                        \
     gcc                                                                        \
     make                                                                       \
+    tar                                                                        \
     xz                                                                         \
     zsh
 # ─────────────────────────────────────────────────────────────────────────────┘
@@ -67,7 +69,7 @@ RUN set -ex                                                                    \
  && curl -fSL -o ruby.tar.gz "http://cache.ruby-lang.org/pub/ruby/$RUBY_MAJOR/ruby-$RUBY_VERSION.tar.gz" \
  && echo "$RUBY_DOWNLOAD_SHA1 *ruby.tar.gz" | sha1sum -c -                     \
  && mkdir -p /usr/src/ruby                                                     \
- && tar -xzf ruby.tar.gz -C /usr/src/ruby --strip-components=1                 \
+ && tar -xzf ruby.tar.gz -C /usr/src/ruby --strip-components=1                       \
  && rm ruby.tar.gz                                                             \
  && cd /usr/src/ruby                                                           \
  && { echo '#define ENABLE_PATH_CHECK 0'; echo; cat file.c; } > file.c.new     \

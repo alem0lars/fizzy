@@ -13,7 +13,9 @@ module Fizzy::Execution
 
     full_cmd = as_su ? "sudo #{cmd}" : cmd
 
-    really_run = case @run_mode
+    run_mode = defined?(@run_mode) ? @run_mode : :normal
+
+    really_run = case run_mode
                    when :normal then true
                    when :paranoid
                      quiz("Do you want to run command `#{full_cmd}`")
@@ -21,7 +23,7 @@ module Fizzy::Execution
                    else true
                  end
 
-    if really_run || @run_mode == :dry
+    if really_run || run_mode == :dry
       tell(as_su ? "[sudo] #{cmd}" : cmd, :magenta)
     end
 

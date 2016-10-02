@@ -24,22 +24,17 @@ RUN apk add --update --no-cache                                                \
     libwebp-dev                                                                \
     libjpeg-turbo-dev                                                          \
     libpng-dev                                                                 \
-		libpq                                                                      \
+    libpq                                                                      \
+    linux-headers                                                              \
     ncurses-dev                                                                \
     readline-dev                                                               \
     sqlite-dev                                                                 \
     yaml-dev
 
-# 		libc6-dev                                                                  \
-# 		liblzma-dev                                                                \
-# 		libmagickcore-dev                                                          \
-# 		libmagickwand-dev                                                          \
-# 		libmysqlclient-dev                                                         \
-
 # Install basic packages.
 RUN apk add --update --no-cache                                                \
-		autoconf                                                                   \
-		automake                                                                   \
+    autoconf                                                                   \
+    automake                                                                   \
     ca-certificates                                                            \
     curl                                                                       \
     file                                                                       \
@@ -47,6 +42,7 @@ RUN apk add --update --no-cache                                                \
     gcc                                                                        \
     make                                                                       \
     tar                                                                        \
+    vim                                                                        \
     xz                                                                         \
     zsh
 # ─────────────────────────────────────────────────────────────────────────────┘
@@ -62,14 +58,15 @@ ENV BUNDLER_VERSION 1.12.5
 # Install ruby dependencies.
 RUN apk add --no-cache                                                         \
     bison                                                                      \
-		gdbm-dev
+    gdbm-dev
 
 # Install ruby.
 RUN set -ex                                                                    \
- && curl -fSL -o ruby.tar.gz "http://cache.ruby-lang.org/pub/ruby/$RUBY_MAJOR/ruby-$RUBY_VERSION.tar.gz" \
+ && curl -fSL -o ruby.tar.gz                                                   \
+    "http://cache.ruby-lang.org/pub/ruby/$RUBY_MAJOR/ruby-$RUBY_VERSION.tar.gz"\
  && echo "$RUBY_DOWNLOAD_SHA1 *ruby.tar.gz" | sha1sum -c -                     \
  && mkdir -p /usr/src/ruby                                                     \
- && tar -xzf ruby.tar.gz -C /usr/src/ruby --strip-components=1                       \
+ && tar -xzf ruby.tar.gz -C /usr/src/ruby --strip-components=1                 \
  && rm ruby.tar.gz                                                             \
  && cd /usr/src/ruby                                                           \
  && { echo '#define ENABLE_PATH_CHECK 0'; echo; cat file.c; } > file.c.new     \
@@ -83,21 +80,58 @@ RUN set -ex                                                                    \
 
 # Install things globally and don't create `.bundle` in all our apps.
 ENV GEM_HOME /usr/local/bundle
-ENV BUNDLE_PATH="${GEM_HOME}"                                                    \
-    BUNDLE_BIN="${GEM_HOME}/bin"                                                 \
+ENV BUNDLE_PATH="${GEM_HOME}"                                                  \
+    BUNDLE_BIN="${GEM_HOME}/bin"                                               \
     BUNDLE_SILENCE_ROOT_WARNING=1                                              \
     BUNDLE_APP_CONFIG="$GEM_HOME"
 ENV PATH $BUNDLE_BIN:$PATH
-RUN mkdir -p  "${GEM_HOME}" "${BUNDLE_BIN}"                                        \
+RUN mkdir -p  "${GEM_HOME}" "${BUNDLE_BIN}"                                    \
  && chmod 777 "${GEM_HOME}" "${BUNDLE_BIN}"
 
 # Install bundler.
 RUN gem install bundler --version "${BUNDLER_VERSION}"
 # ─────────────────────────────────────────────────────────────────────────────┘
 
+# ──────────────────────────────────────────────────────────────── Setup ssh ──┐
+# Install ssh daemon.
+RUN apk add --no-cache                                                         \
+    openssh
+# Generate fresh keys.
+RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa                       \
+ && ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa
+# Prepare ssh run directory.
+RUN mkdir -p /var/run/sshd
+# Start ssh daemon.
+RUN /usr/sbin/sshd -D &
+# Expose ssh port.
+EXPOSE 22
+# ─────────────────────────────────────────────────────────────────────────────┘
+
+# ──────────────────────────────────────────────────────────────── Setup git ──┐
+# Install git packages.
+RUN apk add --no-cache                                                         \
+    git-daemon                                                                 \
+    git
+# Setup a git user and ssh.
+ARG GIT_PWD="git"
+RUN addgroup git                                                               \
+ && echo -e "${GIT_PWD}\n${GIT_PWD}\n"                                         \
+  | adduser -G git -h /git -s /usr/bin/git-shell git
+# Remove the annoying `/etc/motd`.
+RUN rm -rf /etc/update-motd.d /etc/motd /etc/motd.dynamic
+RUN ln -fs /dev/null /run/motd.dynamic
+# Configure local git client.
+# TODO: Replace with fizzy config (when `--no-ask` is implemented).
+RUN git config --global push.default simple                                    \
+ && git config --global user.name root                                         \
+ && git config --global user.email root@localhost.localdomain
+# ─────────────────────────────────────────────────────────────────────────────┘
+
 # ────────────────────────────────────────────────────────────── Setup fizzy ──┐
 # Install fizzy dependencies.
 RUN gem install thor
+RUN apk add --no-cache                                                         \
+    sudo
 # Install fizzy.
 RUN curl -sL                                                                   \
     https://raw.githubusercontent.com/alem0lars/fizzy/master/build/fizzy       \
@@ -107,46 +141,8 @@ RUN curl -sL                                                                   \
 
 # ─────────────────────────────────────────────────────────── Setup ruby (2) ──┐
 # Configure ruby.
-# TODO uncomment when `--no-ask` is implemented
-# RUN fizzy cfg s -C ruby -U https:alem0lars/configs-ruby
-# RUN fizzy qi -V docker-test-box -C ruby -I ruby
-# ─────────────────────────────────────────────────────────────────────────────┘
-
-# # ──────────────────────────────────────────────────────────────── Setup ssh ──┐
-# # Enable the insecure key permanently.
-# # In clients you can then login to the docker container by running:
-# #   $ docker ps # find the container <ID>
-# #   $ docker inspect -f "{{ .NetworkSettings.IPAddress }}" <ID> # find the <IP>
-# #   $ curl -o insecure_key -fSL https://github.com/phusion/baseimage-docker/raw/master/image/services/sshd/keys/insecure_key
-# #   $ chmod 600 insecure_key
-# #   $ ssh -i insecure_key root@<IP> # login to the container through ssh
-# RUN /usr/sbin/enable_insecure_key
-# # Allow to perform ssh from inside.
-# RUN mkdir -p "${HOME}/.ssh"                                                    \
-#  && curl -o "${HOME}/.ssh/id_rsa" -fSL "https://github.com/phusion/baseimage-docker/raw/master/image/services/sshd/keys/insecure_key" \
-#  && chmod 600 "${HOME}/.ssh/id_rsa"
-# # ─────────────────────────────────────────────────────────────────────────────┘
-
-# ──────────────────────────────────────────────────────────────── Setup git ──┐
-# Install git packages.
-RUN apk add --no-cache                                                         \
-    git-daemon                                                                 \
-    git
-# Setup a git user and ssh.
-RUN groupadd -g 987 git                                                        \
- && useradd -g git -u 987 -d /git -m -r -s /usr/bin/git-shell git
-# Set a long random password to unlock the git user account.
-RUN usermod -p                                                                 \
-    `dd if=/dev/urandom bs=1 count=30 | uuencode -m - | head -2 | tail -1`     \
-    git
-# Remove the annoying `/etc/motd`.
-RUN rm -rf /etc/update-motd.d /etc/motd /etc/motd.dynamic
-RUN ln -fs /dev/null /run/motd.dynamic
-# Configure local git client.
-# TODO: Replace with fizzy config (when `--no-ask` is implemented).
-RUN git config --global push.default simple                                    \
- && git config --global user.name root                                         \
- && git config --global user.email root@localhost.localdomain
+RUN fizzy cfg s -C ruby -U https:alem0lars/configs-ruby                        \
+ && fizzy qi -V docker-test-box -C ruby -I ruby
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ──────────────────────────────────────────────────────────────── Setup app ──┐

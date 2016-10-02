@@ -10,7 +10,7 @@ describe Fizzy::Sync::Git do
     @local_dir_path = Pathname.new(Dir.mktmpdir)
 
     @repo_name = "foo"
-    @repo_url  = "git@localhost:#{repo_dir_path(@repo_name)}"
+    @repo_url  = "#{git_user}@localhost:#{repo_dir_path(@repo_name)}"
 
     create_repo! @repo_name
 

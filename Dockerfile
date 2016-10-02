@@ -108,15 +108,19 @@ EXPOSE 22
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ──────────────────────────────────────────────────────────────── Setup git ──┐
+ARG GIT_PWD="git"
+ENV GIT_USER="git"
+ENV GIT_GROUP="git"
+ENV GIT_REPOS_DIR="/git"
+
 # Install git packages.
 RUN apk add --no-cache                                                         \
     git-daemon                                                                 \
     git
 # Setup a git user and ssh.
-ARG GIT_PWD="git"
-RUN addgroup git                                                               \
+RUN addgroup "${GIT_GROUP}"                                                    \
  && echo -e "${GIT_PWD}\n${GIT_PWD}\n"                                         \
-  | adduser -G git -h /git -s /usr/bin/git-shell git
+  | adduser -G "${GIT_GROUP}" -h "${GIT_REPOS_DIR}" -s /usr/bin/git-shell "${GIT_USER}"
 # Remove the annoying `/etc/motd`.
 RUN rm -rf /etc/update-motd.d /etc/motd /etc/motd.dynamic
 RUN ln -fs /dev/null /run/motd.dynamic

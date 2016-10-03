@@ -112,9 +112,9 @@ protected
     error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
       return {
-        local:  `git rev-parse @`.strip,
-        remote: `git rev-parse @{u}`.strip,
-        base:   `git merge-base @ @{u}`.strip
+        local:  `git rev-parse @`.strip rescue nil,
+        remote: `git rev-parse @{u}`.strip rescue nil,
+        base:   `git merge-base @ @{u}`.strip rescue nil
       }
     end
   end

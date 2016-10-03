@@ -103,6 +103,8 @@ RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa                       \
  && ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa
 # Prepare ssh run directory.
 RUN mkdir -p /var/run/sshd
+# Configure ssh
+RUN echo "StrictHostKeyChecking=no" >> /etc/ssh/ssh_config
 # Expose ssh port.
 EXPOSE 22
 # ─────────────────────────────────────────────────────────────────────────────┘
@@ -117,18 +119,34 @@ ENV GIT_REPOS_DIR="/git"
 RUN apk add --update --no-cache                                                \
     git-daemon                                                                 \
     git
+
 # Setup a git user and ssh.
 RUN addgroup "${GIT_GROUP}"                                                    \
  && echo -e "${GIT_PWD}\n${GIT_PWD}\n"                                         \
   | adduser -G "${GIT_GROUP}" -h "${GIT_REPOS_DIR}" -s /usr/bin/git-shell "${GIT_USER}"
+
 # Remove the annoying `/etc/motd`.
 RUN rm -rf /etc/update-motd.d /etc/motd /etc/motd.dynamic
 RUN ln -fs /dev/null /run/motd.dynamic
+
 # Configure local git client.
 # TODO: Replace with fizzy config (when `--no-ask` is implemented).
 RUN git config --global push.default simple                                    \
  && git config --global user.name  root                                        \
  && git config --global user.email root@localhost.localdomain
+
+# SSH keys for user `root`.
+COPY docker_ssh_key.pub /root/.ssh/authorized_keys
+COPY docker_ssh_key.pub /root/.ssh/id_rsa.pub
+COPY docker_ssh_key     /root/.ssh/id_rsa
+RUN  chmod 700 /root/.ssh
+RUN  chmod 600 /root/.ssh/*
+# SSH keys for user `git`.
+COPY docker_ssh_key.pub "${GIT_REPOS_DIR}/.ssh/authorized_keys"
+COPY docker_ssh_key.pub "${GIT_REPOS_DIR}/.ssh/id_rsa.pub"
+COPY docker_ssh_key     "${GIT_REPOS_DIR}/.ssh/id_rsa"
+RUN  chmod 700 ${GIT_REPOS_DIR}/.ssh
+RUN  chmod 600 ${GIT_REPOS_DIR}/.ssh/*
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ────────────────────────────────────────────────────────────── Setup fizzy ──┐

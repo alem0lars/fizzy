@@ -153,14 +153,18 @@ RUN fizzy cfg s -C ruby -U https:alem0lars/configs-ruby                        \
 ENV APP_DIR="${HOME}/fizzy"
 # ──────────────────────────── (trick to allow caching) Install dependencies ──┤
 WORKDIR /tmp
-ADD ./Gemfile      Gemfile
-ADD ./Gemfile.lock Gemfile.lock
+COPY ./Gemfile      Gemfile
+COPY ./Gemfile.lock Gemfile.lock
 RUN bundle install
 RUN rm ./Gemfile                                                               \
  && rm ./Gemfile.lock
 # ────────────────────────────────────────────────────────────── Add the app ──┤
-ADD .   "$APP_DIR"
+COPY .  "${APP_DIR}"
 WORKDIR "${APP_DIR}"
 RUN bundle install
 RUN bundle exec rake build
 # ─────────────────────────────────────────────────────────────────────────────┘
+
+COPY docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
+RUN chmod +x /usr/local/bin/docker_entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker_entrypoint.sh"]

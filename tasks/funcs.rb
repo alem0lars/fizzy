@@ -1,12 +1,10 @@
-# ──────────────────────────────────────────────────────────────────────────────
-# ☞ Environment variables
+# ───────────────────────────────────────────────────── Environment variables ──
 
 def truthy_env_var?(name)
   ENV[name.to_s] =~ /\A(true|t|yes|y)\z/i
 end
 
-# ──────────────────────────────────────────────────────────────────────────────
-# ☞ Logging
+# ─────────────────────────────────────────────────────────────────── Logging ──
 
 def info(msg, indent: 0, success: false)
   puts(("\t" * indent) + "☞ " + "\e[#{success ? 32 : 34}m#{msg}\e[0m")
@@ -17,8 +15,7 @@ def error(msg)
   exit(-1)
 end
 
-# ──────────────────────────────────────────────────────────────────────────────
-# ☞ `String`s manipulation
+# ───────────────────────────────────────────────────── `String` manipulation ──
 
 def titleize_file_name(file_name)
   file_name.split("/").join(" → ").
@@ -26,8 +23,7 @@ def titleize_file_name(file_name)
             split(/(\s+(?:\S+\s+)?)/).map { |e| e.capitalize }.join
 end
 
-# ──────────────────────────────────────────────────────────────────────────────
-# ☞ `Hash`s manipulation
+# ─────────────────────────────────────────────────────── `Hash` manipulation ──
 
 def deep_merge(first, second)
   merger = proc do |key, v1, v2|

@@ -26,6 +26,7 @@ RUN apk add --update --no-cache                                                \
     libpng-dev                                                                 \
     libpq                                                                      \
     linux-headers                                                              \
+    ncurses                                                                    \
     ncurses-dev                                                                \
     readline-dev                                                               \
     sqlite-dev                                                                 \
@@ -56,12 +57,13 @@ ENV RUBY_MAJOR=2.3                                                             \
 ENV BUNDLER_VERSION 1.12.5
 
 # Install ruby dependencies.
-RUN apk add --no-cache                                                         \
+RUN apk add --update --no-cache                                                \
     bison                                                                      \
     gdbm-dev
 
 # Install ruby.
 RUN set -ex                                                                    \
+ && NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1)                 \
  && curl -fSL -o ruby.tar.gz                                                   \
     "http://cache.ruby-lang.org/pub/ruby/$RUBY_MAJOR/ruby-$RUBY_VERSION.tar.gz"\
  && echo "$RUBY_DOWNLOAD_SHA1 *ruby.tar.gz" | sha1sum -c -                     \
@@ -73,7 +75,7 @@ RUN set -ex                                                                    \
  && mv file.c.new file.c                                                       \
  && autoconf                                                                   \
  && ./configure --disable-install-doc                                          \
- && make -j"$(nproc)"                                                          \
+ && make -j"${NPROC}"                                                          \
  && make install                                                               \
  && gem update --system $RUBYGEMS_VERSION                                      \
  && rm -r /usr/src/ruby
@@ -94,15 +96,13 @@ RUN gem install bundler --version "${BUNDLER_VERSION}"
 
 # ──────────────────────────────────────────────────────────────── Setup ssh ──┐
 # Install ssh daemon.
-RUN apk add --no-cache                                                         \
+RUN apk add --update --no-cache                                                \
     openssh
 # Generate fresh keys.
 RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa                       \
  && ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa
 # Prepare ssh run directory.
 RUN mkdir -p /var/run/sshd
-# Start ssh daemon.
-RUN /usr/sbin/sshd -D &
 # Expose ssh port.
 EXPOSE 22
 # ─────────────────────────────────────────────────────────────────────────────┘
@@ -114,7 +114,7 @@ ENV GIT_GROUP="git"
 ENV GIT_REPOS_DIR="/git"
 
 # Install git packages.
-RUN apk add --no-cache                                                         \
+RUN apk add --update --no-cache                                                \
     git-daemon                                                                 \
     git
 # Setup a git user and ssh.
@@ -127,14 +127,14 @@ RUN ln -fs /dev/null /run/motd.dynamic
 # Configure local git client.
 # TODO: Replace with fizzy config (when `--no-ask` is implemented).
 RUN git config --global push.default simple                                    \
- && git config --global user.name root                                         \
+ && git config --global user.name  root                                        \
  && git config --global user.email root@localhost.localdomain
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ────────────────────────────────────────────────────────────── Setup fizzy ──┐
 # Install fizzy dependencies.
 RUN gem install thor
-RUN apk add --no-cache                                                         \
+RUN apk add --update --no-cache                                                \
     sudo
 # Install fizzy.
 RUN curl -sL                                                                   \
@@ -151,17 +151,16 @@ RUN fizzy cfg s -C ruby -U https:alem0lars/configs-ruby                        \
 
 # ──────────────────────────────────────────────────────────────── Setup app ──┐
 ENV APP_DIR="${HOME}/fizzy"
-# ──────────────────────────── (trick to allow caching) install dependencies ──┤
+# ──────────────────────────── (trick to allow caching) Install dependencies ──┤
 WORKDIR /tmp
 ADD ./Gemfile      Gemfile
 ADD ./Gemfile.lock Gemfile.lock
 RUN bundle install
 RUN rm ./Gemfile                                                               \
  && rm ./Gemfile.lock
-# ────────────────────────────────────────────────────── add & build the app ──┤
-ADD . "$APP_DIR"
+# ────────────────────────────────────────────────────────────── Add the app ──┤
+ADD .   "$APP_DIR"
 WORKDIR "${APP_DIR}"
-# Trigger bundler to use the right location.
 RUN bundle install
-RUN rake build
+RUN bundle exec rake build
 # ─────────────────────────────────────────────────────────────────────────────┘

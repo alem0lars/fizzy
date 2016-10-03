@@ -7,9 +7,5 @@ def docker_build(image_name)
 end
 
 def docker_run(image_name, cmd)
-  cmd = [
-  	"/usr/sbin/sshd -D &",
-  	cmd
-  ]
-  sh "docker run -i -t #{image_name} zsh -c '#{cmd.join(" ")}'"
+  sh "docker run -i -t #{image_name} #{cmd}"
 end

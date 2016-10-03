@@ -111,11 +111,13 @@ protected
   def info
     error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
-      return {
-        local:  `git rev-parse @`.strip rescue nil,
-        remote: `git rev-parse @{u}`.strip rescue nil,
-        base:   `git merge-base @ @{u}`.strip rescue nil
-      }
+      local = `git rev-parse @ 2>&1`.strip
+      local = nil unless $?.success?
+      remote = `git rev-parse @{u} 2>&1`.strip
+      remote = nil unless $?.success?
+      base = `git merge-base @ @{u} 2>&1`.strip
+      base = nil unless $?.success?
+      return { local: local, remote: remote, base: base }
     end
   end
 

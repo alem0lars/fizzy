@@ -212,7 +212,7 @@ protected
     error("Invalid url: can't be empty.") if @remote_normalized_url.nil?
 
     parent_dir = @local_dir_path.dirname
-    name = @local_dir_path.basename
+    name       = @local_dir_path.basename
 
     cmd  = ["git", "clone"]
     cmd << "--recursive" if recursive

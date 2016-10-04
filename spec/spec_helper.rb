@@ -72,11 +72,13 @@ RSpec.configure do |config|
   if config.files_to_run.one?
     # Use the documentation formatter for detailed output, unless a formatter
     # has already been configured (e.g. via a command-line flag).
-    config.default_formatter = "doc"
+    config.add_formatter "doc"
   else
     # Default formatter prints just a overview of specs status.
-    config.default_formatter = "Fuubar"
+    config.add_formatter "Fuubar"
   end
+
+  config.add_formatter "html", "website/source/docs/test_results.html"
 
   # rspec-mocks config goes here. You can use an alternate test double
   # library (such as bogus or mocha) by changing the `mock_with` option here.

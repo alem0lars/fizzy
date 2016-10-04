@@ -37,6 +37,12 @@
 - Preprocess source files (using ERB) in build stage.
 - Add fizzy command: `version` to show fizzy version
   and environment information, like ruby version.
+- Refactor project structure
+- Collapse `gh-pages*` branches into master
+- Migrate from minitest to cucumber + rspec
+- Integrate YARD API docs with fizzy website
+- Integrate coverage docs with fizzy website
+
 
 ## Current and previous versions
 

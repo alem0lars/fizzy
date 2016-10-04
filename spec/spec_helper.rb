@@ -2,25 +2,32 @@ require "bundler/setup" # For `Bundler.with_clean_env`.
 
 Bundler.require(:default, :development)
 
-# Require fizzy.
-build_dir_path = Pathname.new(__FILE__).expand_path.dirname.dirname.join("build")
-$LOAD_PATH.unshift build_dir_path.to_s
-require "fizzy"
+root_dir_path = Pathname.new(__FILE__).expand_path.dirname.dirname
+spec_dir_path = root_dir_path.join("spec")
+build_dir_path = root_dir_path.join("build")
+src_dir_path = root_dir_path.join("src")
+website_dir_path = root_dir_path.join("website")
 
-# Require specs support.
-spec_dir_path = Pathname.new(__FILE__).expand_path.dirname
 $LOAD_PATH.unshift spec_dir_path.to_s
-Dir[spec_dir_path.join("support", "**", "*.rb").to_s].each { |f| require f }
+$LOAD_PATH.unshift build_dir_path.to_s
 
 # Measure code coverage.
-SimpleCov.minimum_coverage 100
-SimpleCov.coverage_dir "website/source/docs/coverage"
-SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
-    SimpleCov::Formatter::HTMLFormatter
-)
-SimpleCov.start do
-  add_group "Commands", ["src/commands"]
+SimpleCov.profiles.define "fizzy" do
+  root build_dir_path.to_s
+  coverage_dir website_dir_path.join("source", "docs", "coverage")
+
+  formatters = [SimpleCov::Formatter::HTMLFormatter]
+
+  # TODO: Uncomment when code is starting to be documented
+  # minimum_coverage 100
 end
+SimpleCov.start "fizzy"
+
+# Require specs support.
+Dir[spec_dir_path.join("support", "**", "*.rb").to_s].each { |f| require f }
+
+# Require fizzy.
+require "fizzy"
 
 RSpec.configure do |config|
 
@@ -45,16 +52,6 @@ RSpec.configure do |config|
   # particularly slow.
   config.profile_examples = 8
 
-  # Many RSpec users commonly either run the entire suite or an individual
-  # file, and it's useful to allow more verbose output when running an
-  # individual spec file.
-  if config.files_to_run.one?
-    # Use the documentation formatter for detailed output,
-    # unless a formatter has already been configured
-    # (e.g. via a command-line flag).
-    config.default_formatter = "doc"
-  end
-
   # Allows RSpec to persist some state between runs in order to support
   # the `--only-failures` and `--next-failure` CLI options. We recommend
   # you configure your source control system to ignore this file.
@@ -67,9 +64,19 @@ RSpec.configure do |config|
   # metadata: `fit`, `fdescribe` and `fcontext`, respectively.
   config.filter_run_when_matching :focus
 
-  # config.color = true
+  config.color = true
 
-  # config.formatter = "Fuubar"
+  # Many RSpec users commonly either run the entire suite or an individual
+  # file, and it's useful to allow more verbose output when running an
+  # individual spec file.
+  if config.files_to_run.one?
+    # Use the documentation formatter for detailed output, unless a formatter
+    # has already been configured (e.g. via a command-line flag).
+    config.default_formatter = "doc"
+  else
+    # Default formatter prints just a overview of specs status.
+    config.default_formatter = "Fuubar"
+  end
 
   # rspec-mocks config goes here. You can use an alternate test double
   # library (such as bogus or mocha) by changing the `mock_with` option here.

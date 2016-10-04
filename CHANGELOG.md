@@ -41,7 +41,8 @@
 - Collapse `gh-pages*` branches into master
 - Migrate from minitest to cucumber + rspec
 - Integrate YARD API docs with fizzy website
-- Integrate coverage docs with fizzy website
+- Integrate test results with fizzy website
+- Integrate coverage results with fizzy website
 
 
 ## Current and previous versions

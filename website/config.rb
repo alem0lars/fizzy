@@ -3,9 +3,9 @@ set :build_dir, "../docs"
 # Per-page layout changes:
 #
 # With no layout
-page '/*.xml', layout: false
-page '/*.json', layout: false
-page '/*.txt', layout: false
+page "/*.xml", layout: false
+page "/*.json", layout: false
+page "/*.txt", layout: false
 
 # Reload the browser automatically whenever files change
 configure :development do

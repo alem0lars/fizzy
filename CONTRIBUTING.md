@@ -57,6 +57,22 @@ There are some simple rules to keep in mind when you want to open a new issue:
       When an issue is in that stage, any kind of intellectual contribution is appreciated, in particular
       personal opinions, vision, point-of-views.
 
+## Changelog entry format
+
+Here are a few examples:
+
+```
+* [#716](https://github.com/bbatsov/rubocop/issues/716): Fixed a regression in the auto-correction logic of `MethodDefParentheses`. ([@bbatsov][])
+* New cop `ElseLayout` checks for odd arrangement of code in the `else` branch of a conditional expression. ([@bbatsov][])
+```
+
+* Mark it up in [Markdown syntax][6].
+* The entry line should start with `* ` (an asterisk and a space).
+* If the change has a related GitHub issue (e.g. a bug fix for a reported issue), put a link to the issue as `[#123](https://github.com/bbatsov/rubocop/issues/123): `.
+* Describe the brief of the change. The sentence should end with a punctuation.
+* At the end of the entry, add an implicit link to your GitHub user page as `([@username][])`.
+* If this is your first contribution to RuboCop project, add a link definition for the implicit link to the bottom of the changelog as `[@username]: https://github.com/username`.
+
 ----
 
 **Thank you for your contribution!**
@@ -72,3 +88,5 @@ There are some simple rules to keep in mind when you want to open a new issue:
 [houndci]: https://houndci.com
 
 [good_commit_message]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
+
+[markdown_syntax]: http://daringfireball.net/projects/markdown/syntax

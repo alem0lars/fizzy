@@ -1,5 +1,8 @@
 Fizzy::CFG = OpenStruct.new
 
+# Fizzy version.
+Fizzy::CFG.version = "<%= build_cfg[:version] %>"
+
 # URL for reporting fizzy issues.
 Fizzy::CFG.issues_url = "https://github.com/alem0lars/fizzy/issues"
 

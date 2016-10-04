@@ -6,7 +6,6 @@ The hassle free configuration manager
 [![Bountysource][bountysource_image]][bountysource_link]
 [![Gitbook status][gitbook_status_image]][gitbook_status_link]
 [![Build Status][travis_status_image]][travis_status_link]
-[![CodeCov][codecov_image]][codecov_link]
 
 ## Usage
 

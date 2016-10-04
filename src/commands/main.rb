@@ -1,13 +1,13 @@
 class Fizzy::MainCommand < Fizzy::BaseCommand
 
-  desc("cfg SUBCOMMAND ...ARGS", "Manage the Fizzy configuration " +
+  desc("cfg SUBCOMMAND ...ARGS", "Manage the fizzy configuration " +
                                  "(without modifying the host system).")
   subcommand("cfg", Fizzy::CfgCommand)
 
   desc("inst SUBCOMMAND ...ARGS", "Manage a configuration instance")
   subcommand("inst", Fizzy::InstCommand)
 
-  desc("usage", "Show how to use Fizzy.")
+  desc("usage", "Show how to use fizzy.")
   def usage
     url = URI.join(Fizzy::CFG.static_files_base_url, "README.md")
     res = Net::HTTP.get_response(url)
@@ -16,6 +16,12 @@ class Fizzy::MainCommand < Fizzy::BaseCommand
     else
       error("Network error: cannot retrieve `#{url}`.")
     end
+  end
+
+  desc("version", "Show fizzy version.")
+  def version
+    info "fizzy version", Fizzy::CFG.version
+    info "ruby version", "ruby #{RUBY_VERSION}p#{RUBY_PATCHLEVEL}"
   end
 
   method_option(*shared_option(:verbose))

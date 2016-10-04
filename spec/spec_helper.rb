@@ -78,7 +78,7 @@ RSpec.configure do |config|
     config.add_formatter "Fuubar"
   end
 
-  config.add_formatter "html", "website/source/docs/test_results.html"
+  config.add_formatter "html", "website/source/docs/test-results.html"
 
   # rspec-mocks config goes here. You can use an alternate test double
   # library (such as bogus or mocha) by changing the `mock_with` option here.

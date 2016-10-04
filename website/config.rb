@@ -25,7 +25,7 @@ activate :sprockets do |c|
   c.expose_middleman_helpers = true
   c.supported_output_extensions << ".es6"
 end
-sprockets.append_path File.join "#{root}", "bower_components"
+sprockets.append_path File.join root, "bower_components"
 
 # Development-specific configuration.
 configure :development do

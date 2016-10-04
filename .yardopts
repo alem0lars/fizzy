@@ -1,10 +1,13 @@
 --markup-provider kramdown
 --markup markdown
 --main README.md
+--protected
+--output-dir "website/source/docs/api"
+--title "fizzy API documentation"
 
 src/**/*.rb
 -
-LICENSE
+LICENSE.md
 CHANGELOG.md
 CONTRIBUTING.md
 STYLE_GUIDE.md

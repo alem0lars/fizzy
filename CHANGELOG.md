@@ -33,6 +33,10 @@
 - Add `must`, used for implementing pre-conditions / post-conditions
 - Add `Fizzy::Caller` class, used to retrieve information about the
   caller.
+- Split rake tasks in `tasks` directory.
+- Preprocess source files (using ERB) in build stage.
+- Add fizzy command: `version` to show fizzy version
+  and environment information, like ruby version.
 
 ## Current and previous versions
 

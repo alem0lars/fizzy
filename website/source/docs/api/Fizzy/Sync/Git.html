@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: Fizzy::Sync::Git
+  
+    &mdash; fizzy API documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "Fizzy::Sync::Git";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (G)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../Fizzy.html" title="Fizzy (module)">Fizzy</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Sync.html" title="Fizzy::Sync (module)">Sync</a></span></span>
+     &raquo; 
+    <span class="title">Git</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <iframe id="search_frame" src="../../class_list.html"></iframe>
+
+      <div id="content"><h1>Class: Fizzy::Sync::Git
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="Base.html" title="Fizzy::Sync::Base (class)">Base</a></span></span>
+      
+        <ul class="fullTree">
+          <li><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></li>
+          
+            <li class="next"><span class='object_link'><a href="Base.html" title="Fizzy::Sync::Base (class)">Base</a></span></li>
+          
+            <li class="next">Fizzy::Sync::Git</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  <dl>
+      <dt>Includes:</dt>
+      <dd><span class='object_link'><a href="../Execution.html" title="Fizzy::Execution (module)">Execution</a></span>, <span class='object_link'><a href="../Filesystem.html" title="Fizzy::Filesystem (module)">Filesystem</a></span>, <span class='object_link'><a href="../IO.html" title="Fizzy::IO (module)">IO</a></span></dd>
+  </dl>
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>src/core/sync/git.rb</dd>
+  </dl>
+  
+</div>
+
+
+
+
+
+
+
+  <h2>Instance Attribute Summary</h2>
+  
+  <h3 class="inherited">Attributes inherited from <span class='object_link'><a href="Base.html" title="Fizzy::Sync::Base (class)">Base</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Base.html#name-instance_method" title="Fizzy::Sync::Base#name (method)">#name</a></span></p>
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#branches-instance_method" title="#branches (instance method)">#<strong>branches</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Get the list of the available git branches.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#enabled%3F-instance_method" title="#enabled? (instance method)">#<strong>enabled?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Check if the synchronizer is enabled.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#info-instance_method" title="#info (instance method)">#<strong>info</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Get a <code>Hash</code> containing information about the local and remote repository.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(local_dir_path, remote_url)  &#x21d2; Git </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Git.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#local_changed%3F-instance_method" title="#local_changed? (instance method)">#<strong>local_changed?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Check if local is changed, and now is different from latest remote state.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#local_valid_repo%3F-instance_method" title="#local_valid_repo? (instance method)">#<strong>local_valid_repo?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Check if the local directory holds a valid git repository.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#normalize_url-instance_method" title="#normalize_url (instance method)">#<strong>normalize_url</strong>(url, default_protocol: :ssh)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Normalize the remote git URL.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#perform_add-instance_method" title="#perform_add (instance method)">#<strong>perform_add</strong>(files: nil, interactive: false)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Add the changes from the Working Tree to the stage.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#perform_clone-instance_method" title="#perform_clone (instance method)">#<strong>perform_clone</strong>(recursive: true)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#perform_commit-instance_method" title="#perform_commit (instance method)">#<strong>perform_commit</strong>(message: nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Commit the changes in the Working Tree.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#perform_fetch-instance_method" title="#perform_fetch (instance method)">#<strong>perform_fetch</strong>(remote: nil, branch: nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#perform_pull-instance_method" title="#perform_pull (instance method)">#<strong>perform_pull</strong>(remote: nil, branch: nil, with_submodules: true)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Pull from the provided <code>remote</code> in the provided <code>branch</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#perform_push-instance_method" title="#perform_push (instance method)">#<strong>perform_push</strong>(remote: nil, branch: nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Push to the provided <code>remote</code> in the provided <code>branch</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#remote_changed%3F-instance_method" title="#remote_changed? (instance method)">#<strong>remote_changed?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Check if remote is changed, and now is different from latest local state.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#remotes-instance_method" title="#remotes (instance method)">#<strong>remotes</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Get the list of the available remote git repositories.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#should_pull%3F-instance_method" title="#should_pull? (instance method)">#<strong>should_pull?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Check if a <code>pull</code> operation is needed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#should_push%3F-instance_method" title="#should_push? (instance method)">#<strong>should_push?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Check if a <code>push</code> operation is needed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#update_local-instance_method" title="#update_local (instance method)">#<strong>update_local</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Update local from remote.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#update_remote-instance_method" title="#update_remote (instance method)">#<strong>update_remote</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Update remote from local.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#working_tree_changes-instance_method" title="#working_tree_changes (instance method)">#<strong>working_tree_changes</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Get the Working Tree (local) changes.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#working_tree_changes%3F-instance_method" title="#working_tree_changes? (instance method)">#<strong>working_tree_changes?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Check if there are some changes in the Working Tree.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="../Filesystem.html" title="Fizzy::Filesystem (module)">Filesystem</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Filesystem.html#existing_dir-instance_method" title="Fizzy::Filesystem#existing_dir (method)">#existing_dir</a></span>, <span class='object_link'><a href="../Filesystem.html#find_yaml_path-instance_method" title="Fizzy::Filesystem#find_yaml_path (method)">#find_yaml_path</a></span>, <span class='object_link'><a href="../Filesystem.html#prepare_storage-instance_method" title="Fizzy::Filesystem#prepare_storage (method)">#prepare_storage</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="../Execution.html" title="Fizzy::Execution (module)">Execution</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Execution.html#exec_cmd-instance_method" title="Fizzy::Execution#exec_cmd (method)">#exec_cmd</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="../IO.html" title="Fizzy::IO (module)">IO</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../IO.html#colorize-instance_method" title="Fizzy::IO#colorize (method)">#colorize</a></span>, <span class='object_link'><a href="../IO.html#debug-instance_method" title="Fizzy::IO#debug (method)">#debug</a></span>, <span class='object_link'><a href="../IO.html#error-instance_method" title="Fizzy::IO#error (method)">#error</a></span>, <span class='object_link'><a href="../IO.html#quiz-instance_method" title="Fizzy::IO#quiz (method)">#quiz</a></span>, <span class='object_link'><a href="../IO.html#shell-instance_method" title="Fizzy::IO#shell (method)">#shell</a></span>, <span class='object_link'><a href="../IO.html#tell-instance_method" title="Fizzy::IO#tell (method)">#tell</a></span>, <span class='object_link'><a href="../IO.html#warning-instance_method" title="Fizzy::IO#warning (method)">#warning</a></span>, <span class='object_link'><a href="../IO.html#%E2%9C%94-instance_method" title="Fizzy::IO#✔ (method)">#✔</a></span>, <span class='object_link'><a href="../IO.html#%E2%9C%98-instance_method" title="Fizzy::IO#✘ (method)">#✘</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="Base.html" title="Fizzy::Sync::Base (class)">Base</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Base.html#default%3F-instance_method" title="Fizzy::Sync::Base#default? (method)">#default?</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(local_dir_path, remote_url)  &#x21d2; <tt><span class='object_link'><a href="" title="Fizzy::Sync::Git (class)">Git</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Git</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+7
+8
+9
+10</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 7</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_local_dir_path'>local_dir_path</span><span class='comma'>,</span> <span class='id identifier rubyid_remote_url'>remote_url</span><span class='rparen'>)</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='symbol'>:git</span><span class='comma'>,</span> <span class='id identifier rubyid_local_dir_path'>local_dir_path</span><span class='comma'>,</span> <span class='id identifier rubyid_remote_url'>remote_url</span><span class='rparen'>)</span>
+  <span class='ivar'>@remote_normalized_url</span> <span class='op'>=</span> <span class='id identifier rubyid_normalize_url'>normalize_url</span><span class='lparen'>(</span><span class='ivar'>@remote_url</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="branches-instance_method">
+  
+    #<strong>branches</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Get the list of the available git branches.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+147
+148
+149
+150
+151
+152</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 147</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_branches'>branches</span>
+  <span class='id identifier rubyid_error'>error</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid local repo: `</span><span class='embexpr_beg'>#{</span><span class='ivar'>@local_dir_path</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span>
+  <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_cd'>cd</span><span class='lparen'>(</span><span class='ivar'>@local_dir_path</span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='kw'>return</span> <span class='backtick'>`</span><span class='tstring_content'>git branch</span><span class='tstring_end'>`</span></span><span class='period'>.</span><span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\W+</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:empty?</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="enabled?-instance_method">
+  
+    #<strong>enabled?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Check if the synchronizer is enabled.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+14
+15
+16
+17
+18</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 14</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_enabled?'>enabled?</span>
+  <span class='lparen'>(</span> <span class='kw'>super</span> <span class='op'>||</span>
+    <span class='op'>!</span><span class='ivar'>@remote_url</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@remote_url</span><span class='period'>.</span><span class='id identifier rubyid_start_with?'>start_with?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@name</span><span class='embexpr_end'>}</span><span class='tstring_content'>:</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='op'>||</span>
+    <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="info-instance_method">
+  
+    #<strong>info</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Get a <code>Hash</code> containing information about the local and remote repository.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 111</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_info'>info</span>
+  <span class='id identifier rubyid_error'>error</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid local repo: `</span><span class='embexpr_beg'>#{</span><span class='ivar'>@local_dir_path</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span>
+  <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_cd'>cd</span><span class='lparen'>(</span><span class='ivar'>@local_dir_path</span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_local'>local</span> <span class='op'>=</span> <span class='backtick'>`</span><span class='tstring_content'>git rev-parse @ 2&gt; /dev/null</span><span class='tstring_end'>`</span></span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span>
+    <span class='id identifier rubyid_local'>local</span> <span class='op'>=</span> <span class='kw'>nil</span> <span class='kw'>unless</span> <span class='gvar'>$?</span><span class='period'>.</span><span class='id identifier rubyid_success?'>success?</span>
+    <span class='id identifier rubyid_remote'>remote</span> <span class='op'>=</span> <span class='backtick'>`</span><span class='tstring_content'>git rev-parse @{u} 2&gt; /dev/null</span><span class='tstring_end'>`</span></span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span>
+    <span class='id identifier rubyid_remote'>remote</span> <span class='op'>=</span> <span class='kw'>nil</span> <span class='kw'>unless</span> <span class='gvar'>$?</span><span class='period'>.</span><span class='id identifier rubyid_success?'>success?</span>
+    <span class='id identifier rubyid_base'>base</span> <span class='op'>=</span> <span class='backtick'>`</span><span class='tstring_content'>git merge-base @ @{u} 2&gt; /dev/null</span><span class='tstring_end'>`</span></span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span>
+    <span class='id identifier rubyid_base'>base</span> <span class='op'>=</span> <span class='kw'>nil</span> <span class='kw'>unless</span> <span class='gvar'>$?</span><span class='period'>.</span><span class='id identifier rubyid_success?'>success?</span>
+    <span class='kw'>return</span> <span class='lbrace'>{</span> <span class='label'>local:</span> <span class='id identifier rubyid_local'>local</span><span class='comma'>,</span> <span class='label'>remote:</span> <span class='id identifier rubyid_remote'>remote</span><span class='comma'>,</span> <span class='label'>base:</span> <span class='id identifier rubyid_base'>base</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="local_changed?-instance_method">
+  
+    #<strong>local_changed?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Check if local is changed, and now is different from latest remote state.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+44
+45
+46
+47
+48
+49
+50</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 44</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_local_changed?'>local_changed?</span>
+  <span class='id identifier rubyid_tell'>tell</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Checking if local repository is changed</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:blue</span>
+  <span class='kw'>return</span> <span class='kw'>false</span> <span class='kw'>unless</span> <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span>
+  <span class='kw'>return</span> <span class='kw'>true</span>  <span class='kw'>if</span>     <span class='id identifier rubyid_working_tree_changes?'>working_tree_changes?</span>
+  <span class='kw'>return</span> <span class='kw'>true</span>  <span class='kw'>if</span>     <span class='id identifier rubyid_perform_fetch'>perform_fetch</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_should_push?'>should_push?</span>
+  <span class='kw'>false</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="local_valid_repo?-instance_method">
+  
+    #<strong>local_valid_repo?</strong>  &#x21d2; <tt>Boolean</tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Check if the local directory holds a valid git repository.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+90
+91
+92</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 90</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span>
+  <span class='ivar'>@local_dir_path</span><span class='period'>.</span><span class='id identifier rubyid_directory?'>directory?</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@local_dir_path</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>.git</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_directory?'>directory?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="normalize_url-instance_method">
+  
+    #<strong>normalize_url</strong>(url, default_protocol: :ssh)  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Normalize the remote git URL.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 65</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_normalize_url'>normalize_url</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span> <span class='label'>default_protocol:</span> <span class='symbol'>:ssh</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>if</span> <span class='id identifier rubyid_url'>url</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+  <span class='id identifier rubyid_protocols'>protocols</span> <span class='op'>=</span> <span class='qsymbols_beg'>%i(</span><span class='tstring_content'>https</span><span class='words_sep'> </span><span class='tstring_content'>ssh</span><span class='words_sep'>)</span>
+  <span class='id identifier rubyid_url'>url</span> <span class='op'>=</span> <span class='id identifier rubyid_url'>url</span><span class='period'>.</span><span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^</span><span class='embexpr_beg'>#{</span><span class='ivar'>@name</span><span class='embexpr_end'>}</span><span class='tstring_content'>:</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='comment'># Remove VCS name prefix (optional).
+</span>  <span class='id identifier rubyid_regexp'>regexp</span> <span class='op'>=</span> <span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>
+    ^
+    (?&lt;protocol&gt;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_protocols'>protocols</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_p'>p</span><span class='op'>|</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_p'>p</span><span class='embexpr_end'>}</span><span class='tstring_content'>:</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>|</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'>)?
+    (?&lt;username&gt;[a-z0-9\-_]+)
+    \/
+    (?&lt;repository&gt;[a-z0-9\-_]+)
+    $
+  </span><span class='regexp_end'>}xi</span></span>
+  <span class='id identifier rubyid_md'>md</span> <span class='op'>=</span> <span class='id identifier rubyid_url'>url</span><span class='period'>.</span><span class='id identifier rubyid_match'>match</span><span class='lparen'>(</span><span class='id identifier rubyid_regexp'>regexp</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_url'>url</span> <span class='kw'>unless</span> <span class='id identifier rubyid_md'>md</span>
+  <span class='id identifier rubyid_protocol'>protocol</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_md'>md</span><span class='lbracket'>[</span><span class='symbol'>:protocol</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>:$</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_default_protocol'>default_protocol</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_protocol'>protocol</span>
+    <span class='kw'>when</span> <span class='symbol'>:ssh</span>   <span class='kw'>then</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>git@github.com:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_md'>md</span><span class='lbracket'>[</span><span class='symbol'>:username</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_content'>/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_md'>md</span><span class='lbracket'>[</span><span class='symbol'>:repository</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>when</span> <span class='symbol'>:https</span> <span class='kw'>then</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>https://github.com/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_md'>md</span><span class='lbracket'>[</span><span class='symbol'>:username</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_content'>/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_md'>md</span><span class='lbracket'>[</span><span class='symbol'>:repository</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>else</span>        <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid protocol for `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_url'>url</span><span class='embexpr_end'>}</span><span class='tstring_content'>`: `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_protocol'>protocol</span><span class='embexpr_end'>}</span><span class='tstring_content'>` not in </span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+                      <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>`[</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_protocols'>protocols</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>, </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'>]`.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="perform_add-instance_method">
+  
+    #<strong>perform_add</strong>(files: nil, interactive: false)  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Add the changes from the Working Tree to the stage.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 156</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_perform_add'>perform_add</span><span class='lparen'>(</span><span class='label'>files:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>interactive:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_error'>error</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid files `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_files'>files</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_files'>files</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>||</span> <span class='id identifier rubyid_files'>files</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_cmd'>cmd</span>  <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>git</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>add</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>-i</span><span class='tstring_end'>&quot;</span></span>  <span class='kw'>if</span>     <span class='id identifier rubyid_interactive'>interactive</span>
+  <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>-A</span><span class='tstring_end'>&quot;</span></span>  <span class='kw'>if</span>     <span class='id identifier rubyid_files'>files</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+  <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_files'>files</span> <span class='kw'>unless</span> <span class='id identifier rubyid_files'>files</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+  <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid local repo: `</span><span class='embexpr_beg'>#{</span><span class='ivar'>@local_dir_path</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span>
+  <span class='id identifier rubyid_exec_cmd'>exec_cmd</span><span class='lparen'>(</span><span class='id identifier rubyid_cmd'>cmd</span><span class='comma'>,</span> <span class='label'>as_su:</span> <span class='op'>!</span><span class='id identifier rubyid_existing_dir'>existing_dir</span><span class='lparen'>(</span><span class='ivar'>@local_dir_path</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='label'>chdir:</span> <span class='ivar'>@local_dir_path</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="perform_clone-instance_method">
+  
+    #<strong>perform_clone</strong>(recursive: true)  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 212</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_perform_clone'>perform_clone</span><span class='lparen'>(</span><span class='label'>recursive:</span> <span class='kw'>true</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Syncing from remote repository: `</span><span class='embexpr_beg'>#{</span><span class='ivar'>@remote_normalized_url</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:blue</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid url: can&#39;t be empty.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='ivar'>@remote_normalized_url</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+  <span class='id identifier rubyid_parent_dir'>parent_dir</span> <span class='op'>=</span> <span class='ivar'>@local_dir_path</span><span class='period'>.</span><span class='id identifier rubyid_dirname'>dirname</span>
+  <span class='id identifier rubyid_name'>name</span>       <span class='op'>=</span> <span class='ivar'>@local_dir_path</span><span class='period'>.</span><span class='id identifier rubyid_basename'>basename</span>
+
+  <span class='id identifier rubyid_cmd'>cmd</span>  <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>git</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>clone</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>--recursive</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_recursive'>recursive</span>
+  <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>&lt;&lt;</span> <span class='ivar'>@remote_normalized_url</span><span class='period'>.</span><span class='id identifier rubyid_shell_escape'>shell_escape</span>
+  <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_shell_escape'>shell_escape</span>
+
+  <span class='id identifier rubyid_exec_cmd'>exec_cmd</span><span class='lparen'>(</span><span class='id identifier rubyid_cmd'>cmd</span><span class='comma'>,</span> <span class='label'>as_su:</span> <span class='op'>!</span><span class='id identifier rubyid_existing_dir'>existing_dir</span><span class='lparen'>(</span><span class='id identifier rubyid_parent_dir'>parent_dir</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='label'>chdir:</span> <span class='id identifier rubyid_parent_dir'>parent_dir</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="perform_commit-instance_method">
+  
+    #<strong>perform_commit</strong>(message: nil)  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Commit the changes in the Working Tree.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 170</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_perform_commit'>perform_commit</span><span class='lparen'>(</span><span class='label'>message:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_status'>status</span> <span class='op'>=</span> <span class='kw'>true</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_working_tree_changes?'>working_tree_changes?</span>
+    <span class='id identifier rubyid_tell'>tell</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>The configuration has the following local changes:\n</span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+         <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_colorize'>colorize</span><span class='lparen'>(</span><span class='id identifier rubyid_working_tree_changes'>working_tree_changes</span><span class='comma'>,</span> <span class='symbol'>:white</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:cyan</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_quiz'>quiz</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Do you want to commit them all</span><span class='tstring_end'>&quot;</span></span>
+      <span class='id identifier rubyid_status'>status</span> <span class='op'>&amp;&amp;=</span> <span class='id identifier rubyid_perform_add'>perform_add</span> <span class='comment'># Add from Working Tree to stage.
+</span>      <span class='kw'>if</span> <span class='id identifier rubyid_status'>status</span>
+        <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Performing commit</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:blue</span><span class='rparen'>)</span>
+
+        <span class='id identifier rubyid_message'>message</span> <span class='op'>||=</span> <span class='id identifier rubyid_quiz'>quiz</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Type the commit message</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>type:</span> <span class='symbol'>:string</span><span class='rparen'>)</span>
+
+        <span class='id identifier rubyid_cmd'>cmd</span>  <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>git</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>commit</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>-a</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+        <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>--allow-empty-message</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span>     <span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+        <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>+=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>-m</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_message'>message</span><span class='rbracket'>]</span>         <span class='kw'>unless</span> <span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+        <span class='id identifier rubyid_error'>error</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid local repo: `</span><span class='embexpr_beg'>#{</span><span class='ivar'>@local_dir_path</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span>
+        <span class='id identifier rubyid_status'>status</span> <span class='op'>&amp;&amp;=</span> <span class='id identifier rubyid_exec_cmd'>exec_cmd</span><span class='lparen'>(</span><span class='id identifier rubyid_cmd'>cmd</span><span class='comma'>,</span>
+                            <span class='label'>as_su:</span> <span class='op'>!</span><span class='id identifier rubyid_existing_dir'>existing_dir</span><span class='lparen'>(</span><span class='ivar'>@local_dir_path</span><span class='rparen'>)</span><span class='comma'>,</span>
+                            <span class='label'>chdir:</span> <span class='ivar'>@local_dir_path</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_status'>status</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="perform_fetch-instance_method">
+  
+    #<strong>perform_fetch</strong>(remote: nil, branch: nil)  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 198</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_perform_fetch'>perform_fetch</span><span class='lparen'>(</span><span class='label'>remote:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>branch:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid remote `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_remote'>remote</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_remote'>remote</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_remotes'>remotes</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_remote'>remote</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid branch `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_branch'>branch</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_branch'>branch</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_branches'>branches</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_branch'>branch</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Fetching information from remote</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:blue</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_cmd'>cmd</span>  <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>git</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>fetch</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_remote'>remote</span><span class='period'>.</span><span class='id identifier rubyid_shell_escape'>shell_escape</span> <span class='kw'>unless</span> <span class='id identifier rubyid_remote'>remote</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+  <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_branch'>branch</span><span class='period'>.</span><span class='id identifier rubyid_shell_escape'>shell_escape</span> <span class='kw'>unless</span> <span class='id identifier rubyid_branch'>branch</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+  <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid local repo: `</span><span class='embexpr_beg'>#{</span><span class='ivar'>@local_dir_path</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span>
+  <span class='id identifier rubyid_exec_cmd'>exec_cmd</span><span class='lparen'>(</span><span class='id identifier rubyid_cmd'>cmd</span><span class='comma'>,</span> <span class='label'>as_su:</span> <span class='op'>!</span><span class='id identifier rubyid_existing_dir'>existing_dir</span><span class='lparen'>(</span><span class='ivar'>@local_dir_path</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='label'>chdir:</span> <span class='ivar'>@local_dir_path</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="perform_pull-instance_method">
+  
+    #<strong>perform_pull</strong>(remote: nil, branch: nil, with_submodules: true)  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Pull from the provided <code>remote</code> in the provided <code>branch</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 229</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_perform_pull'>perform_pull</span><span class='lparen'>(</span><span class='label'>remote:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>branch:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>with_submodules:</span> <span class='kw'>true</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid remote `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_remote'>remote</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_remote'>remote</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_remotes'>remotes</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_remote'>remote</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid branch `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_branch'>branch</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_branch'>branch</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_branches'>branches</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_branch'>branch</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_status'>status</span> <span class='op'>=</span> <span class='kw'>true</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_should_pull?'>should_pull?</span>
+    <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Performing pull</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:blue</span><span class='rparen'>)</span>
+
+    <span class='id identifier rubyid_cmd'>cmd</span>  <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>git</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>pull</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_remote'>remote</span><span class='period'>.</span><span class='id identifier rubyid_shell_escape'>shell_escape</span> <span class='kw'>unless</span> <span class='id identifier rubyid_remote'>remote</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_branch'>branch</span><span class='period'>.</span><span class='id identifier rubyid_shell_escape'>shell_escape</span> <span class='kw'>unless</span> <span class='id identifier rubyid_branch'>branch</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+    <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid local repo: `</span><span class='embexpr_beg'>#{</span><span class='ivar'>@local_dir_path</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span>
+    <span class='id identifier rubyid_status'>status</span> <span class='op'>=</span> <span class='id identifier rubyid_exec_cmd'>exec_cmd</span><span class='lparen'>(</span><span class='id identifier rubyid_cmd'>cmd</span><span class='comma'>,</span>
+                      <span class='label'>as_su:</span> <span class='op'>!</span><span class='id identifier rubyid_existing_dir'>existing_dir</span><span class='lparen'>(</span><span class='ivar'>@local_dir_path</span><span class='rparen'>)</span><span class='comma'>,</span>
+                      <span class='label'>chdir:</span> <span class='ivar'>@local_dir_path</span><span class='rparen'>)</span>
+
+    <span class='kw'>if</span> <span class='id identifier rubyid_with_submodules'>with_submodules</span>
+      <span class='id identifier rubyid_status'>status</span> <span class='op'>&amp;&amp;=</span> <span class='id identifier rubyid_exec_cmd'>exec_cmd</span><span class='lparen'>(</span><span class='qwords_beg'>%w(</span><span class='tstring_content'>git</span><span class='words_sep'> </span><span class='tstring_content'>submodule</span><span class='words_sep'> </span><span class='tstring_content'>update</span><span class='words_sep'> </span><span class='tstring_content'>--recursive</span><span class='words_sep'>)</span><span class='comma'>,</span>
+                          <span class='label'>as_su:</span> <span class='op'>!</span><span class='id identifier rubyid_existing_dir'>existing_dir</span><span class='lparen'>(</span><span class='ivar'>@local_dir_path</span><span class='rparen'>)</span><span class='comma'>,</span>
+                          <span class='label'>chdir:</span> <span class='ivar'>@local_dir_path</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_status'>status</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="perform_push-instance_method">
+  
+    #<strong>perform_push</strong>(remote: nil, branch: nil)  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Push to the provided <code>remote</code> in the provided <code>branch</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 259</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_perform_push'>perform_push</span><span class='lparen'>(</span><span class='label'>remote:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>branch:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid remote `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_remote'>remote</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_remote'>remote</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_remotes'>remotes</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_remote'>remote</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid branch `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_branch'>branch</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_branch'>branch</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_branches'>branches</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_branch'>branch</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_status'>status</span> <span class='op'>=</span> <span class='kw'>true</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_should_push?'>should_push?</span>
+    <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Pushing to remote</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:blue</span><span class='rparen'>)</span>
+
+    <span class='id identifier rubyid_cmd'>cmd</span>  <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>git</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>push</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_remote'>remote</span><span class='period'>.</span><span class='id identifier rubyid_shell_escape'>shell_escape</span> <span class='kw'>unless</span> <span class='id identifier rubyid_remote'>remote</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_branch'>branch</span><span class='period'>.</span><span class='id identifier rubyid_shell_escape'>shell_escape</span> <span class='kw'>unless</span> <span class='id identifier rubyid_branch'>branch</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+    <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid local repo: `</span><span class='embexpr_beg'>#{</span><span class='ivar'>@local_dir_path</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span>
+    <span class='id identifier rubyid_status'>status</span> <span class='op'>&amp;&amp;=</span> <span class='id identifier rubyid_exec_cmd'>exec_cmd</span><span class='lparen'>(</span><span class='id identifier rubyid_cmd'>cmd</span><span class='comma'>,</span>
+                        <span class='label'>as_su:</span> <span class='op'>!</span><span class='id identifier rubyid_existing_dir'>existing_dir</span><span class='lparen'>(</span><span class='ivar'>@local_dir_path</span><span class='rparen'>)</span><span class='comma'>,</span>
+                        <span class='label'>chdir:</span> <span class='ivar'>@local_dir_path</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_status'>status</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="remote_changed?-instance_method">
+  
+    #<strong>remote_changed?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Check if remote is changed, and now is different from latest local state.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+54
+55
+56
+57
+58
+59</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 54</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_remote_changed?'>remote_changed?</span>
+  <span class='id identifier rubyid_tell'>tell</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Checking if remote repository is changed</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:blue</span>
+  <span class='kw'>return</span> <span class='kw'>true</span> <span class='kw'>unless</span> <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span>
+  <span class='kw'>return</span> <span class='kw'>true</span> <span class='kw'>if</span>     <span class='id identifier rubyid_perform_fetch'>perform_fetch</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_should_pull?'>should_pull?</span>
+  <span class='kw'>false</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="remotes-instance_method">
+  
+    #<strong>remotes</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Get the list of the available remote git repositories.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+138
+139
+140
+141
+142
+143</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 138</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_remotes'>remotes</span>
+  <span class='id identifier rubyid_error'>error</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid local repo: `</span><span class='embexpr_beg'>#{</span><span class='ivar'>@local_dir_path</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span>
+  <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_cd'>cd</span><span class='lparen'>(</span><span class='ivar'>@local_dir_path</span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='kw'>return</span> <span class='backtick'>`</span><span class='tstring_content'>git remote</span><span class='tstring_end'>`</span></span><span class='period'>.</span><span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\W+</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:empty?</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="should_pull?-instance_method">
+  
+    #<strong>should_pull?</strong>  &#x21d2; <tt>Boolean</tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Check if a <code>pull</code> operation is needed.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+126
+127
+128</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 126</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_should_pull?'>should_pull?</span>
+  <span class='id identifier rubyid_info'>info</span><span class='lbracket'>[</span><span class='symbol'>:remote</span><span class='rbracket'>]</span> <span class='op'>!=</span> <span class='id identifier rubyid_info'>info</span><span class='lbracket'>[</span><span class='symbol'>:base</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="should_push?-instance_method">
+  
+    #<strong>should_push?</strong>  &#x21d2; <tt>Boolean</tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Check if a <code>push</code> operation is needed.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+132
+133
+134</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 132</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_should_push?'>should_push?</span>
+  <span class='id identifier rubyid_info'>info</span><span class='lbracket'>[</span><span class='symbol'>:local</span><span class='rbracket'>]</span> <span class='op'>!=</span> <span class='id identifier rubyid_info'>info</span><span class='lbracket'>[</span><span class='symbol'>:base</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="update_local-instance_method">
+  
+    #<strong>update_local</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Update local from remote.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 22</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_update_local'>update_local</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span>
+    <span class='comment'># Update existing local from remote, i.e. perform `git pull`.
+</span>    <span class='id identifier rubyid_tell'>tell</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Syncing from `origin` to local</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:blue</span>
+    <span class='id identifier rubyid_status'>status</span>   <span class='op'>=</span> <span class='id identifier rubyid_perform_commit'>perform_commit</span>
+    <span class='id identifier rubyid_status'>status</span> <span class='op'>&amp;&amp;=</span> <span class='id identifier rubyid_perform_pull'>perform_pull</span>
+  <span class='kw'>else</span>
+    <span class='comment'># Update non-existing local from remote, i.e. perform `git clone`.
+</span>    <span class='id identifier rubyid_perform_clone'>perform_clone</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="update_remote-instance_method">
+  
+    #<strong>update_remote</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Update remote from local.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+36
+37
+38
+39
+40</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 36</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_update_remote'>update_remote</span>
+  <span class='id identifier rubyid_tell'>tell</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Syncing from local to `origin`</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:blue</span>
+  <span class='id identifier rubyid_status'>status</span>   <span class='op'>=</span> <span class='id identifier rubyid_perform_commit'>perform_commit</span>
+  <span class='id identifier rubyid_status'>status</span> <span class='op'>&amp;&amp;=</span> <span class='id identifier rubyid_perform_push'>perform_push</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="working_tree_changes-instance_method">
+  
+    #<strong>working_tree_changes</strong>  &#x21d2; <tt><span class='object_link'><a href="../../Object.html" title="Object (class)">Object</a></span></tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Get the Working Tree (local) changes.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+96
+97
+98
+99
+100
+101</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 96</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_working_tree_changes'>working_tree_changes</span>
+  <span class='id identifier rubyid_error'>error</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invalid local repo: `</span><span class='embexpr_beg'>#{</span><span class='ivar'>@local_dir_path</span><span class='embexpr_end'>}</span><span class='tstring_content'>`</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_local_valid_repo?'>local_valid_repo?</span>
+  <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_cd'>cd</span><span class='lparen'>(</span><span class='ivar'>@local_dir_path</span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='kw'>return</span> <span class='backtick'>`</span><span class='tstring_content'>git status -uall --porcelain</span><span class='tstring_end'>`</span></span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="working_tree_changes?-instance_method">
+  
+    #<strong>working_tree_changes?</strong>  &#x21d2; <tt>Boolean</tt>  <span class="extras">(protected)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Check if there are some changes in the Working Tree.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+105
+106
+107</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/core/sync/git.rb', line 105</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_working_tree_changes?'>working_tree_changes?</span>
+  <span class='op'>!</span><span class='id identifier rubyid_working_tree_changes'>working_tree_changes</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Oct  4 14:11:28 2016 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.5 (ruby-2.4.0).
+</div>
+
+    </div>
+  </body>
+</html>

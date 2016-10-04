@@ -11,9 +11,14 @@ group :development do
   # Generate ruby code from the grammars definitions.
   gem "racc", "~> 1.4", require: false
 
+  # Lint
+  gem "rubocop",       require: false
+  gem "rubocop-rspec", require: false
+
   # Testing
-  gem "cucumber"
-  gem "relish"
+  gem "rspec",    require: false
+  gem "fuubar",   require: false
+  gem "cucumber", require: false
 
   # Improve IRB, adding some features.
   gem "irbtools",      require: false
@@ -30,6 +35,6 @@ group :development do
   gem "byebug"
 
   # Code coverage.
-  gem "simplecov", require: false
-  gem "codecov",   require: false
+  gem "simplecov"
+
 end

@@ -15,15 +15,16 @@ def error(msg)
   exit(-1)
 end
 
-# ───────────────────────────────────────────────────── `String` manipulation ──
+# ─────────────────────────────────────────────────── `String` ← Manipulation ──
 
-def titleize_file_name(file_name)
-  file_name.split("/").join(" → ").
-            split("_").join(" ").
-            split(/(\s+(?:\S+\s+)?)/).map { |e| e.capitalize }.join
+def titleize_file_name(file_name, inverted: false)
+  result = file_name.split("/")
+  result = inverted ? result.reverse.join(" ← ") : result.join(" → ")
+  result.split("_").join(" ").
+         split(/(\s+(?:\S+\s+)?)/).map { |e| e.capitalize }.join
 end
 
-# ─────────────────────────────────────────────────────── `Hash` manipulation ──
+# ───────────────────────────────────────────────────── `Hash` ← Manipulation ──
 
 def deep_merge(first, second)
   merger = proc do |key, v1, v2|
@@ -43,3 +44,5 @@ def symbolize(obj)
 
   obj
 end
+
+# ──────────────────────────────────────────────────────────────────────────────

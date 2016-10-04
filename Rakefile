@@ -11,6 +11,7 @@ require "bundler/setup" # For `Bundler.with_clean_env`.
 
 Bundler.require(:development)
 
+require "rake/clean"
 require "rake/testtask"
 
 $:.unshift(File.dirname(__FILE__))

@@ -1,6 +1,6 @@
-Bundler.setup(:default, :website)
-
 set :build_dir, "../docs"
+
+# TODO: Add prefix in build to docs so it will be served relative do docs
 
 # Per-page layout changes:
 #
@@ -10,6 +10,7 @@ page "/*.json", layout: false
 page "/*.txt", layout: false
 
 # Reload the browser automatically whenever files change
+require "middleman-livereload"
 configure :development do
   activate :livereload
 end
@@ -23,6 +24,7 @@ activate :directory_indexes
 
 # Manage assets with sprockets.
 require "sprockets/es6"
+require "middleman-sprockets"
 activate :sprockets do |c|
   c.expose_middleman_helpers = true
   c.supported_output_extensions << ".es6"

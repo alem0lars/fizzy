@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  File: README
+  
+    &mdash; fizzy API documentation
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "README";
+  relpath = '';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="class_list.html"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: README</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <iframe id="search_frame" src="class_list.html"></iframe>
+
+      <div id="content"><div id='filecontents'><h1 id="fizzy">Fizzy</h1>
+
+<p>The hassle free configuration manager</p>
+
+<p><a href="https://www.bountysource.com/teams/fizzy"><img src="https://img.shields.io/bountysource/team/fizzy/activity.svg" alt="Bountysource" /></a>
+<a href="https://www.gitbook.io/book/alem0lars/fizzy/activity"><img src="https://www.gitbook.com/button/status/book/alem0lars/fizzy" alt="Gitbook status" /></a>
+<a href="https://travis-ci.org/alem0lars/fizzy"><img src="https://travis-ci.org/alem0lars/fizzy.svg?branch=master" alt="Build Status" /></a></p>
+
+<h2 id="usage">Usage</h2>
+
+<p>The best way to learn how to use fizzy is to read the
+<strong>Official End-User Guide</strong>:</p>
+
+<ul>
+  <li><a href="https://www.gitbook.com/read/book/alem0lars/fizzy"><strong>Read online</strong></a></li>
+  <li><a href="https://www.gitbook.com/download/pdf/book/alem0lars/fizzy"><strong>Download as PDF</strong></a></li>
+  <li><a href="https://www.gitbook.com/download/epub/book/alem0lars/fizzy"><strong>Download as ePUB</strong></a></li>
+  <li><a href="https://www.gitbook.com/download/mobi/book/alem0lars/fizzy"><strong>Download it as MOBI</strong></a></li>
+</ul>
+
+<h2 id="installation">Installation</h2>
+
+<p>Fizzy is distributed in two ways:</p>
+
+<ul>
+  <li><strong>Standalone</strong>: it includes just fizzy, as any other project.
+This is the <em>preferred</em> way to use fizzy in your machines.</li>
+  <li><strong>Portable</strong>: it includes everything:
+fizzy, its dependencies, a ruby interpreter.
+You may want to use this if you don’t want to leave any traces,
+can’t use or don’t have a Ruby interpreter,
+don’t have permissions to install fizzy dependencies.</li>
+</ul>
+
+<h3 id="bundle">Bundle</h3>
+
+<p>First, <a href="https://github.com/alem0lars/fizzy/releases">download the bundle</a>; then:</p>
+
+<p><code>shellsession
+$ mkdir fizzy_portable
+$ tar -xzf fizzy-*.tar.gz -C fizzy_portable
+$ cd fizzy_portable
+$ chmod +x ./fizzy
+$ ./fizzy
+</code></p>
+
+<h3 id="standalone">Standalone</h3>
+
+<h4 id="macosx-standalone">MacOSX (standalone)</h4>
+
+<p>If you already haven’t tapped the alem0lars HomeBrew repository, tap it:
+<code>shellsession
+$ brew tap alem0lars/homebrew-repo
+</code></p>
+
+<p>Install via HomeBrew
+<code>shellsession
+$ brew install fizzy
+</code></p>
+
+<h4 id="one-liner-standalone">One-liner (standalone)</h4>
+
+<p>The destination can be everywhere, I suggest <code>/usr/local/bin</code> in GNU/Linux
+based systems because it’s almost always in the <code>PATH</code> environment variable,
+so you can run <code>fizzy</code> from everywhere.</p>
+
+<p><code>shellsession
+$ curl -sL https://raw.githubusercontent.com/alem0lars/fizzy/master/build/fizzy | \
+  sudo tee /usr/local/bin/fizzy &gt; /dev/null &amp;&amp; \
+  sudo chmod +x /usr/local/bin/fizzy
+</code></p>
+
+<h4 id="others-standalone">Others (standalone)</h4>
+
+<p>You can provide integration with an existing package system.</p>
+
+<p>The dependencies are:
+* The <a href="https://www.ruby-lang.org">ruby</a> interpreter (<code>&gt;= 2.0.0</code>)
+* The <a href="http://whatisthor.com">thor</a> <a href="https://rubygems.org/gems/thor">gem</a></p>
+
+<p>Then you can drop <a href="./build/fizzy">fizzy</a> everywhere (possibly in the system path)
+and make it executable.</p>
+
+<h2 id="contributions">Contributions</h2>
+
+<p>See <a href="./CONTRIBUTING.md">CONTRIBUTING.md</a></p>
+
+<p><strong>Contributions are welcome!</strong></p>
+
+<h2 id="pointers">Pointers</h2>
+
+<ul>
+  <li>IRC channel: <code>#fizzy</code> at freenode</li>
+  <li>Slack team <code>fizzy-cfg</code>: <a href="https://fizzy-cfg.slack.com">https://fizzy-cfg.slack.com</a></li>
+</ul>
+
+<hr />
+
+<p>Made with ♥ by Alessandro Molari</p>
+
+<ul>
+  <li><a href="https://twitter.com/alem0lars">@alem0lars</a></li>
+  <li><a href="mailto:molari.alessandro@gmail.com">molari.alessandro@gmail.com</a></li>
+</ul>
+
+<!-- Link declarations -->
+
+</div></div>
+
+      <div id="footer">
+  Generated on Tue Oct  4 14:12:30 2016 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.5 (ruby-2.4.0).
+</div>
+
+    </div>
+  </body>
+</html>

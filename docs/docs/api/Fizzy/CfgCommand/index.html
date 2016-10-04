@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: Fizzy::CfgCommand
+  
+    &mdash; fizzy API documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "Fizzy::CfgCommand";
+  relpath = '../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../class_list.html"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../_index.html">Index (C)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../Fizzy.html" title="Fizzy (module)">Fizzy</a></span></span>
+     &raquo; 
+    <span class="title">CfgCommand</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <iframe id="search_frame" src="../class_list.html"></iframe>
+
+      <div id="content"><h1>Class: Fizzy::CfgCommand
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="BaseCommand.html" title="Fizzy::BaseCommand (class)">BaseCommand</a></span></span>
+      
+        <ul class="fullTree">
+          <li><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></li>
+          
+            <li class="next"><span class='object_link'><a href="../Thor.html" title="Thor (class)">Thor</a></span></li>
+          
+            <li class="next"><span class='object_link'><a href="BaseCommand.html" title="Fizzy::BaseCommand (class)">BaseCommand</a></span></li>
+          
+            <li class="next">Fizzy::CfgCommand</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>src/commands/cfg.rb</dd>
+  </dl>
+  
+</div>
+
+
+
+
+  <h2>Constant Summary</h2>
+  
+  <h3 class="inherited">Constants inherited
+     from <span class='object_link'><a href="BaseCommand.html" title="Fizzy::BaseCommand (class)">BaseCommand</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="BaseCommand.html#SHARED_OPTIONS-constant" title="Fizzy::BaseCommand::SHARED_OPTIONS (constant)">BaseCommand::SHARED_OPTIONS</a></span></p>
+
+
+
+
+  <h2>Instance Attribute Summary</h2>
+  
+  <h3 class="inherited">Attributes included from <span class='object_link'><a href="Vars.html" title="Fizzy::Vars (module)">Vars</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Vars.html#vars-instance_method" title="Fizzy::Vars#vars (method)">#vars</a></span></p>
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#source_root-class_method" title="source_root (class method)">.<strong>source_root</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#cd-instance_method" title="#cd (instance method)">#<strong>cd</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#cleanup-instance_method" title="#cleanup (instance method)">#<strong>cleanup</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#details-instance_method" title="#details (instance method)">#<strong>details</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#edit-instance_method" title="#edit (instance method)">#<strong>edit</strong>(pattern)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#instantiate-instance_method" title="#instantiate (instance method)">#<strong>instantiate</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#sync-instance_method" title="#sync (instance method)">#<strong>sync</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="BaseCommand.html" title="Fizzy::BaseCommand (class)">BaseCommand</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="BaseCommand.html#shared_option-class_method" title="Fizzy::BaseCommand.shared_option (method)">shared_option</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="IO.html" title="Fizzy::IO (module)">IO</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="IO.html#colorize-instance_method" title="Fizzy::IO#colorize (method)">#colorize</a></span>, <span class='object_link'><a href="IO.html#debug-instance_method" title="Fizzy::IO#debug (method)">#debug</a></span>, <span class='object_link'><a href="IO.html#error-instance_method" title="Fizzy::IO#error (method)">#error</a></span>, <span class='object_link'><a href="IO.html#info-instance_method" title="Fizzy::IO#info (method)">#info</a></span>, <span class='object_link'><a href="IO.html#quiz-instance_method" title="Fizzy::IO#quiz (method)">#quiz</a></span>, <span class='object_link'><a href="IO.html#shell-instance_method" title="Fizzy::IO#shell (method)">#shell</a></span>, <span class='object_link'><a href="IO.html#tell-instance_method" title="Fizzy::IO#tell (method)">#tell</a></span>, <span class='object_link'><a href="IO.html#warning-instance_method" title="Fizzy::IO#warning (method)">#warning</a></span>, <span class='object_link'><a href="IO.html#%E2%9C%94-instance_method" title="Fizzy::IO#✔ (method)">#✔</a></span>, <span class='object_link'><a href="IO.html#%E2%9C%98-instance_method" title="Fizzy::IO#✘ (method)">#✘</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="MetaCommands.html" title="Fizzy::MetaCommands (module)">MetaCommands</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="MetaCommands.html#available_commands-instance_method" title="Fizzy::MetaCommands#available_commands (method)">#available_commands</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="MetaElements.html" title="Fizzy::MetaElements (module)">MetaElements</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="MetaElements.html#elements_appliers-instance_method" title="Fizzy::MetaElements#elements_appliers (method)">#elements_appliers</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Execution.html" title="Fizzy::Execution (module)">Execution</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Execution.html#exec_cmd-instance_method" title="Fizzy::Execution#exec_cmd (method)">#exec_cmd</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="MetaInfo.html" title="Fizzy::MetaInfo (module)">MetaInfo</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="MetaInfo.html#get_meta-instance_method" title="Fizzy::MetaInfo#get_meta (method)">#get_meta</a></span>, <span class='object_link'><a href="MetaInfo.html#selected_by_only%3F-instance_method" title="Fizzy::MetaInfo#selected_by_only? (method)">#selected_by_only?</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Vars.html" title="Fizzy::Vars (module)">Vars</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Vars.html#avail_vars-instance_method" title="Fizzy::Vars#avail_vars (method)">#avail_vars</a></span>, <span class='object_link'><a href="Vars.html#data_for_features-instance_method" title="Fizzy::Vars#data_for_features (method)">#data_for_features</a></span>, <span class='object_link'><a href="Vars.html#has_feature%3F-instance_method" title="Fizzy::Vars#has_feature? (method)">#has_feature?</a></span>, <span class='object_link'><a href="Vars.html#setup_vars-instance_method" title="Fizzy::Vars#setup_vars (method)">#setup_vars</a></span>, <span class='object_link'><a href="Vars.html#var-instance_method" title="Fizzy::Vars#var (method)">#var</a></span>, <span class='object_link'><a href="Vars.html#var%21-instance_method" title="Fizzy::Vars#var! (method)">#var!</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Locals.html" title="Fizzy::Locals (module)">Locals</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Locals.html#define_locals-instance_method" title="Fizzy::Locals#define_locals (method)">#define_locals</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Filesystem.html" title="Fizzy::Filesystem (module)">Filesystem</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Filesystem.html#existing_dir-instance_method" title="Fizzy::Filesystem#existing_dir (method)">#existing_dir</a></span>, <span class='object_link'><a href="Filesystem.html#find_yaml_path-instance_method" title="Fizzy::Filesystem#find_yaml_path (method)">#find_yaml_path</a></span>, <span class='object_link'><a href="Filesystem.html#prepare_storage-instance_method" title="Fizzy::Filesystem#prepare_storage (method)">#prepare_storage</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Environment.html" title="Fizzy::Environment (module)">Environment</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Environment.html#case_os-instance_method" title="Fizzy::Environment#case_os (method)">#case_os</a></span>, <span class='object_link'><a href="Environment.html#get_env-instance_method" title="Fizzy::Environment#get_env (method)">#get_env</a></span>, <span class='object_link'><a href="Environment.html#get_env%21-instance_method" title="Fizzy::Environment#get_env! (method)">#get_env!</a></span>, <span class='object_link'><a href="Environment.html#is_linux%3F-instance_method" title="Fizzy::Environment#is_linux? (method)">#is_linux?</a></span>, <span class='object_link'><a href="Environment.html#is_osx%3F-instance_method" title="Fizzy::Environment#is_osx? (method)">#is_osx?</a></span>, <span class='object_link'><a href="Environment.html#is_windows%3F-instance_method" title="Fizzy::Environment#is_windows? (method)">#is_windows?</a></span>, <span class='object_link'><a href="Environment.html#which%3F-instance_method" title="Fizzy::Environment#which? (method)">#which?</a></span>, <span class='object_link'><a href="Environment.html#xdg_config_home-instance_method" title="Fizzy::Environment#xdg_config_home (method)">#xdg_config_home</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="source_root-class_method">
+  
+    .<strong>source_root</strong>  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+3
+4
+5</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/commands/cfg.rb', line 3</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_source_root'>source_root</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>/</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="cd-instance_method">
+  
+    #<strong>cd</strong>  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/commands/cfg.rb', line 54</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_cd'>cd</span>
+  <span class='comment'># Prepare stuff for changing directory.
+</span>  <span class='id identifier rubyid_paths'>paths</span> <span class='op'>=</span> <span class='id identifier rubyid_prepare_storage'>prepare_storage</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_fizzy_dir'>fizzy_dir</span><span class='comma'>,</span>
+                          <span class='label'>valid_meta:</span>   <span class='kw'>false</span><span class='comma'>,</span>
+                          <span class='label'>valid_inst:</span>   <span class='kw'>false</span><span class='comma'>,</span>
+                          <span class='label'>valid_cfg:</span>    <span class='op'>!</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_cfg_name'>cfg_name</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span><span class='comma'>,</span>
+                          <span class='label'>cur_cfg_name:</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_cfg_name'>cfg_name</span><span class='rparen'>)</span>
+
+  <span class='comment'># Changing directory.
+</span>  <span class='id identifier rubyid_dir_path'>dir_path</span> <span class='op'>=</span> <span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cur_cfg'>cur_cfg</span> <span class='op'>||</span> <span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cfg'>cfg</span>
+  <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Changing directory to: `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_dir_path'>dir_path</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:cyan</span><span class='rparen'>)</span>
+  <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_cd'>cd</span><span class='lparen'>(</span><span class='id identifier rubyid_dir_path'>dir_path</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_system'>system</span><span class='lparen'>(</span><span class='id identifier rubyid_get_env!'>get_env!</span><span class='lparen'>(</span><span class='symbol'>:SHELL</span><span class='rparen'>)</span><span class='rparen'>)</span>
+
+  <span class='comment'># Inform user about the changing directory status.
+</span>  <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>CD done in: `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_dir_path'>dir_path</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:green</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="cleanup-instance_method">
+  
+    #<strong>cleanup</strong>  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/commands/cfg.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_cleanup'>cleanup</span>
+  <span class='comment'># Prepare paths for cleanup.
+</span>  <span class='id identifier rubyid_paths'>paths</span> <span class='op'>=</span> <span class='id identifier rubyid_prepare_storage'>prepare_storage</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_fizzy_dir'>fizzy_dir</span><span class='comma'>,</span>
+                          <span class='label'>valid_meta:</span> <span class='kw'>false</span><span class='comma'>,</span>
+                          <span class='label'>valid_cfg:</span>  <span class='kw'>false</span><span class='comma'>,</span>
+                          <span class='label'>valid_inst:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+
+  <span class='comment'># Perform cleanup.
+</span>  <span class='id identifier rubyid_status'>status</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_quiz'>quiz</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Remove the fizzy root directory (`</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_root'>root</span><span class='embexpr_end'>}</span><span class='tstring_content'>`)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_root'>root</span><span class='period'>.</span><span class='id identifier rubyid_rmtree'>rmtree</span>
+  <span class='kw'>else</span>
+    <span class='kw'>nil</span> <span class='comment'># Cleanup skipped.
+</span>  <span class='kw'>end</span>
+
+  <span class='comment'># Inform user about the cleanup status.
+</span>  <span class='kw'>case</span> <span class='id identifier rubyid_status'>status</span>
+    <span class='kw'>when</span> <span class='kw'>true</span>  <span class='kw'>then</span> <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Successfully cleaned: `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_root'>root</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:green</span><span class='rparen'>)</span>
+    <span class='kw'>when</span> <span class='kw'>false</span> <span class='kw'>then</span> <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Failed to cleanup: `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_root'>root</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:red</span><span class='rparen'>)</span>
+    <span class='kw'>when</span> <span class='kw'>nil</span>   <span class='kw'>then</span> <span class='id identifier rubyid_warning'>warning</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Cleanup skipped.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>ask_continue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="details-instance_method">
+  
+    #<strong>details</strong>  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/commands/cfg.rb', line 10</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_details'>details</span>
+  <span class='comment'># Prepare paths before considering details.
+</span>  <span class='id identifier rubyid_paths'>paths</span> <span class='op'>=</span> <span class='id identifier rubyid_prepare_storage'>prepare_storage</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_fizzy_dir'>fizzy_dir</span><span class='comma'>,</span>
+                          <span class='label'>valid_meta:</span>   <span class='kw'>false</span><span class='comma'>,</span>
+                          <span class='label'>valid_cfg:</span>    <span class='symbol'>:readonly</span><span class='comma'>,</span>
+                          <span class='label'>valid_inst:</span>   <span class='kw'>false</span><span class='comma'>,</span>
+                          <span class='label'>cur_cfg_name:</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_cfg_name'>cfg_name</span><span class='rparen'>)</span>
+  <span class='comment'># Print details.
+</span>  <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Available variable files:</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:cyan</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_avail_vars'>avail_vars</span><span class='lparen'>(</span><span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cur_cfg_vars'>cur_cfg_vars</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_path'>path</span><span class='op'>|</span>
+    <span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_basename'>basename</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_extname'>extname</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\t→ </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_colorize'>colorize</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='symbol'>:magenta</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="edit-instance_method">
+  
+    #<strong>edit</strong>(pattern)  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/commands/cfg.rb', line 75</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_edit'>edit</span><span class='lparen'>(</span><span class='id identifier rubyid_pattern'>pattern</span><span class='rparen'>)</span>
+  <span class='comment'># Prepare stuff for editing.
+</span>  <span class='id identifier rubyid_paths'>paths</span> <span class='op'>=</span> <span class='id identifier rubyid_prepare_storage'>prepare_storage</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_fizzy_dir'>fizzy_dir</span><span class='comma'>,</span>
+                          <span class='label'>valid_meta:</span>   <span class='kw'>false</span><span class='comma'>,</span>
+                          <span class='label'>valid_inst:</span>   <span class='kw'>false</span><span class='comma'>,</span>
+                          <span class='label'>cur_cfg_name:</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_cfg_name'>cfg_name</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_find_path'>find_path</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cur_cfg'>cur_cfg</span> <span class='op'>||</span> <span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cfg'>cfg</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='id identifier rubyid_pattern'>pattern</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_cfg_files'>cfg_files</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_find_path'>find_path</span><span class='period'>.</span><span class='id identifier rubyid_exist?'>exist?</span>
+    <span class='const'>Array</span><span class='lbracket'>[</span><span class='id identifier rubyid_find_path'>find_path</span><span class='rbracket'>]</span>
+  <span class='kw'>else</span>
+    <span class='const'>Pathname</span><span class='period'>.</span><span class='id identifier rubyid_glob'>glob</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_find_path'>find_path</span><span class='embexpr_end'>}</span><span class='tstring_content'>*</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='const'>File</span><span class='op'>::</span><span class='const'>FNM_DOTMATCH</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span>
+            <span class='period'>.</span><span class='id identifier rubyid_select'>select</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:file?</span><span class='rparen'>)</span>
+            <span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span><span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_path'>path</span><span class='op'>|</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\.git</span><span class='regexp_end'>/</span></span><span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_cfg_files_arg'>cfg_files_arg</span> <span class='op'>=</span> <span class='id identifier rubyid_cfg_files'>cfg_files</span><span class='period'>.</span><span class='id identifier rubyid_collect'>collect</span><span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_path'>path</span><span class='op'>|</span> <span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_shell_escape'>shell_escape</span><span class='rbrace'>}</span>
+                           <span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+                           <span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span>
+
+  <span class='comment'># Perform edit.
+</span>  <span class='id identifier rubyid_status'>status</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_cfg_files_arg'>cfg_files_arg</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='id identifier rubyid_warning'>warning</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>No files matching `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_cfg_name'>cfg_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>` have been found.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+            <span class='label'>ask_continue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Editing configuration file(s): `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_cfg_files_arg'>cfg_files_arg</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:cyan</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_system'>system</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='const'>Fizzy</span><span class='op'>::</span><span class='const'>CFG</span><span class='period'>.</span><span class='id identifier rubyid_editor'>editor</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_cfg_files_arg'>cfg_files_arg</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># Inform user about the editing status.
+</span>  <span class='kw'>case</span> <span class='id identifier rubyid_status'>status</span>
+    <span class='kw'>when</span> <span class='kw'>true</span>  <span class='kw'>then</span> <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Successfully edited: `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_cfg_files_arg'>cfg_files_arg</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:green</span><span class='rparen'>)</span>
+    <span class='kw'>when</span> <span class='kw'>false</span> <span class='kw'>then</span> <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Failed to edit: `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_cfg_files_arg'>cfg_files_arg</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:red</span><span class='rparen'>)</span>
+    <span class='kw'>when</span> <span class='kw'>nil</span>   <span class='kw'>then</span> <span class='id identifier rubyid_warning'>warning</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Editing skipped.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>ask_continue:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="instantiate-instance_method">
+  
+    #<strong>instantiate</strong>  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/commands/cfg.rb', line 142</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_instantiate'>instantiate</span>
+  <span class='comment'># Before instantiation.
+</span>  <span class='id identifier rubyid_paths'>paths</span> <span class='op'>=</span> <span class='id identifier rubyid_prepare_storage'>prepare_storage</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_fizzy_dir'>fizzy_dir</span><span class='comma'>,</span>
+                          <span class='label'>meta_name:</span>     <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_meta_name'>meta_name</span><span class='comma'>,</span>
+                          <span class='label'>valid_cfg:</span>     <span class='symbol'>:readonly</span><span class='comma'>,</span>
+                          <span class='label'>valid_inst:</span>    <span class='kw'>false</span><span class='comma'>,</span>
+                          <span class='label'>cur_cfg_name:</span>  <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_cfg_name'>cfg_name</span><span class='comma'>,</span>
+                          <span class='label'>cur_inst_name:</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_inst_name'>inst_name</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_setup_vars'>setup_vars</span><span class='lparen'>(</span><span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cur_cfg_vars'>cur_cfg_vars</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_vars_name'>vars_name</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_meta'>meta</span> <span class='op'>=</span> <span class='id identifier rubyid_get_meta'>get_meta</span><span class='lparen'>(</span><span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cur_cfg_meta'>cur_cfg_meta</span><span class='comma'>,</span> <span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cur_cfg_vars'>cur_cfg_vars</span><span class='comma'>,</span> <span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cur_cfg'>cur_cfg</span><span class='comma'>,</span>
+                  <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_verbose'>verbose</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>meta: </span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_colorize'>colorize</span><span class='lparen'>(</span><span class='id identifier rubyid_meta'>meta</span><span class='lbracket'>[</span><span class='symbol'>:elems</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_count'>count</span><span class='comma'>,</span> <span class='symbol'>:green</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'>/</span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+                 <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_meta'>meta</span><span class='lbracket'>[</span><span class='symbol'>:all_elems_count</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_content'> elem(s) selected.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>meta: </span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_colorize'>colorize</span><span class='lparen'>(</span><span class='id identifier rubyid_meta'>meta</span><span class='lbracket'>[</span><span class='symbol'>:excluded_files</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_count'>count</span><span class='comma'>,</span> <span class='symbol'>:red</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'>/</span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+                 <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_meta'>meta</span><span class='lbracket'>[</span><span class='symbol'>:all_files_count</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_content'> file(s) excluded.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_tell'>tell</span>
+
+  <span class='comment'># Create a configuration instance.
+</span>  <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Creating a configuration instance named `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_inst_name'>inst_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>` </span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+       <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>from: `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cur_cfg'>cur_cfg</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:blue</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_exclude_pattern'>exclude_pattern</span> <span class='op'>=</span> <span class='const'>Fizzy</span><span class='op'>::</span><span class='const'>CFG</span><span class='period'>.</span><span class='id identifier rubyid_instantiate_exclude_pattern'>instantiate_exclude_pattern</span>
+  <span class='id identifier rubyid_meta'>meta</span><span class='lbracket'>[</span><span class='symbol'>:excluded_files</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_excluded_file'>excluded_file</span><span class='op'>|</span>
+    <span class='id identifier rubyid_exclude_pattern'>exclude_pattern</span> <span class='op'>=</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_exclude_pattern'>exclude_pattern</span><span class='embexpr_end'>}</span><span class='tstring_content'>|</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_excluded_file'>excluded_file</span><span class='embexpr_end'>}</span><span class='regexp_end'>/</span></span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>begin</span>
+    <span class='id identifier rubyid_directory'>directory</span><span class='lparen'>(</span><span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cur_cfg'>cur_cfg</span><span class='comma'>,</span> <span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cur_inst'>cur_inst</span><span class='comma'>,</span> <span class='label'>exclude_pattern:</span> <span class='id identifier rubyid_exclude_pattern'>exclude_pattern</span><span class='rparen'>)</span>
+  <span class='kw'>rescue</span> <span class='const'>SyntaxError</span>
+    <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Error while processing the template: `</span><span class='embexpr_beg'>#{</span><span class='gvar'>$fizzy_cur_template</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># After instantiation.
+</span>  <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Created the configuration instance in: `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cur_inst'>cur_inst</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:green</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="sync-instance_method">
+  
+    #<strong>sync</strong>  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'src/commands/cfg.rb', line 116</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_sync'>sync</span>
+  <span class='comment'># Prepare stuff for syncing.
+</span>  <span class='id identifier rubyid_paths'>paths</span> <span class='op'>=</span> <span class='id identifier rubyid_prepare_storage'>prepare_storage</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_fizzy_dir'>fizzy_dir</span><span class='comma'>,</span>
+                          <span class='label'>valid_meta:</span>   <span class='kw'>false</span><span class='comma'>,</span>
+                          <span class='label'>valid_cfg:</span>    <span class='kw'>false</span><span class='comma'>,</span>
+                          <span class='label'>valid_inst:</span>   <span class='kw'>false</span><span class='comma'>,</span>
+                          <span class='label'>cur_cfg_name:</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_cfg_name'>cfg_name</span><span class='rparen'>)</span>
+
+  <span class='comment'># Perform sync.
+</span>  <span class='id identifier rubyid_sync_result'>sync_result</span> <span class='op'>=</span> <span class='const'>Fizzy</span><span class='op'>::</span><span class='const'>Sync</span><span class='period'>.</span><span class='id identifier rubyid_perform'>perform</span><span class='lparen'>(</span><span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cur_cfg'>cur_cfg</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_cfg_url'>cfg_url</span><span class='rparen'>)</span>
+
+  <span class='comment'># Inform user about sync status.
+</span>  <span class='kw'>if</span> <span class='id identifier rubyid_sync_result'>sync_result</span>
+    <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Synced to: `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_paths'>paths</span><span class='period'>.</span><span class='id identifier rubyid_cur_cfg'>cur_cfg</span><span class='embexpr_end'>}</span><span class='tstring_content'>`.</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:green</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Unable to sync.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Oct  4 14:12:31 2016 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.5 (ruby-2.4.0).
+</div>
+
+    </div>
+  </body>
+</html>

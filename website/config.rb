@@ -1,3 +1,5 @@
+Bundler.setup(:default, :website)
+
 set :build_dir, "../docs"
 
 # Per-page layout changes:

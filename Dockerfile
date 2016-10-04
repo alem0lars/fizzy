@@ -105,6 +105,8 @@ RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa                       \
 RUN mkdir -p /var/run/sshd
 # Configure ssh
 RUN echo "StrictHostKeyChecking=no" >> /etc/ssh/ssh_config
+RUN sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g'      \
+    /etc/ssh/sshd_config
 # Expose ssh port.
 EXPOSE 22
 # ─────────────────────────────────────────────────────────────────────────────┘
@@ -136,17 +138,18 @@ RUN git config --global push.default simple                                    \
  && git config --global user.email root@localhost.localdomain
 
 # SSH keys for user `root`.
-COPY docker_ssh_key.pub /root/.ssh/authorized_keys
-COPY docker_ssh_key.pub /root/.ssh/id_rsa.pub
-COPY docker_ssh_key     /root/.ssh/id_rsa
-RUN  chmod 700 /root/.ssh
+COPY docker_ssh_key.pub "/root/.ssh/authorized_keys"
+COPY docker_ssh_key.pub "/root/.ssh/id_rsa.pub"
+COPY docker_ssh_key     "/root/.ssh/id_rsa"
+RUN  chmod 700 "/root/.ssh"
 RUN  chmod 600 /root/.ssh/*
 # SSH keys for user `git`.
 COPY docker_ssh_key.pub "${GIT_REPOS_DIR}/.ssh/authorized_keys"
 COPY docker_ssh_key.pub "${GIT_REPOS_DIR}/.ssh/id_rsa.pub"
 COPY docker_ssh_key     "${GIT_REPOS_DIR}/.ssh/id_rsa"
-RUN  chmod 700 ${GIT_REPOS_DIR}/.ssh
+RUN  chmod 700 "${GIT_REPOS_DIR}/.ssh"
 RUN  chmod 600 ${GIT_REPOS_DIR}/.ssh/*
+RUN  chown -R "${GIT_USER}:${GIT_GROUP}" "${GIT_REPOS_DIR}/.ssh"
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ────────────────────────────────────────────────────────────── Setup fizzy ──┐

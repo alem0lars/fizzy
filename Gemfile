@@ -11,8 +11,9 @@ group :development do
   # Generate ruby code from the grammars definitions.
   gem "racc", "~> 1.4", require: false
 
-  # Testing framework.
-  gem "minitest", require: false
+  # Testing
+  gem "cucumber"
+  gem "relish"
 
   # Improve IRB, adding some features.
   gem "irbtools",      require: false

@@ -111,11 +111,11 @@ protected
   def info
     error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
-      local = `git rev-parse @ 2>&1`.strip
+      local = `git rev-parse @ 2> /dev/null`.strip
       local = nil unless $?.success?
-      remote = `git rev-parse @{u} 2>&1`.strip
+      remote = `git rev-parse @{u} 2> /dev/null`.strip
       remote = nil unless $?.success?
-      base = `git merge-base @ @{u} 2>&1`.strip
+      base = `git merge-base @ @{u} 2> /dev/null`.strip
       base = nil unless $?.success?
       return { local: local, remote: remote, base: base }
     end
@@ -167,7 +167,7 @@ protected
 
   # Commit the changes in the Working Tree.
   #
-  def perform_commit
+  def perform_commit(message: nil)
     status = true
 
     if working_tree_changes?
@@ -178,7 +178,7 @@ protected
         if status
           tell("Performing commit", :blue)
 
-          message = quiz("Type the commit message", type: :string)
+          message ||= quiz("Type the commit message", type: :string)
 
           cmd  = ["git", "commit", "-a"]
           cmd << "--allow-empty-message" if     message.nil?

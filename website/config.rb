@@ -38,7 +38,7 @@ end
 
 # Build-specific configuration.
 configure :build do
-  set :http_prefix, "/docs"
+  set :http_prefix, "docs"
 
   # Minify CSS on build.
   activate :minify_css

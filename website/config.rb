@@ -20,7 +20,7 @@ activate :asset_hash
 
 # Create a folder for each `.html` file and place the built template file as
 # the index of that folder.
-activate :directory_indexes
+# activate :directory_indexes
 
 # Manage assets with sprockets.
 require "sprockets/es6"

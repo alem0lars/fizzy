@@ -51,15 +51,26 @@ describe Fizzy::LogicParser do
     end
 
     context "when combined features" do
-      it "should succeed for available features" do
-        assert_parse("#{avail_feature} && #{avail_feature}")
-        assert_parse("#{unavail_feature} || #{avail_feature}")
+
+
+      [ "#{avail_feature} && #{avail_feature}",
+        "#{unavail_feature} || #{avail_feature}"
+      ].each do |expression|
+        context "when features are available" do
+          subject { expression }
+          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+        end
       end
 
-      it "should fail for unavailable features" do
-        assert_not_parse("#{unavail_feature} && #{avail_feature}")
-        assert_not_parse("#{unavail_feature} || #{unavail_feature}")
+      [ "#{unavail_feature} && #{avail_feature}",
+        "#{unavail_feature} || #{unavail_feature}"
+      ].each do |expression|
+        context "when features are unavailable" do
+          subject { expression }
+          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+        end
       end
+
     end
 
     context "when conditions are nested" do

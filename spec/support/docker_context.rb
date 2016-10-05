@@ -1,4 +1,4 @@
-module Fizzy::TestUtils::Docker
+shared_context :docker do
 
   def in_docker?
     cgroup_path = Pathname.new("/proc/self/cgroup")

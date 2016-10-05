@@ -38,6 +38,7 @@ end
 
 # Build-specific configuration.
 configure :build do
+  # Set the prefix used in production.
   set :http_prefix, "/docs"
 
   # Minify CSS on build.

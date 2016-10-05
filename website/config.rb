@@ -38,7 +38,6 @@ end
 
 # Build-specific configuration.
 configure :build do
-  set :https, true
   set :http_prefix, "/docs"
 
   # Minify CSS on build.

@@ -5,7 +5,7 @@ namespace :website do
   task :build do
     FileUtils.cd $cfg[:paths][:website] do
       sh "bower install"
-      sh "bundle exec middleman build"
+      sh "bundle exec middleman build --verbose"
     end
   end
 

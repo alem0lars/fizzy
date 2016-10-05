@@ -10,7 +10,7 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.4.0)
     ast (2.3.0)
-    autoprefixer-rails (6.5.0.1)
+    autoprefixer-rails (6.5.0.2)
       execjs
     awesome_print (1.7.0)
     babel-source (5.8.35)

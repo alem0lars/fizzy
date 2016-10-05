@@ -38,6 +38,7 @@ end
 
 # Build-specific configuration.
 configure :build do
+  set :host, "https://alem0lars.github.io/docs"
   set :http_prefix, "docs"
 
   # Minify CSS on build.

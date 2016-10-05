@@ -1,4 +1,4 @@
-module Fizzy::TestUtils::Git
+shared_context :git do
 
   def repo_dir_path(repo_name)
     Pathname.new(ENV["GIT_REPOS_DIR"] || Dir.mktmpdir).join(repo_name)

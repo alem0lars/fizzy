@@ -9,21 +9,18 @@ to abide by the [Code of Conduct][code_of_conduct].
 
 - Fork, then clone the repo: `git clone git@github.com:your-username/fizzy.git`.
 - Set up Ruby dependencies via Bundler: `bundle install`.
-- Make sure the tests pass: `rake test`.
+- Make sure the tests pass: `bundle exec rake docker:test`.
 
 ### 2: Make changes
 
 - Make your change.
-- Write tests.
+- Write specs (following the [guidelines][betterspecs]).
 - Follow the [Style Guide][style_guide].
-- Make the tests pass: `rake test`.
-  You can also run tests inside a Docker container, running: `rake docker:test`.
-  To forcibly build the Docker image, you need to set the environment variable
-  `FIZZY_DOCKER_BUILD` to `true`: `FIZZY_DOCKER_BUILD=true rake docker:test`.
+- Make the tests pass: `bundle exec rake docker:test`.
 - If you need to open a console inside the Docker container, you can run:
-  `rake docker:console`.
-- Update the packages: `rake package`.
-- Add notes on your change to the [CHANGELOG.md][changelog] file,
+  `bundle exec rake docker:console`.
+- Update the packages: `bundle exec rake package`.
+- Add notes on your change to the [changelog][changelog] file,
   in the `Next Version` section.
 - Write a [good commit message][good_commit_message].
 - Push to your fork.
@@ -66,12 +63,12 @@ Here are a few examples:
 * New cop `ElseLayout` checks for odd arrangement of code in the `else` branch of a conditional expression. ([@bbatsov][])
 ```
 
-* Mark it up in [Markdown syntax][6].
+* Mark it up in [markdown syntax][markdown_syntax].
 * The entry line should start with `* ` (an asterisk and a space).
-* If the change has a related GitHub issue (e.g. a bug fix for a reported issue), put a link to the issue as `[#123](https://github.com/bbatsov/rubocop/issues/123): `.
+* If the change has a related GitHub issue (e.g. a bug fix for a reported issue), put a link to the issue as `[#123](https://github.com/alem0lars/fizzy/issues/1): `.
 * Describe the brief of the change. The sentence should end with a punctuation.
 * At the end of the entry, add an implicit link to your GitHub user page as `([@username][])`.
-* If this is your first contribution to RuboCop project, add a link definition for the implicit link to the bottom of the changelog as `[@username]: https://github.com/username`.
+* If this is your first contribution to fizzy project, add a link definition for the implicit link to the bottom of the changelog as `[@username]: https://github.com/username`.
 
 ----
 
@@ -83,10 +80,11 @@ Here are a few examples:
 [code_of_conduct]: ./CODE_OF_CONDUCT.md
 [changelog]: ./CHANGELOG.md
 
-[send_pull_request]: https://github.com/alem0lars/fizzy/compare/
+[send_pull_request]: https://github.com/alem0lars/fizzy/compare
 
 [houndci]: https://houndci.com
 
 [good_commit_message]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
+[betterspecs]: http://betterspecs.org
 
 [markdown_syntax]: http://daringfireball.net/projects/markdown/syntax

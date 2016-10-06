@@ -26,6 +26,7 @@
 * Migrate meta keys *from strings to symbols*
 * Migrate variables keys *from strings to symbols* (see `parse_vars(..)`)
   and have indifferent access (see `_get_var(..)`).
+  and have indifferent access (see `_get_var(..)`).
 * API documentation (using `yard`). The following tasks were added:
   * `rake doc:generate`: Generate the API documentation.
   * `rake doc:server`: Serve the API documentation in a local webserver
@@ -54,5 +55,5 @@
 
 See the release notes.
 
-
 <!-- Link declarations -->
+[@jak3]: https://github.com/jak3

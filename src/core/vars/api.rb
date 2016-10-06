@@ -38,8 +38,10 @@ module Fizzy::Vars
   # Since the features are defined just using variables, before calling this
   # method be sure that `setup_vars` has already been called.
   #
-  def has_feature?(feature_name)
-    get_var!("features", single_match: :force).include?(feature_name.to_s)
+  def has_feature?(*features_name)
+    features_name.all? do |feature_name|
+      get_var!("features", single_match: :force).include?(feature_name.to_s)
+    end
   end
 
   # Filter the values associated to the features, keeping only those

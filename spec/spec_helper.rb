@@ -23,11 +23,11 @@ SimpleCov.profiles.define "fizzy" do
 end
 SimpleCov.start "fizzy"
 
-# Require specs support.
-Dir[spec_dir_path.join("support", "**", "*.rb").to_s].each { |f| require f }
-
 # Require fizzy.
 require "fizzy"
+
+# Require specs support.
+Dir[spec_dir_path.join("support", "**", "*.rb").to_s].each { |f| require f }
 
 RSpec.configure do |config|
 

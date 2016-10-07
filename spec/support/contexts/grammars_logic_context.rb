@@ -4,7 +4,7 @@ shared_context :grammars_logic do
 
   RSpec::Matchers.define :be_evaluated_as_true do |vars|
     match do |actual|
-      parser.parse(actual, vars)
+      parser.parse(vars, actual)
     end
     description do
       "be evaluated as true"

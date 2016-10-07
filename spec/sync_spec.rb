@@ -19,7 +19,7 @@ describe Fizzy::Sync do
     end
 
     context "when remote is an existing directory" do
-      skip_unless_in_docker do
+      just_in_docker do
         let(:dir_path) { Pathname.new(Dir.mktmpdir) }
 
         after(:each) do
@@ -42,7 +42,7 @@ describe Fizzy::Sync do
       end
 
       context "that selects `local` sync is provided" do
-        skip_unless_in_docker do
+        just_in_docker do
           let(:dir_path) {
             puts "A" * 80
             Pathname.new(Dir.mktmpdir("foo")) }

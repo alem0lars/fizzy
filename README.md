@@ -84,6 +84,12 @@ See [CONTRIBUTING.md][contributing]
 
 **Contributions are welcome!**
 
+## Hall of fame
+
+* **Alessandro Molari** (`@alem0lars`)
+* **Luca Molari** (`@LMolr`)
+* **Giacomo Mantani** (`@jak3`)
+
 ## Pointers
 
 * IRC channel: `#fizzy` at freenode

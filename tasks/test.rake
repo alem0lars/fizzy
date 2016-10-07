@@ -12,9 +12,10 @@ end
 begin
   require "rspec/core/rake_task"
 
-  RSpec::Core::RakeTask.new("test") do |t|
+  RSpec::Core::RakeTask.new(:test) do |t|
     t.rspec_opts = ["--require spec_helper"]
   end
+  task test: :build
 rescue LoadError
   error("RSpec is not loaded: please `bundle install`")
 end

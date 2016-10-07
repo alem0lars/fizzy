@@ -71,23 +71,19 @@ to abide by the <a href="./CODE_OF_CONDUCT.md">Code of Conduct</a>.</p>
 <ul>
   <li>Fork, then clone the repo: <code>git clone git@github.com:your-username/fizzy.git</code>.</li>
   <li>Set up Ruby dependencies via Bundler: <code>bundle install</code>.</li>
-  <li>Make sure the tests pass: <code>rake test</code>.</li>
+  <li>Make sure the tests pass: <code>bundle exec rake docker:test</code>.</li>
 </ul>
 
 <h3 id="make-changes">2: Make changes</h3>
 
 <ul>
   <li>Make your change.</li>
-  <li>Write tests.</li>
   <li>Follow the <a href="./STYLE_GUIDE.md">Style Guide</a>.</li>
-  <li>Make the tests pass: <code>rake test</code>.
-You can also run tests inside a Docker container, running: <code>rake docker:test</code>.
-To forcibly build the Docker image, you need to set the environment variable
-<code>FIZZY_DOCKER_BUILD</code> to <code>true</code>: <code>FIZZY_DOCKER_BUILD=true rake docker:test</code>.</li>
+  <li>Make the tests pass: <code>bundle exec rake docker:test</code>.</li>
   <li>If you need to open a console inside the Docker container, you can run:
-<code>rake docker:console</code>.</li>
-  <li>Update the packages: <code>rake package</code>.</li>
-  <li>Add notes on your change to the <a href="./CHANGELOG.md">CHANGELOG.md</a> file,
+<code>bundle exec rake docker:console</code>.</li>
+  <li>Update the packages: <code>bundle exec rake package</code>.</li>
+  <li>Add notes on your change to the <a href="./CHANGELOG.md">changelog</a> file,
 in the <code>Next Version</code> section.</li>
   <li>Write a <a href="http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html">good commit message</a>.</li>
   <li>Push to your fork.</li>
@@ -96,8 +92,7 @@ in the <code>Next Version</code> section.</li>
 <h3 id="integrate-changes">3: Integrate changes</h3>
 
 <ul>
-  <li><a href="https://github.com/alem0lars/fizzy/compare/">Submit a pull request</a>.</li>
-  <li>If <a href="https://houndci.com">Hound CI</a> catches style violations, fix them.</li>
+  <li><a href="https://github.com/alem0lars/fizzy/compare">Submit a pull request</a>.</li>
 </ul>
 
 <h2 id="issues">Issues</h2>
@@ -145,12 +140,12 @@ personal opinions, vision, point-of-views.</li>
 </code></p>
 
 <ul>
-  <li>Mark it up in [Markdown syntax][6].</li>
+  <li>Mark it up in <a href="http://daringfireball.net/projects/markdown/syntax">markdown syntax</a>.</li>
   <li>The entry line should start with <code>* </code> (an asterisk and a space).</li>
-  <li>If the change has a related GitHub issue (e.g. a bug fix for a reported issue), put a link to the issue as <code>[#123](https://github.com/bbatsov/rubocop/issues/123): </code>.</li>
+  <li>If the change has a related GitHub issue (e.g. a bug fix for a reported issue), put a link to the issue as <code>[#123](https://github.com/alem0lars/fizzy/issues/1): </code>.</li>
   <li>Describe the brief of the change. The sentence should end with a punctuation.</li>
   <li>At the end of the entry, add an implicit link to your GitHub user page as <code>([@username][])</code>.</li>
-  <li>If this is your first contribution to RuboCop project, add a link definition for the implicit link to the bottom of the changelog as <code>[@username]: https://github.com/username</code>.</li>
+  <li>If this is your first contribution to fizzy project, add a link definition for the implicit link to the bottom of the changelog as <code>[@username]: https://github.com/username</code>.</li>
 </ul>
 
 <hr />
@@ -162,7 +157,7 @@ personal opinions, vision, point-of-views.</li>
 </div></div>
 
       <div id="footer">
-  Generated on Tue Oct  4 14:12:30 2016 by
+  Generated on Fri Oct  7 11:52:36 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.4.0).
 </div>

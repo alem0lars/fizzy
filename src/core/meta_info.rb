@@ -33,7 +33,7 @@ module Fizzy::MetaInfo
       info("\nElement: ", elem_identifier) if verbose
 
       # Step 1.1: Validate `only` and determine if the element is selected.
-      if elem.has_key?(:only) && !elem[:only].is_a?(Hash)
+      if elem.has_key?(:only) && !(elem[:only].is_a?(Hash) || elem[:only].is_a?(String))
         error("The configuration element `#{elem_identifier}` has invalid " +
               "`only`: it's not a `Hash`.")
       end

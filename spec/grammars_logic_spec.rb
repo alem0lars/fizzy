@@ -31,64 +31,70 @@ describe Fizzy::LogicParser do
   describe "#parse" do
 
     context "when simple feature" do
-      it "should succeed for available features" do
-        @avail_features.each { |feature| assert_parse("f?#{feature}") }
+      avail_features.each do |feature|
+        context "when feature is available: #{feature}" do
+          subject { "f?#{feature}" }
+          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+        end
       end
 
-      it "should fail for unavailable features" do
-        @unavail_features.each { |feature| assert_not_parse("f?#{feature}") }
+      unavail_features.each do |variable|
+        context "when feature is unavailable: #{feature}" do
+          subject { "f?#{feature}" }
+          it { is_expected.to_not be_evaluated_as_true(@vars_mock) }
+        end
       end
     end
 
     context "when simple variable" do
-      it "should succeed for available variables" do
-        @avail_vars.each { |variable| assert_parse("v?#{variable}") }
+      avail_vars.each do |variable|
+        context "when variable is available: #{variable}" do
+          subject { "v?#{variable}" }
+          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+        end
       end
 
-      it "should fail for unavailable variables" do
-        @unavail_vars.each { |variable| assert_not_parse("v?#{variable}") }
+      unavail_vars.each do |variable|
+        context "when variable is unavailable: #{variable}" do
+          subject { "v?#{variable}" }
+          it { is_expected.to_not be_evaluated_as_true(@vars_mock) }
+        end
       end
     end
 
     context "when combined features" do
-      it "should succeed for available features" do
-        assert_parse("#{avail_feature} && #{avail_feature}")
-        assert_parse("#{unavail_feature} || #{avail_feature}")
+      [ "#{avail_feature} && #{avail_feature}",
+        "#{unavail_feature} || #{avail_feature}"
+      ].each do |expression|
+        context "when is logically equivalent to true: #{expression}" do
+          subject { expression }
+          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+        end
       end
 
-      it "should fail for unavailable features" do
-        assert_not_parse("#{unavail_feature} && #{avail_feature}")
-        assert_not_parse("#{unavail_feature} || #{unavail_feature}")
+      [ "#{unavail_feature} && #{avail_feature}",
+        "#{unavail_feature} || #{unavail_feature}"
+      ].each do |expression|
+        context "when is logically equivalent to false: #{expression}" do
+          subject { expression }
+          it { is_expected.to_not be_evaluated_as_true(@vars_mock) }
+        end
       end
     end
 
     context "when conditions are nested" do
-
       [ "#{avail_var} && (#{avail_var} || #{unavail_var})",
-        "(#{avail_var} && #{avail_var}) && (#{avail_var} || #{unavail_var})"
+        "(#{avail_var} && #{avail_var}) && (#{avail_var} || #{unavail_var})",
+        "#{avail_feature} && (#{avail_feature} || #{unavail_feature})",
+        "(#{avail_feature} && #{avail_feature}) && (#{avail_feature} || #{unavail_feature})",
+        "(#{avail_var} && #{avail_feature}) && (#{unavail_feature} || (#{avail_var} || #{unavail_feature}))"
       ].each do |expression|
-        context "when using only variables: #{expression}" do
+        context "when is logically equivalent to true: #{expression}" do
           subject { expression }
           it { is_expected.to be_evaluated_as_true(@vars_mock) }
         end
       end
-
-      [ "#{avail_feature} && (#{avail_feature} || #{unavail_feature})",
-        "(#{avail_feature} && #{avail_feature}) && (#{avail_feature} || #{unavail_feature})"
-      ].each do |expression|
-        context "when using only features: #{expression}" do
-          subject { expression }
-          it { is_expected.to be_evaluated_as_true(@vars_mock) }
-        end
-      end
-
-      context "when using both variables and features" do
-        subject { "(#{avail_var} && #{avail_feature}) && (#{unavail_feature} || (#{avail_var} || #{unavail_feature}))" }
-        it { is_expected.to be_evaluated_as_true(@vars_mock) }
-      end
-
     end
 
   end
-
 end

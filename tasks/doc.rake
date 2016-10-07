@@ -9,6 +9,7 @@ namespace :doc do
     #   --main #{$cfg[:api_doc][:main]}
     # ]
   end
+  task generate: :build
 
   desc "Run a local documentation server"
   task server: "doc:generate" do

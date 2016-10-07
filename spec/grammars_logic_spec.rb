@@ -63,31 +63,43 @@ describe Fizzy::LogicParser do
     end
 
     context "when combined features" do
-      [ "#{avail_feature} && #{avail_feature}",
-        "#{unavail_feature} || #{avail_feature}"
+      [ "f?#{avail_feature} && f?#{avail_feature}",
+        "f?#{unavail_feature} || f?#{avail_feature}"
+      ].each do |expression|
+        context "when features are available" do
+          subject { expression }
+          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+        end
+      end
+
+      [ "f?#{unavail_feature} && f?#{avail_feature}",
+        "f?#{unavail_feature} || f?#{unavail_feature}"
+      ].each do |expression|
+        context "when features are unavailable" do
+          subject { expression }
+          it { is_expected.to_not be_evaluated_as_true(@vars_mock) }
+        end
+      end
+
+    end
+
+    context "when conditions are nested" do
+      [ "v?#{avail_var} && (v?#{avail_var} || v?#{unavail_var})",
+        "(v?#{avail_var} && v?#{avail_var}) && (v?#{avail_var} || v?#{unavail_var})"
       ].each do |expression|
         context "when is logically equivalent to true: #{expression}" do
           subject { expression }
           it { is_expected.to be_evaluated_as_true(@vars_mock) }
         end
       end
-
-      [ "#{unavail_feature} && #{avail_feature}",
-        "#{unavail_feature} || #{unavail_feature}"
-      ].each do |expression|
-        context "when is logically equivalent to false: #{expression}" do
-          subject { expression }
-          it { is_expected.to_not be_evaluated_as_true(@vars_mock) }
-        end
-      end
     end
 
     context "when conditions are nested" do
-      [ "#{avail_var} && (#{avail_var} || #{unavail_var})",
-        "(#{avail_var} && #{avail_var}) && (#{avail_var} || #{unavail_var})",
-        "#{avail_feature} && (#{avail_feature} || #{unavail_feature})",
-        "(#{avail_feature} && #{avail_feature}) && (#{avail_feature} || #{unavail_feature})",
-        "(#{avail_var} && #{avail_feature}) && (#{unavail_feature} || (#{avail_var} || #{unavail_feature}))"
+      [ "v?#{avail_var} && (v?#{avail_var} || v?#{unavail_var})",
+        "(v?#{avail_var} && v?#{avail_var}) && (v?#{avail_var} || v?#{unavail_var})",
+        "f?#{avail_feature} && (f?#{avail_feature} || f?#{unavail_feature})",
+        "(f?#{avail_feature} && f?#{avail_feature}) && (f?#{avail_feature} || f?#{unavail_feature})",
+        "(v?#{avail_var} && f?#{avail_feature}) && (f?#{unavail_feature} || (v?#{avail_var} || f?#{unavail_feature}))"
       ].each do |expression|
         context "when is logically equivalent to true: #{expression}" do
           subject { expression }

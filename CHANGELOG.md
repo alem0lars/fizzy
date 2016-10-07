@@ -22,7 +22,6 @@
   - `rake doc:generate`: Generate the API documentation.
   - `rake doc:server`: Serve the API documentation in a local webserver
     (for testing purposes).
-- Integration with [Hound CI][houndci].
 - Add logic expressions support for `only` in the meta.
 - *Docker support*, with a custom Docker image (defined in the `Dockerfile`)
   that automatically builds `fizzy` upon building the image.

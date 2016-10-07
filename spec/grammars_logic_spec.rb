@@ -17,8 +17,8 @@ describe Fizzy::LogicParser do
     def unavail_feature_expression; "f?#{unavail_features.sample}" end
   end
 
-  before do
-    @vars_mock = Fizzy::Mocks::Vars.new({
+  let(:vars_mock) {
+    Fizzy::Mocks::Vars.new({
       "arte"        => "agility",
       "arti"        => "agility",
       "balpha"      => "strength",
@@ -30,7 +30,7 @@ describe Fizzy::LogicParser do
       },
       features: %w(accu aluna andro amun-ra corr_disc the-eme_ward)
     })
-  end
+  }
 
   describe "#parse" do
 
@@ -38,14 +38,14 @@ describe Fizzy::LogicParser do
       avail_features.each do |feature|
         context "`#{feature}` is available" do
           subject { "f?#{feature}" }
-          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+          it { is_expected.to be_evaluated_as_true(vars_mock) }
         end
       end
 
       unavail_features.each do |feature|
         context "`#{feature}` is unavailable" do
           subject { "f?#{feature}" }
-          it { is_expected.to_not be_evaluated_as_true(@vars_mock) }
+          it { is_expected.to_not be_evaluated_as_true(vars_mock) }
         end
       end
     end
@@ -54,14 +54,14 @@ describe Fizzy::LogicParser do
       avail_vars.each do |variable|
         context "`#{variable}` is available" do
           subject { "v?#{variable}" }
-          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+          it { is_expected.to be_evaluated_as_true(vars_mock) }
         end
       end
 
       unavail_vars.each do |variable|
         context "`#{variable}` is unavailable" do
           subject { "v?#{variable}" }
-          it { is_expected.to_not be_evaluated_as_true(@vars_mock) }
+          it { is_expected.to_not be_evaluated_as_true(vars_mock) }
         end
       end
     end
@@ -72,7 +72,7 @@ describe Fizzy::LogicParser do
       ].each do |expression|
         context "when features are available" do
           subject { expression }
-          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+          it { is_expected.to be_evaluated_as_true(vars_mock) }
         end
       end
 
@@ -81,7 +81,7 @@ describe Fizzy::LogicParser do
       ].each do |expression|
         context "when features are unavailable" do
           subject { expression }
-          it { is_expected.to_not be_evaluated_as_true(@vars_mock) }
+          it { is_expected.to_not be_evaluated_as_true(vars_mock) }
         end
       end
 
@@ -93,7 +93,7 @@ describe Fizzy::LogicParser do
       ].each do |expression|
         context "when is logically equivalent to true: #{expression}" do
           subject { expression }
-          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+          it { is_expected.to be_evaluated_as_true(vars_mock) }
         end
       end
     end
@@ -107,7 +107,7 @@ describe Fizzy::LogicParser do
       ].each do |expression|
         context "when is logically equivalent to true: #{expression}" do
           subject { expression }
-          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+          it { is_expected.to be_evaluated_as_true(vars_mock) }
         end
       end
     end

@@ -5,15 +5,17 @@ describe Fizzy::LogicParser do
 
   include_context :grammars_logic
 
-  def avail_features;   %w(accu amun-ra corr_disc the-eme_ward)            end
-  def unavail_features; %w(arti amun_ra corr-disc the-eme-ward empath)     end
-  def avail_vars;       %w(arte doc-rep flint_beast keep-of_the.lake)      end
-  def unavail_vars;     %w(accu doc_rep flint-beast keep_of_the.lake ophe) end
+  class << self
+    def avail_features;   %w(accu amun-ra corr_disc the-eme_ward)            end
+    def unavail_features; %w(arti amun_ra corr-disc the-eme-ward empath)     end
+    def avail_vars;       %w(arte doc-rep flint_beast keep-of_the.lake)      end
+    def unavail_vars;     %w(accu doc_rep flint-beast keep_of_the.lake ophe) end
 
-  def avail_var;       "v?#{avail_vars.sample}"       end
-  def avail_feature;   "f?#{avail_features.sample}"   end
-  def unavail_var;     "v?#{unavail_vars.sample}"     end
-  def unavail_feature; "f?#{unavail_features.sample}" end
+    def avail_var_expression;       "v?#{avail_vars.sample}"       end
+    def avail_feature_expression;   "f?#{avail_features.sample}"   end
+    def unavail_var_expression;     "v?#{unavail_vars.sample}"     end
+    def unavail_feature_expression; "f?#{unavail_features.sample}" end
+  end
 
   before do
     @vars_mock = Fizzy::Mocks::Vars.new({
@@ -34,14 +36,14 @@ describe Fizzy::LogicParser do
 
     context "when simple feature" do
       avail_features.each do |feature|
-        context "when feature is available: #{feature}" do
+        context "`#{feature}` is available" do
           subject { "f?#{feature}" }
           it { is_expected.to be_evaluated_as_true(@vars_mock) }
         end
       end
 
-      unavail_features.each do |variable|
-        context "when feature is unavailable: #{feature}" do
+      unavail_features.each do |feature|
+        context "`#{feature}` is unavailable" do
           subject { "f?#{feature}" }
           it { is_expected.to_not be_evaluated_as_true(@vars_mock) }
         end
@@ -50,14 +52,14 @@ describe Fizzy::LogicParser do
 
     context "when simple variable" do
       avail_vars.each do |variable|
-        context "when variable is available: #{variable}" do
+        context "`#{variable}` is available" do
           subject { "v?#{variable}" }
           it { is_expected.to be_evaluated_as_true(@vars_mock) }
         end
       end
 
       unavail_vars.each do |variable|
-        context "when variable is unavailable: #{variable}" do
+        context "`#{variable}` is unavailable" do
           subject { "v?#{variable}" }
           it { is_expected.to_not be_evaluated_as_true(@vars_mock) }
         end
@@ -65,8 +67,8 @@ describe Fizzy::LogicParser do
     end
 
     context "when combined features" do
-      [ "f?#{avail_feature} && f?#{avail_feature}",
-        "f?#{unavail_feature} || f?#{avail_feature}"
+      [ "#{avail_feature_expression} && #{avail_feature_expression}",
+        "#{unavail_feature_expression} || #{avail_feature_expression}"
       ].each do |expression|
         context "when features are available" do
           subject { expression }
@@ -74,8 +76,8 @@ describe Fizzy::LogicParser do
         end
       end
 
-      [ "f?#{unavail_feature} && f?#{avail_feature}",
-        "f?#{unavail_feature} || f?#{unavail_feature}"
+      [ "#{unavail_feature_expression} && #{avail_feature_expression}",
+        "#{unavail_feature_expression} || #{unavail_feature_expression}"
       ].each do |expression|
         context "when features are unavailable" do
           subject { expression }
@@ -86,8 +88,8 @@ describe Fizzy::LogicParser do
     end
 
     context "when conditions are nested" do
-      [ "v?#{avail_var} && (v?#{avail_var} || v?#{unavail_var})",
-        "(v?#{avail_var} && v?#{avail_var}) && (v?#{avail_var} || v?#{unavail_var})"
+      [ "#{avail_var_expression} && (#{avail_var_expression} || #{unavail_var_expression})",
+        "(#{avail_var_expression} && #{avail_var_expression}) && (#{avail_var_expression} || #{unavail_var_expression})"
       ].each do |expression|
         context "when is logically equivalent to true: #{expression}" do
           subject { expression }
@@ -97,11 +99,11 @@ describe Fizzy::LogicParser do
     end
 
     context "when conditions are nested" do
-      [ "v?#{avail_var} && (v?#{avail_var} || v?#{unavail_var})",
-        "(v?#{avail_var} && v?#{avail_var}) && (v?#{avail_var} || v?#{unavail_var})",
-        "f?#{avail_feature} && (f?#{avail_feature} || f?#{unavail_feature})",
-        "(f?#{avail_feature} && f?#{avail_feature}) && (f?#{avail_feature} || f?#{unavail_feature})",
-        "(v?#{avail_var} && f?#{avail_feature}) && (f?#{unavail_feature} || (v?#{avail_var} || f?#{unavail_feature}))"
+      [ "#{avail_var_expression} && (#{avail_var_expression} || #{unavail_var_expression})",
+        "(#{avail_var_expression} && #{avail_var_expression}) && (#{avail_var_expression} || #{unavail_var_expression})",
+        "#{avail_feature_expression} && (#{avail_feature_expression} || #{unavail_feature_expression})",
+        "(#{avail_feature_expression} && #{avail_feature_expression}) && (#{avail_feature_expression} || #{unavail_feature_expression})",
+        "(#{avail_var_expression} && #{avail_feature_expression}) && (#{unavail_feature_expression} || (#{avail_var_expression} || #{unavail_feature_expression}))"
       ].each do |expression|
         context "when is logically equivalent to true: #{expression}" do
           subject { expression }

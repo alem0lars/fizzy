@@ -12,13 +12,14 @@ module Fizzy::Sync
 
   def self.others(subject)
     subject = subject.class unless subject.is_a?(Class)
-    result = available
+    result  = available
     result.delete(subject)
     result
   end
 
   def self.enabled(local_dir_path, remote_url)
-    available.map{|e| e.new(local_dir_path, remote_url)}.select{|e| e.enabled?}
+    available.map    { |e| e.new(local_dir_path, remote_url) }.
+              select { |e| e.enabled? }
   end
 
   def self.selected(local_dir_path, remote_url)
@@ -64,7 +65,7 @@ class Fizzy::Sync::Base
   def enabled?
     return false if !@remote_url.nil? &&
                     Fizzy::Sync.others(self).any? { |e|
-                      @remote_url.start_with?("#{e.name}:")
+                      @remote_url.to_s.start_with?("#{e.name}:")
                     }
     return true if default? && Fizzy::Sync.others(self).
       map  { |e| e.new(@local_dir_path, @remote_url) }.

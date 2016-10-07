@@ -21,15 +21,13 @@ describe Fizzy::Sync do
     context "when remote is an existing directory" do
       skip unless in_docker?
 
-      before do
-        @dir_path = Dir.mktmpdir("foo")
+      let(:dir_path) { Pathname.new(Dir.mktmpdir("foo")) }
+
+      after(:each) do
+        FileUtils.rm_r(dir_path)
       end
 
-      after do
-        FileUtils.rm_r(@dir_path)
-      end
-
-      subject { Fizzy::Sync.enabled(Pathname.new("foo"), @dir_path) }
+      subject { Fizzy::Sync.enabled(Pathname.new("foo"), dir_path) }
       it { is_expected.to include(a_kind_of Fizzy::Sync::Local) }
     end
   end
@@ -44,17 +42,19 @@ describe Fizzy::Sync do
       end
 
       context "that selects `local` sync is provided" do
-        skip unless in_docker?
+        skip_unless_in_docker
 
-        before do
-          @dir_path = Dir.mktmpdir("foo")
+        let(:dir_path) {
+          puts "cingli"
+          Pathname.new(Dir.mktmpdir("foo"))
+        }
+
+        after(:each) do
+          puts "qwe"
+          FileUtils.rm_r(dir_path)
         end
 
-        after do
-          FileUtils.rm_r(@dir_path)
-        end
-
-        subject { Fizzy::Sync.selected(Pathname.new("foo"), @dir_path) }
+        subject { Fizzy::Sync.selected(Pathname.new("foo"), dir_path) }
         it { is_expected.to be_kind_of(Fizzy::Sync::Local) }
       end
     end

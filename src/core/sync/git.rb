@@ -13,7 +13,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   #
   def enabled?
     ( super ||
-      !@remote_url.nil? && @remote_url.start_with?("#{@name}:") ||
+      !@remote_url.nil? && @remote_url.to_s.start_with?("#{@name}:") ||
       local_valid_repo?)
   end
 
@@ -64,6 +64,7 @@ protected
   #
   def normalize_url(url, default_protocol: :ssh)
     return nil if url.nil?
+    url = url.to_s
     protocols = %i(https ssh)
     url = url.gsub(/^#{@name}:/, "") # Remove VCS name prefix (optional).
     regexp = %r{

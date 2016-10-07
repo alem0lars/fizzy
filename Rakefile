@@ -6,7 +6,7 @@ require "pathname"
 require "shellwords"
 require "uri"
 
-require "bundler/setup" # For `Bundler.with_clean_env`.
+# require "bundler/setup" # For `Bundler.with_clean_env`.
 
 Bundler.require(:default, :development)
 

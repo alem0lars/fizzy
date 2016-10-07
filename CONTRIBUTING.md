@@ -74,6 +74,7 @@ Here are a few examples:
 
 **Thank you for your contribution!**
 
+
 <!-- Link declarations -->
 
 [style_guide]: ./STYLE_GUIDE.md

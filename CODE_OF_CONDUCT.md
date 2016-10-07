@@ -73,6 +73,7 @@ This Code of Conduct is adapted from the [Contributor Covenant][cc_homepage],
 version 1.4, available at
 [http://contributor-covenant.org/version/1/4][cc_version]
 
+
 <!-- Link declarations -->
 
 [send_email]: mailto:molari.alessandro@gmail.com

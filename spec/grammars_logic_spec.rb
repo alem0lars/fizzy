@@ -3,15 +3,17 @@ require "spec_helper"
 
 describe Fizzy::LogicParser do
 
-  let(:avail_features)   { %w(accu amun-ra corr_disc the-eme_ward) }
-  let(:unavail_features) { %w(arti amun_ra corr-disc the-eme-ward empath) }
-  let(:avail_vars)       { %w(arte doc-rep flint_beast keep-of_the.lake) }
-  let(:unavail_vars)     { %w(accu doc_rep flint-beast keep_of_the.lake ophe) }
+  include_context :grammars_logic
 
-  let(:avail_var)       { "v?#{avail_vars.sample}" }
-  let(:avail_feature)   { "f?#{avail_features.sample}" }
-  let(:unavail_var)     { "v?#{unavail_vars.sample}" }
-  let(:unavail_feature) { "f?#{unavail_features.sample}" }
+  def avail_features;   %w(accu amun-ra corr_disc the-eme_ward)            end
+  def unavail_features; %w(arti amun_ra corr-disc the-eme-ward empath)     end
+  def avail_vars;       %w(arte doc-rep flint_beast keep-of_the.lake)      end
+  def unavail_vars;     %w(accu doc_rep flint-beast keep_of_the.lake ophe) end
+
+  def avail_var;       "v?#{avail_vars.sample}"       end
+  def avail_feature;   "f?#{avail_features.sample}"   end
+  def unavail_var;     "v?#{unavail_vars.sample}"     end
+  def unavail_feature; "f?#{unavail_features.sample}" end
 
   before do
     @vars_mock = Fizzy::Mocks::Vars.new({

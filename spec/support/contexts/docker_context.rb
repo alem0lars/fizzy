@@ -1,6 +1,6 @@
 shared_context :docker do
 
-  def self.skip_unless_in_docker(&block)
+  def self.just_in_docker(&block)
     unless in_docker?
       skip(".. not inside a docker container: skipping ..", &block)
     end

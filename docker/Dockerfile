@@ -125,8 +125,7 @@ RUN apk add --update --no-cache                                                \
 # Setup a git user and ssh.
 RUN addgroup "${GIT_GROUP}"                                                    \
  && echo -e "${GIT_PWD}\n${GIT_PWD}\n"                                         \
-  | adduser -G "${GIT_GROUP}" -h "${GIT_REPOS_DIR}" -s /usr/bin/git-shell      \
-            "${GIT_USER}"
+  | adduser -G "${GIT_GROUP}" -h "${GIT_REPOS_DIR}" -s /usr/bin/git-shell "${GIT_USER}"
 
 # Remove the annoying `/etc/motd`.
 RUN rm -rf /etc/update-motd.d /etc/motd /etc/motd.dynamic
@@ -145,9 +144,9 @@ COPY docker/ssh_key     "/root/.ssh/id_rsa"
 RUN  chmod 700 "/root/.ssh"
 RUN  chmod 600 /root/.ssh/*
 # SSH keys for user `git`.
-COPY ./docker/ssh_key.pub "${GIT_REPOS_DIR}/.ssh/authorized_keys"
-COPY ./docker/ssh_key.pub "${GIT_REPOS_DIR}/.ssh/id_rsa.pub"
-COPY ./docker/ssh_key     "${GIT_REPOS_DIR}/.ssh/id_rsa"
+COPY docker/ssh_key.pub "${GIT_REPOS_DIR}/.ssh/authorized_keys"
+COPY docker/ssh_key.pub "${GIT_REPOS_DIR}/.ssh/id_rsa.pub"
+COPY docker/ssh_key     "${GIT_REPOS_DIR}/.ssh/id_rsa"
 RUN  chmod 700 "${GIT_REPOS_DIR}/.ssh"
 RUN  chmod 600 ${GIT_REPOS_DIR}/.ssh/*
 RUN  chown -R "${GIT_USER}:${GIT_GROUP}" "${GIT_REPOS_DIR}/.ssh"
@@ -187,6 +186,6 @@ RUN bundle install
 RUN bundle exec rake build
 # ─────────────────────────────────────────────────────────────────────────────┘
 
-COPY ./docker/entrypoint.sh /usr/local/bin/docker_entrypoint.sh
+COPY docker/entrypoint.sh /usr/local/bin/docker_entrypoint.sh
 RUN chmod +x /usr/local/bin/docker_entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/docker_entrypoint.sh"]

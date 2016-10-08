@@ -27,9 +27,7 @@ describe Fizzy::Sync::Git do
     describe "#local_changed?" do
       subject { git.local_changed? }
 
-      before(:each) do
-        git.send(:perform_clone)
-      end
+      before(:each) { git.send :perform_clone }
 
       context "when there aren't local modifications" do
         it { is_expected.to eq(false) }
@@ -42,23 +40,27 @@ describe Fizzy::Sync::Git do
     end
 
     describe "#working_tree_changes?" do
-      subject { git.working_tree_changes? }
+      before(:each) { git.send :perform_clone }
 
-      before(:each) do
-        git.send(:perform_clone)
-      end
+      subject { git.send :working_tree_changes? }
 
       context "when there aren't local modifications" do
         it { is_expected.to eq(false) }
       end
 
       context "when there are local modifications" do
-        local_dir_path.join("foo").write("foo")
-        git.working_tree_changes?.must_equal true
-        git.perform_commit message: "Added foo!"
-        git.working_tree_changes?.must_equal false
-        local_dir_path.join("bar").write("bar")
-        git.working_tree_changes?.must_equal true
+        before(:each) { local_dir_path.join("foo").write("foo") }
+        it { is_expected.to eq(true) }
+
+        context "and commit is performed" do
+          before(:each) { git.send :perform_commit, message: "xD" }
+          it { is_expected.to eq(false) }
+
+          context "and then another file is added" do
+            before(:each) { local_dir_path.join("bar").write("bar") }
+            it { is_expected.to eq(true) }
+          end
+        end
       end
     end
   end

@@ -1,8 +1,10 @@
 shared_context :docker do
 
-  def self.just_in_docker(&block)
-    unless in_docker?
-      skip(".. not inside a docker container: skipping ..", &block)
+  def self.just_in_docker
+    if in_docker?
+      yield
+    else
+      skip ".. not inside a docker container: skipping .."
     end
   end
 

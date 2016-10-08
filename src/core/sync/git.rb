@@ -174,7 +174,7 @@ protected
     if working_tree_changes?
       tell "The configuration has the following local changes:\n" +
            "#{colorize(working_tree_changes, :white)}", :cyan
-      if quiz "Do you want to commit them all"
+      if message || quiz("Do you want to commit them all")
         status &&= perform_add # Add from Working Tree to stage.
         if status
           tell("Performing commit", :blue)

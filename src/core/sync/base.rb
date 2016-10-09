@@ -23,7 +23,7 @@ module Fizzy::Sync
   end
 
   def self.selected(local_dir_path, remote_url)
-    enabled(local_dir_path, remote_url).first
+    enabled(local_dir_path, remote_url).last
   end
 
   def self.perform(local_dir_path, remote_url)

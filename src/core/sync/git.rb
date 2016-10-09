@@ -13,7 +13,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   #
   def enabled?
     ( super ||
-      !@remote_url.nil? && @remote_url.to_s.start_with?("#{@name}:") ||
+      (!@remote_url.nil? && @remote_url.to_s.start_with?("#{@name}:")) ||
       local_valid_repo?)
   end
 

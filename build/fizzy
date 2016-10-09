@@ -2053,7 +2053,7 @@ module Fizzy::Sync
   end
 
   def self.selected(local_dir_path, remote_url)
-    enabled(local_dir_path, remote_url).first
+    enabled(local_dir_path, remote_url).last
   end
 
   def self.perform(local_dir_path, remote_url)
@@ -2192,7 +2192,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   #
   def enabled?
     ( super ||
-      !@remote_url.nil? && @remote_url.to_s.start_with?("#{@name}:") ||
+      (!@remote_url.nil? && @remote_url.to_s.start_with?("#{@name}:")) ||
       local_valid_repo?)
   end
 
@@ -2353,7 +2353,7 @@ protected
     if working_tree_changes?
       tell "The configuration has the following local changes:\n" +
            "#{colorize(working_tree_changes, :white)}", :cyan
-      if quiz "Do you want to commit them all"
+      if message || quiz("Do you want to commit them all")
         status &&= perform_add # Add from Working Tree to stage.
         if status
           tell("Performing commit", :blue)

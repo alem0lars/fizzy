@@ -13,6 +13,7 @@ traveling_ruby:
 
 grammars:
   - logic
+  - type
 
 sources:
   - requires

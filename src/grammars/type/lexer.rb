@@ -3,7 +3,14 @@ class Fizzy::TypeLexer < Fizzy::BaseLexer
   def initialize(string)
     super
 
-    leaf_types = %i(
+    ignore(/\s+/)
+
+    token(/</, :LBRACKET)
+    token(/>/, :RBRACKET)
+
+    token(/,/, :SEP)
+
+    tokens(%i(
       string str
       symbol sym
       integer int
@@ -11,26 +18,25 @@ class Fizzy::TypeLexer < Fizzy::BaseLexer
       path pth
       directory dir
       file
-    )
-
-    list_types = %i(
-      array a
-      list l
-    )
-    #dict_types = %i(
-    #  dictionary dict hash
-    #)
-
-    ignore(/\s+/)
-
-    token(/</, :LBRACKET)
-    token(/>/, :RBRACKET)
+    ), :LEAF_TYPE)
 
     token(/\[/, :LIST_LBRACKET)
     token(/\]/, :LIST_RBRACKET)
-    tokens(list_types, :LIST_TYPE)
+    tokens(%i(
+      array a
+      list l
+    ), :LIST_TYPE)
 
-    tokens(leaf_types, :LEAF_TYPE)
+    token(/:/, :DICT_KEY_SEP)
+    token(/\{/, :DICT_LBRACKET)
+    token(/\}/, :DICT_RBRACKET)
+    token(%i(
+      dictionary dict d
+      hash h
+    ), :DICT_TYPE)
+
+    # Generic name.
+    token(/\S+/, :NAME)
   end
 
 end

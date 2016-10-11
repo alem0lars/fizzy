@@ -22,14 +22,16 @@ describe Fizzy::TypeParser do
 #      it { is_expected.to be_evaluated_as_true }
 #    end
 
-    context "when list of lists" do
-      subject { "[[[int]]]" }
-      it { is_expected.to be_evaluated_as_true }
-    end
+    # context "when list of lists" do
+    #   subject { "[[[int]]]" }
+    #   it { is_expected.to be_evaluated_as_true }
+    # end
 
-#    context "when list of lists" do
-#      subject { "list<list<list<int>>>" }
-#      it { is_expected.to be_evaluated_as_true }
-#    end
+   context "when list of lists" do
+     subject               {  [ [ [ 10,  20  ] ] ] }
+     let(:expected)        {  [ [ [ 10, "20" ] ] ] }
+     let(:type_expression) { "list<list<list<int, string>>>" }
+     it { is_expected.to be_evaluated_as(expected, using: type_expression) }
+   end
   end
 end

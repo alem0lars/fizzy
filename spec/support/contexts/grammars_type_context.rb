@@ -2,13 +2,13 @@ shared_context :grammars_type do
 
   let(:parser) { Fizzy::TypeParser.new }
 
-  matcher :be_evaluated_as_true do |untyped_value|
-    match do |type_expression|
-      parser.parse(untyped_value, type_expression)
+  matcher :be_evaluated_as do |expected, using: nil|
+    match do |untyped_value|
+      expect(parser.parse(untyped_value, using)).to eq(expected)
     end
 
     description do
-      "be evaluated as true"
+      "be evaluated `#{expected}` using type expression `#{using}`"
     end
   end
 

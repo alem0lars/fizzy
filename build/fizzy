@@ -771,7 +771,7 @@ require 'racc/parser.rb'
 module Fizzy
   class LogicParser < Racc::Parser
 
-module_eval(<<'...end parser.y/module_eval...', 'parser.y', 29)
+module_eval(<<'...end parser.y/module_eval...', 'parser.y', 31)
 
   def parse(receiver, arg)
     @yydebug = Fizzy::CFG.debug
@@ -792,17 +792,17 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 29)
 
 racc_action_table = [
      3,     3,     4,     4,     5,     5,     3,     3,     4,     4,
-     5,     5,     7,     8,     6,    15,     7,     8,    10,    11,
-    12,    16,     7,    17 ]
+     5,     5,     7,     8,     7,    15,     7,     8,    17,     6,
+    10,    11,    12,    16 ]
 
 racc_action_check = [
-     0,     3,     0,     3,     0,     3,     7,     8,     7,     8,
-     7,     8,     9,     9,     1,     9,     2,     2,     4,     5,
-     6,    11,    14,    16 ]
+     7,     8,     7,     8,     7,     8,     3,     0,     3,     0,
+     3,     0,     9,     9,    14,     9,     2,     2,    16,     1,
+     4,     5,     6,    11 ]
 
 racc_action_pointer = [
-    -5,    14,    13,    -4,    10,     9,    20,     1,     2,     9,
-   nil,    19,   nil,   nil,    19,   nil,    12,   nil ]
+     2,    19,    13,     1,    12,    11,    22,    -5,    -4,     9,
+   nil,    21,   nil,   nil,    11,   nil,     7,   nil ]
 
 racc_action_default = [
     -8,    -8,    -1,    -8,    -8,    -8,    -8,    -8,    -8,    -8,
@@ -895,35 +895,35 @@ Racc_debug_parser = false
 
 # reduce 2 omitted
 
-module_eval(<<'.,.,', 'parser.y', 18)
+module_eval(<<'.,.,', 'parser.y', 20)
   def _reduce_3(val, _values, result)
      @eval.and 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 19)
+module_eval(<<'.,.,', 'parser.y', 21)
   def _reduce_4(val, _values, result)
      @eval.or  
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 21)
+module_eval(<<'.,.,', 'parser.y', 23)
   def _reduce_5(val, _values, result)
      @eval.has_feature?(val[1])            
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 22)
+module_eval(<<'.,.,', 'parser.y', 24)
   def _reduce_6(val, _values, result)
      @eval.has_variable?(val[1])           
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 23)
+module_eval(<<'.,.,', 'parser.y', 25)
   def _reduce_7(val, _values, result)
      @eval.variable_value?(val[1], val[3]) 
     result
@@ -944,7 +944,14 @@ class Fizzy::TypeLexer < Fizzy::BaseLexer
   def initialize(string)
     super
 
-    leaf_types = %i(
+    ignore(/\s+/)
+
+    token(/</, :LBRACKET)
+    token(/>/, :RBRACKET)
+
+    token(/,/, :SEP)
+
+    tokens(%i(
       string str
       symbol sym
       integer int
@@ -952,26 +959,25 @@ class Fizzy::TypeLexer < Fizzy::BaseLexer
       path pth
       directory dir
       file
-    )
-
-    list_types = %i(
-      array a
-      list l
-    )
-    #dict_types = %i(
-    #  dictionary dict hash
-    #)
-
-    ignore(/\s+/)
-
-    token(/</, :LBRACKET)
-    token(/>/, :RBRACKET)
+    ), :LEAF_TYPE)
 
     token(/\[/, :LIST_LBRACKET)
     token(/\]/, :LIST_RBRACKET)
-    tokens(list_types, :LIST_TYPE)
+    tokens(%i(
+      array a
+      list l
+    ), :LIST_TYPE)
 
-    tokens(leaf_types, :LEAF_TYPE)
+    token(/:/, :DICT_KEY_SEP)
+    token(/\{/, :DICT_LBRACKET)
+    token(/\}/, :DICT_RBRACKET)
+    token(%i(
+      dictionary dict d
+      hash h
+    ), :DICT_TYPE)
+
+    # Generic name.
+    token(/\S+/, :NAME)
   end
 
 end
@@ -990,15 +996,29 @@ class Fizzy::TypeEvaluator
   end
 
   def add_list
-    @stack.unshift :list
+    @stack.push :list
   end
 
   def add_leaf(value)
-    @stack.unshift value
+    @stack.push value
   end
 
   def typed_value
-    @stack
+    # byebug
+
+    # parse(@untyped_value)
+  end
+
+  def parse(value, type: nil)
+    case @stack.pop
+    when :list
+      if value.is_a? Array
+        value.map { |e| parse(e ) }
+      else
+        error "Invalid untyped value `#{value}`: cannot parse into a list"
+      end
+    else typize(value)
+    end
   end
 
 #  private def resolve_type(type)
@@ -1020,14 +1040,13 @@ require 'racc/parser.rb'
 module Fizzy
   class TypeParser < Racc::Parser
 
-module_eval(<<'...end parser.y/module_eval...', 'parser.y', 20)
+module_eval(<<'...end parser.y/module_eval...', 'parser.y', 34)
 
   def parse(untyped_value, type_expression)
     @yydebug = Fizzy::CFG.debug
     @lexer   = Fizzy::TypeLexer.new(type_expression)
     @eval    = Fizzy::TypeEvaluator.new(untyped_value)
     do_parse
-    byebug
     @eval.typed_value
   end
 
@@ -1041,60 +1060,84 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 20)
 ##### State transition tables begin ###
 
 racc_action_table = [
-     3,     7,     5,     4,     3,     6,     5,     4,     3,     6,
-     5,     4,     3,     6,     5,     4,    10,     6,    11,    12,
-    13,    15 ]
+    21,    13,     3,     5,     4,    18,     7,    15,     6,    20,
+    13,     3,     5,     4,    21,     7,    16,     6,    13,     3,
+     5,     4,     8,     7,    18,     6,     3,     5,     4,    17,
+     7,    22,     6,     3,     5,     4,    11,     7,   nil,     6,
+     3,     5,     4,   nil,     7,   nil,     6,     3,     5,     4,
+   nil,     7,   nil,     6,     3,     5,     4,   nil,     7,   nil,
+     6,    25,    18,    28,    21 ]
 
 racc_action_check = [
-     0,     1,     0,     0,     3,     0,     3,     3,     4,     3,
-     4,     4,    10,     4,    10,    10,     5,    10,     7,     8,
-     9,    14 ]
+    12,     6,     6,     6,     6,    24,     6,     7,     6,    12,
+    21,    21,    21,    21,    26,    21,     8,    21,    15,    15,
+    15,    15,     1,    15,     9,    15,     0,     0,     0,     9,
+     0,    13,     0,     4,     4,     4,     5,     4,   nil,     4,
+    11,    11,    11,   nil,    11,   nil,    11,    18,    18,    18,
+   nil,    18,   nil,    18,    22,    22,    22,   nil,    22,   nil,
+    22,    19,    19,    23,    23 ]
 
 racc_action_pointer = [
-    -2,     1,   nil,     2,     6,    14,   nil,    18,    16,    14,
-    10,   nil,   nil,   nil,    18,   nil ]
+    20,    22,   nil,   nil,    27,    34,    -4,     5,    16,    20,
+   nil,    34,    -4,    20,   nil,    13,   nil,   nil,    41,    58,
+   nil,     5,    48,    60,     1,   nil,    10,   nil,   nil ]
 
 racc_action_default = [
-    -6,    -6,    -1,    -6,    -6,    -6,    -5,    -6,    -6,    -6,
-    -6,    16,    -2,    -3,    -6,    -4 ]
+   -12,   -12,    -1,    -2,   -12,   -12,   -12,   -12,   -12,   -12,
+    -8,   -12,   -12,   -12,   -11,   -12,    29,    -3,   -12,   -12,
+    -5,   -12,   -12,   -12,    -7,    -4,    -9,   -10,    -6 ]
 
 racc_goto_table = [
-     2,     1,   nil,     8,     9,   nil,   nil,   nil,   nil,   nil,
-    14 ]
+     2,    12,     1,   nil,     9,   nil,    14,   nil,   nil,   nil,
+    23,    19,   nil,   nil,   nil,    14,    26,   nil,    24,   nil,
+   nil,    14,    27 ]
 
 racc_goto_check = [
-     2,     1,   nil,     2,     2,   nil,   nil,   nil,   nil,   nil,
-     2 ]
+     2,     4,     1,   nil,     3,   nil,     2,   nil,   nil,   nil,
+     4,     3,   nil,   nil,   nil,     2,     4,   nil,     3,   nil,
+   nil,     2,     2 ]
 
 racc_goto_pointer = [
-   nil,     1,     0 ]
+   nil,     2,     0,     0,    -5 ]
 
 racc_goto_default = [
-   nil,   nil,   nil ]
+   nil,   nil,    10,   nil,   nil ]
 
 racc_reduce_table = [
   0, 0, :racc_error,
-  1, 9, :_reduce_none,
-  3, 10, :_reduce_none,
-  3, 10, :_reduce_3,
-  4, 10, :_reduce_4,
-  1, 10, :_reduce_5 ]
+  1, 15, :_reduce_none,
+  1, 16, :_reduce_2,
+  3, 16, :_reduce_3,
+  4, 16, :_reduce_4,
+  3, 16, :_reduce_5,
+  4, 16, :_reduce_6,
+  3, 17, :_reduce_7,
+  1, 17, :_reduce_8,
+  3, 18, :_reduce_9,
+  3, 18, :_reduce_10,
+  1, 18, :_reduce_11 ]
 
-racc_reduce_n = 6
+racc_reduce_n = 12
 
-racc_shift_n = 16
+racc_shift_n = 29
 
 racc_token_table = {
   false => 0,
   :error => 1,
   :LBRACKET => 2,
   :RBRACKET => 3,
-  :LIST_TYPE => 4,
-  :LIST_LBRACKET => 5,
-  :LIST_RBRACKET => 6,
-  :LEAF_TYPE => 7 }
+  :SEP => 4,
+  :NAME => 5,
+  :LEAF_TYPE => 6,
+  :LIST_TYPE => 7,
+  :LIST_LBRACKET => 8,
+  :LIST_RBRACKET => 9,
+  :DICT_TYPE => 10,
+  :DICT_KEY_SEP => 11,
+  :DICT_LBRACKET => 12,
+  :DICT_RBRACKET => 13 }
 
-racc_nt_base = 8
+racc_nt_base = 14
 
 racc_use_result_var = true
 
@@ -1119,13 +1162,21 @@ Racc_token_to_s_table = [
   "error",
   "LBRACKET",
   "RBRACKET",
+  "SEP",
+  "NAME",
+  "LEAF_TYPE",
   "LIST_TYPE",
   "LIST_LBRACKET",
   "LIST_RBRACKET",
-  "LEAF_TYPE",
+  "DICT_TYPE",
+  "DICT_KEY_SEP",
+  "DICT_LBRACKET",
+  "DICT_RBRACKET",
   "$start",
   "target",
-  "exp" ]
+  "exp",
+  "list_exp",
+  "dict_exp" ]
 
 Racc_debug_parser = false
 
@@ -1135,25 +1186,72 @@ Racc_debug_parser = false
 
 # reduce 1 omitted
 
-# reduce 2 omitted
-
-module_eval(<<'.,.,', 'parser.y', 12)
-  def _reduce_3(val, _values, result)
-     puts "QWE -> #{val}"; @eval.add_list 
-    result
-  end
-.,.,
-
 module_eval(<<'.,.,', 'parser.y', 13)
-  def _reduce_4(val, _values, result)
-     puts "RTY -> #{val}"; @eval.add_list 
+  def _reduce_2(val, _values, result)
+     puts "ASD -> #{val}"; @eval.add_leaf(val[0]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'parser.y', 14)
+module_eval(<<'.,.,', 'parser.y', 15)
+  def _reduce_3(val, _values, result)
+     puts "LIST -> #{val}" 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'parser.y', 16)
+  def _reduce_4(val, _values, result)
+     puts "LIST -> #{val}" 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'parser.y', 18)
   def _reduce_5(val, _values, result)
-     puts "ASD -> #{val}"; @eval.add_leaf(val[0]) 
+     puts "DICT -> #{val}" 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'parser.y', 19)
+  def _reduce_6(val, _values, result)
+     puts "DICT -> #{val}" 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'parser.y', 22)
+  def _reduce_7(val, _values, result)
+     puts "LIST_INNER a -> #{val}" 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'parser.y', 23)
+  def _reduce_8(val, _values, result)
+     puts "LIST_INNER b -> #{val}" 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'parser.y', 26)
+  def _reduce_9(val, _values, result)
+     puts "DICT_INNER a -> #{dict}" 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'parser.y', 27)
+  def _reduce_10(val, _values, result)
+     puts "DICT_INNER b -> #{dict}" 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'parser.y', 28)
+  def _reduce_11(val, _values, result)
+     puts "DICT_INNER c -> #{dict}" 
     result
   end
 .,.,

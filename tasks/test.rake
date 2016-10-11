@@ -13,7 +13,8 @@ begin
   require "rspec/core/rake_task"
 
   RSpec::Core::RakeTask.new(:test) do |t|
-    t.rspec_opts = ["--require spec_helper"]
+    t.rspec_opts  = ["--require spec_helper"]
+    t.pattern     = "spec/#{ENV["S"] || "*"}_spec.rb"
   end
   task test: :build
 rescue LoadError

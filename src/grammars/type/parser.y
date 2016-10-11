@@ -1,18 +1,32 @@
 class Fizzy::TypeParser
 
-  token LBRACKET RBRACKET
-        LIST_TYPE LIST_LBRACKET LIST_RBRACKET
+  token LBRACKET RBRACKET SEP NAME
         LEAF_TYPE
+        LIST_TYPE LIST_LBRACKET LIST_RBRACKET
+        DICT_TYPE DICT_KEY_SEP DICT_LBRACKET DICT_RBRACKET
 
 rule
 
-  target: exp
+  target
+    : exp
 
-  exp: LBRACKET exp RBRACKET
+  exp
+    : LEAF_TYPE { puts "ASD -> #{val}"; @eval.add_leaf(val[0]) }
 
-     | LIST_LBRACKET exp LIST_RBRACKET { puts "QWE -> #{val}"; @eval.add_list }
-     | LIST_TYPE LBRACKET exp RBRACKET { puts "RTY -> #{val}"; @eval.add_list }
-     | LEAF_TYPE { puts "ASD -> #{val}"; @eval.add_leaf(val[0]) }
+    | LIST_LBRACKET      list_exp LIST_RBRACKET { puts "LIST -> #{val}" }
+    | LIST_TYPE LBRACKET list_exp RBRACKET      { puts "LIST -> #{val}" }
+
+    | DICT_LBRACKET      dict_exp DICT_RBRACKET { puts "DICT -> #{val}" }
+    | DICT_TYPE LBRACKET dict_exp RBRACKET      { puts "DICT -> #{val}" }
+
+  list_exp
+    : list_exp SEP list_exp { puts "LIST_INNER a -> #{val}" }
+    | exp                   { puts "LIST_INNER b -> #{val}" }
+
+  dict_exp
+    : dict_exp SEP dict_exp { puts "DICT_INNER a -> #{dict}" }
+    | NAME DICT_KEY_SEP exp { puts "DICT_INNER b -> #{dict}" }
+    | exp                   { puts "DICT_INNER c -> #{dict}" }
 
 end
 
@@ -23,7 +37,6 @@ end
     @lexer   = Fizzy::TypeLexer.new(type_expression)
     @eval    = Fizzy::TypeEvaluator.new(untyped_value)
     do_parse
-    byebug
     @eval.typed_value
   end
 

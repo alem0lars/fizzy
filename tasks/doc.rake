@@ -12,7 +12,7 @@ namespace :doc do
   task generate: :build
 
   desc "Run a local documentation server"
-  task server: "doc:generate" do
+  task serve: "doc:generate" do
     sh "yard server --reload"
   end
 end

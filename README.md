@@ -84,11 +84,11 @@ See [CONTRIBUTING.md][contributing]
 
 **Contributions are welcome!**
 
-## Hall of fame
+### Contributors
 
-* **Alessandro Molari** (`@alem0lars`)
-* **Luca Molari** (`@LMolr`)
-* **Giacomo Mantani** (`@jak3`)
+* **Alessandro Molari** (`alem0lars`)
+* **Luca Molari** (`LMolr`)
+* **Giacomo Mantani** (`jak3`)
 
 ## Pointers
 

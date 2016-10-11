@@ -1,87 +1,107 @@
+# Namespace for fizzy's tree data structure implementation.
 module Fizzy::Tree
 
-  # == Fizzy::Tree::Node Class Description
+  # ## Fizzy::Tree::Node Class Description
   #
   # This class models the nodes for an *N-ary* tree data structure. The
   # nodes are *named*, and have a place-holder for the node data (i.e.,
-  # _content_ of the node). The node names are required to be *unique*
-  # amongst the sibling/peer nodes. Note that the name is implicitly
-  # used as an _ID_ within the data structure).
+  # *content* of the node).
   #
-  # The node's _content_ is *not* required to be unique across
-  # different nodes in the tree, and can be +nil+ as well.
+  # @note The node names are required to be *unique* amongst the sibling/peer
+  #       nodes because the node's name is implicitly used as *ID* within the
+  #       data structure.
+  #
+  # The node's *content* is *not* required to be unique across
+  # different nodes in the tree, and can be `nil` as well.
   #
   # The class provides various methods to navigate the tree, traverse
   # the structure, modify contents of the node, change position of the
   # node in the tree, and to make structural changes to the tree.
   #
   # A node can have any number of *child* nodes attached to it and
-  # hence can be used to create N-ary trees.  Access to the child
-  # nodes can be made in order (with the conventional left to right
-  # access), or randomly.
+  # hence can be used to create N-ary trees. Access to the child
+  # nodes can be made *in order* (with the conventional left to right
+  # access), or *randomly*.
   #
   # The node also provides direct access to its *parent* node as well
   # as other superior parents in the path to root of the tree.  In
   # addition, a node can also access its *sibling* nodes, if present.
   #
-  # Note that while this implementation does not _explicitly_ support
+  # Note that while this implementation does not *explicitly* support
   # directed graphs, the class itself makes no restrictions on
   # associating a node's *content* with multiple nodes in the tree.
   # However, having duplicate nodes within the structure is likely to
   # cause unpredictable behavior.
   #
-  # == Example
+  # @example Basic usage
+  #   # Load the library
+  #   require "tree"
+  #   # .. Create root node first. Every node has a name and a optional content.
+  #   root_node = Fizzy::Tree::Node.new("ROOT", "Root Content")
+  #   root_node.print_tree
+  #   # .. Now insert the child nodes. You can "chain" the child insertions for a given path to any depth.
+  #   root_node << Fizzy::Tree::Node.new("CHILD1", "Child1 Content") << Fizzy::Tree::Node.new("GRANDCHILD1", "GrandChild1 Content")
+  #   root_node << Fizzy::Tree::Node.new("CHILD2", "Child2 Content")
+  #   # .. Lets print the representation to stdout. This is primarily used for debugging purposes.
+  #   root_node.print_tree
+  #   # .. Lets directly access children and grandchildren of the root.  The can be "chained" for a given path to any depth.
+  #   child1       = root_node["CHILD1"]
+  #   grand_child1 = root_node["CHILD1"]["GRANDCHILD1"]
+  #   # .. Now lets retrieve siblings of the current node as an array.
+  #   siblings_of_child1 = child1.siblings
+  #   # .. Lets retrieve immediate children of the root node as an array.
+  #   children_of_root = root_node.children
+  #   # .. Retrieve the parent of a node.
+  #   parent = child1.parent
+  #   # .. This is a depth-first and L-to-R pre-ordered traversal.
+  #   root_node.each { |node| node.content.reverse }
+  #   # .. Lets remove a child node from the root node.
+  #   root_node.remove!(child1)
   #
-  #
-  #
-  # @author Alessandro Molari <molari.alessandro@gmail.com (@alem0lars)
-  #
-  # Thanks to Anupam Sengupta
   class Node
     include Enumerable
     include Comparable
-    include Tree::Utils::CamelCaseMethodHandler
-    include Tree::Utils::JSONConverter
-    include Tree::Utils::TreeMergeHandler
-    include Tree::Utils::HashConverter
+
+    include Fizzy::IO
+    include Fizzy::Tree::MetricsHandler
+    include Fizzy::Tree::PathHandler
+    include Fizzy::Tree::MergeHandler
+    include Fizzy::Tree::HashConverter
 
     # @!group Core Attributes
 
     # @!attribute [r] name
+    # Name of this node. Expected to be unique within the tree.
     #
-    # Name of this node.  Expected to be unique within the tree.
+    # @note The name attribute really functions as an *ID* within the tree
+    # structure, and hence the uniqueness constraint is required.
     #
-    # Note that the name attribute really functions as an *ID* within
-    # the tree structure, and hence the uniqueness constraint is
-    # required.
-    #
-    # This may be changed in the future, but for now it is best to
-    # retain unique names within the tree structure, and use the
-    # +content+ attribute for any non-unique node requirements.
-    #
-    # If you want to change the name, you probably want to call +rename+
+    # If you want to change the name, you probably want to call {#rename}
     # instead.
     #
     # @see content
     # @see rename
-    attr_reader   :name
+    attr_reader :name
 
     # @!attribute [rw] content
-    # Content of this node.  Can be +nil+.  Note that there is no
-    # uniqueness constraint related to this attribute.
+    # Content of this node. Can be `nil`.
+    #
+    # @note There is no uniqueness constraint related to this attribute.
     #
     # @see name
     attr_accessor :content
 
     # @!attribute [r] parent
-    # Parent of this node.  Will be +nil+ for a root node.
-    attr_reader   :parent
+    # Parent of this node.
+    #
+    # @note Will be `nil` for a root node.
+    attr_reader :parent
 
     # @!attribute [r] root
     # Root node for the (sub)tree to which this node belongs.
     # A root node's root is itself.
     #
-    # @return [Tree::Fizzy::Tree::Node] Root of the (sub)tree.
+    # @return [Fizzy::Tree::Node] Root of the (sub)tree.
     def root
       root = self
       root = root.parent while !root.is_root?
@@ -89,27 +109,27 @@ module Fizzy::Tree
     end
 
     # @!attribute [r] is_root?
-    # Returns +true+ if this is a root node.  Note that
-    # orphaned children will also be reported as root nodes.
+    # Returns `true` if this is a root node.
     #
-    # @return [Boolean] +true+ if this is a root node.
+    # Note that orphaned children will also be reported as root nodes.
+    #
+    # @return [Boolean] `true` if this is a root node.
     def is_root?
       @parent.nil?
     end
 
     # @!attribute [r] has_content?
-    # +true+ if this node has content.
+    # `true` if this node has content.
     #
-    # @return [Boolean] +true+ if the node has content.
+    # @return [Boolean] `true` if the node has content.
     def has_content?
       @content != nil
     end
 
     # @!attribute [r] is_leaf?
-    # +true+ if this node is a _leaf_ - i.e., one without
-    # any children.
+    # `true` if this node is a `leaf` - i.e., one without any children.
     #
-    # @return [Boolean] +true+ if this is a leaf node.
+    # @return [Boolean] `true` if this is a leaf node.
     #
     # @see #has_children?
     def is_leaf?
@@ -120,9 +140,9 @@ module Fizzy::Tree
     # An array of ancestors of this node in reversed order
     # (the first element is the immediate parent of this node).
     #
-    # Returns +nil+ if this is a root node.
+    # Returns `nil` if this is a root node.
     #
-    # @return [Array<Tree::Fizzy::Tree::Node>] An array of ancestors of this node
+    # @return [Array<Fizzy::Tree::Node>] An array of ancestors of this node
     # @return [nil] if this is a root node.
     def parentage
       return nil if is_root?
@@ -137,9 +157,9 @@ module Fizzy::Tree
     end
 
     # @!attribute [r] has_children?
-    # +true+ if the this node has any child node.
+    # `true` if the this node has any child node.
     #
-    # @return [Boolean] +true+ if child nodes exist.
+    # @return [Boolean] `true` if child nodes exist.
     #
     # @see #is_leaf?
     def has_children?
@@ -151,7 +171,7 @@ module Fizzy::Tree
     # Creates a new node with a name and optional content.
     # The node name is expected to be unique within the tree.
     #
-    # The content can be of any type, and defaults to +nil+.
+    # The content can be of any type, and defaults to `nil`.
     #
     # @param [Object] name Name of the node. Conventional usage is to pass a
     #   String (Integer names may cause *surprises*)
@@ -160,10 +180,10 @@ module Fizzy::Tree
     #
     # @raise [ArgumentError] Raised if the node name is empty.
     #
-    # @note If the name is an +Integer+, then the semantics of {#[]} access
-    #   method can be surprising, as an +Integer+ parameter to that method
+    # @note If the name is an `Integer`, then the semantics of {#[]} access
+    #   method can be surprising, as an `Integer` parameter to that method
     #   normally acts as an index to the children array, and follows the
-    #   _zero-based_ indexing convention.
+    #   *zero-based* indexing convention.
     #
     # @see #[]
     def initialize(name, content = nil)
@@ -171,10 +191,9 @@ module Fizzy::Tree
       @name, @content = name, content
 
       if name.kind_of?(Integer)
-        warn StandardWarning,
-             "Using integer as node name."\
-             " Semantics of Fizzy::Tree::Node[] may not be what you expect!"\
-             " #{name} #{content}"
+        warning "Using integer as node name."\
+                " Semantics of TreeNode[] may not be what you expect!"\
+                " #{name} #{content}"
       end
 
       self.set_as_root!
@@ -185,7 +204,7 @@ module Fizzy::Tree
     # Returns a copy of this node, with its parent and children links removed.
     # The original node remains attached to its tree.
     #
-    # @return [Tree::Fizzy::Tree::Node] A copy of this node.
+    # @return [Fizzy::Tree::Node] A copy of this node.
     def detached_copy
       self.class.new(@name, @content ? @content.clone : nil)
     end
@@ -195,7 +214,7 @@ module Fizzy::Tree
     # @author Vincenzo Farruggia
     # @since 0.8.0
     #
-    # @return [Tree::Fizzy::Tree::Node] A copy of (sub-)tree from this node.
+    # @return [Fizzy::Tree::Node] A copy of (sub-)tree from this node.
     def detached_subtree_copy
       new_node = detached_copy
       children { |child| new_node << child.detached_subtree_copy }
@@ -306,7 +325,7 @@ module Fizzy::Tree
     #
     #    -children.size..children.size
     #
-    # This is to prevent +nil+ nodes being created as children if a non-existant
+    # This is to prevent `nil` nodes being created as children if a non-existant
     # position is used.
     #
     # If the new node being added has an existing parent node, then it will be
@@ -326,7 +345,7 @@ module Fizzy::Tree
     #                       the same name exists, or if an invalid insertion
     #                       position is specified.
     #
-    # @raise [ArgumentError] This exception is raised if a +nil+ node is passed
+    # @raise [ArgumentError] This exception is raised if a `nil` node is passed
     #                        as the argument.
     #
     # @see #<<
@@ -446,7 +465,7 @@ module Fizzy::Tree
     #
     # @param [Fizzy::Tree::Node] child The child node to remove.
     #
-    # @return [Fizzy::Tree::Node] The removed child node, or +nil+ if a +nil+ was passed in as argument.
+    # @return [Fizzy::Tree::Node] The removed child node, or `nil` if a `nil` was passed in as argument.
     #
     # @see #remove_from_parent!
     # @see #remove_all!
@@ -477,8 +496,8 @@ module Fizzy::Tree
     #
     # If this is the root node, then does nothing.
     #
-    # @return [Tree:Fizzy::Tree::Node] +self+ (the removed node) if the operation is
-    #                                successful, +nil+ otherwise.
+    # @return [Fizzy::Tree::Node] `self` (the removed node) if the operation is
+    #                                successful, `nil` otherwise.
     #
     # @see #remove_all!
     def remove_from_parent!
@@ -489,7 +508,7 @@ module Fizzy::Tree
     # the child nodes, then these child nodes report themselves as roots after
     # this operation.
     #
-    # @return [Fizzy::Tree::Node] this node (+self+)
+    # @return [Fizzy::Tree::Node] this node (`self`)
     #
     # @see #remove!
     # @see #remove_from_parent!
@@ -503,8 +522,8 @@ module Fizzy::Tree
 
     # Protected method which sets this node as a root node.
     #
-    # @return +nil+.
-    def set_as_root!              # :nodoc:
+    # @return `nil`.
+    def set_as_root!
       self.parent = nil
     end
 
@@ -524,34 +543,34 @@ module Fizzy::Tree
 
     # Returns the requested node from the set of immediate children.
     #
-    # - If the +name+ argument is an _Integer_, then the in-sequence
+    # - If the `name` argument is an _Integer_, then the in-sequence
     #   array of children is accessed using the argument as the
     #   *index* (zero-based).  However, if the second _optional_
-    #   +num_as_name+ argument is +true+, then the +name+ is used
+    #   `num_as_name` argument is `true`, then the `name` is used
     #   literally as a name, and *NOT* as an *index*
     #
-    # - If the +name+ argument is *NOT* an _Integer_, then it is taken to
+    # - If the `name` argument is *NOT* an _Integer_, then it is taken to
     #   be the *name* of the child node to be returned.
     #
-    # If a non-+Integer+ +name+ is passed, and the +num_as_name+
-    # parameter is also +true+, then a warning is thrown (as this is a
-    # redundant use of the +num_as_name+ flag.)
+    # If a non-`Integer` `name` is passed, and the `num_as_name`
+    # parameter is also `true`, then a warning is thrown (as this is a
+    # redundant use of the `num_as_name` flag.)
     #
     # @param [String|Number] name_or_index Name of the child, or its
     #   positional index in the array of child nodes.
     #
-    # @param [Boolean] num_as_name Whether to treat the +Integer+
-    #   +name+ argument as an actual name, and *NOT* as an _index_ to
+    # @param [Boolean] num_as_name Whether to treat the `Integer`
+    #   `name` argument as an actual name, and *NOT* as an _index_ to
     #   the children array.
     #
     # @return [Fizzy::Tree::Node] the requested child node.  If the index
-    #   in not in range, or the name is not present, then a +nil+
+    #   in not in range, or the name is not present, then a `nil`
     #   is returned.
     #
-    # @note The use of +Integer+ names is allowed by using the optional
-    #       +num_as_name+ flag.
+    # @note The use of `Integer` names is allowed by using the optional
+    #       `num_as_name` flag.
     #
-    # @raise [ArgumentError] Raised if the +name_or_index+ argument is +nil+.
+    # @raise [ArgumentError] Raised if the `name_or_index` argument is `nil`.
     #
     # @see #add
     # @see #initialize
@@ -724,17 +743,17 @@ module Fizzy::Tree
     # @!group Navigating the Child Nodes
 
     # First child of this node.
-    # Will be +nil+ if no children are present.
+    # Will be `nil` if no children are present.
     #
-    # @return [Fizzy::Tree::Node] The first child, or +nil+ if none is present.
+    # @return [Fizzy::Tree::Node] The first child, or `nil` if none is present.
     def first_child
       children.first
     end
 
     # Last child of this node.
-    # Will be +nil+ if no children are present.
+    # Will be `nil` if no children are present.
     #
-    # @return [Fizzy::Tree::Node] The last child, or +nil+ if none is present.
+    # @return [Fizzy::Tree::Node] The last child, or `nil` if none is present.
     def last_child
       children.last
     end
@@ -757,9 +776,9 @@ module Fizzy::Tree
       is_root? ? self : parent.children.first
     end
 
-    # Returns +true+ if this node is the first sibling at its level.
+    # Returns `true` if this node is the first sibling at its level.
     #
-    # @return [Boolean] +true+ if this is the first sibling.
+    # @return [Boolean] `true` if this is the first sibling.
     #
     # @see #is_last_sibling?
     # @see #first_sibling
@@ -783,9 +802,9 @@ module Fizzy::Tree
       is_root? ? self : parent.children.last
     end
 
-    # Returns +true+ if this node is the last sibling at its level.
+    # Returns `true` if this node is the last sibling at its level.
     #
-    # @return [Boolean] +true+ if this is the last sibling.
+    # @return [Boolean] `true` if this is the last sibling.
     #
     # @see #is_first_sibling?
     # @see #last_sibling
@@ -796,7 +815,7 @@ module Fizzy::Tree
     # An array of siblings for this node. This node is excluded.
     #
     # If a block is provided, yields each of the sibling nodes to the block.
-    # The root always has +nil+ siblings.
+    # The root always has `nil` siblings.
     #
     # @yieldparam sibling [Fizzy::Tree::Node] Each sibling node.
     #
@@ -820,11 +839,11 @@ module Fizzy::Tree
       end
     end
 
-    # +true+ if this node is the only child of its parent.
+    # `true` if this node is the only child of its parent.
     #
-    # As a special case, a root node will always return +true+.
+    # As a special case, a root node will always return `true`.
     #
-    # @return [Boolean] +true+ if this is the only child of its parent.
+    # @return [Boolean] `true` if this is the only child of its parent.
     #
     # @see #siblings
     def is_only_child?
@@ -834,7 +853,7 @@ module Fizzy::Tree
     # Next sibling for this node.
     # The _next_ node is defined as the node to right of this node.
     #
-    # Will return +nil+ if no subsequent node is present, or if this is a root
+    # Will return `nil` if no subsequent node is present, or if this is a root
     # node.
     #
     # @return [Fizzy::Tree::Node] the next sibling node, if present.
@@ -851,7 +870,7 @@ module Fizzy::Tree
     # Previous sibling of this node.
     # _Previous_ node is defined to be the node to left of this node.
     #
-    # Will return +nil+ if no predecessor node is present, or if this is a root
+    # Will return `nil` if no predecessor node is present, or if this is a root
     # node.
     #
     # @return [Fizzy::Tree::Node] the previous sibling node, if present.
@@ -874,8 +893,8 @@ module Fizzy::Tree
     # @param [Fizzy::Tree::Node] other The other node to compare against.
     #
     # @return [Integer] +1 if this node is a 'successor', 0 if equal and -1 if
-    #                   this node is a 'predecessor'. Returns `nil` if the other
-    #                   object is not a `Fizzy::Tree::Node`.
+    #                   this node is a 'predecessor'. Returns 'nil' if the other
+    #                   object is not a 'Fizzy::Tree::Node'.
     def <=>(other)
       return nil if other == nil || other.class != Fizzy::Tree::Node
       self.name <=> other.name
@@ -912,177 +931,5 @@ module Fizzy::Tree
                          max_depth, block) if child } # Child might be 'nil'
     end
 
-    # @!group Metrics and Measures
-
-    # @!attribute [r] size
-    # Total number of nodes in this (sub)tree, including this node.
-    #
-    # Size of the tree is defined as:
-    #
-    # Size:: Total number nodes in the subtree including this node.
-    #
-    # @return [Integer] Total number of nodes in this (sub)tree.
-    def size
-      inject(0) {|sum, node| sum + 1 if node}
-    end
-
-    # @!attribute [r] length
-    # Convenience synonym for {#size}.
-    #
-    # @deprecated This method name is ambiguous and may be removed. Use
-    # {#size} instead.
-    #
-    # @return [Integer] The total number of nodes in this (sub)tree.
-    # @see #size
-    def length
-      size()
-    end
-
-    # @!attribute [r] node_height
-    # Height of the (sub)tree from this node.  Height of a node is defined as:
-    #
-    # Height:: Length of the longest downward path to a leaf from the node.
-    #
-    # - Height from a root node is height of the entire tree.
-    # - The height of a leaf node is zero.
-    #
-    # @return [Integer] Height of the node.
-    def node_height
-      return 0 if is_leaf?
-      1 + @children.collect { |child| child.node_height }.max
-    end
-
-    # @!attribute [r] node_depth
-    # Depth of this node in its tree.  Depth of a node is defined as:
-    #
-    # Depth:: Length of the node's path to its root. Depth of a root node is
-    # zero.
-    #
-    # {#level} is an alias for this method.
-    #
-    # @return [Integer] Depth of this node.
-    def node_depth
-      return 0 if is_root?
-      1 + parent.node_depth
-    end
-
-    # @!attribute [r] level
-    # Alias for {#node_depth}
-    #
-    # @see #node_depth
-    def level
-      node_depth
-    end
-
-    # @!attribute [r] depth
-    # Depth of the tree from this node. A single leaf node has a depth of 1.
-    #
-    # This method is *DEPRECATED* and may be removed in the subsequent
-    # releases. Note that the value returned by this method is actually the:
-    #
-    # _height_ + 1 of the node, *NOT* the _depth_.
-    #
-    # For correct and conventional behavior, please use {#node_depth} and
-    # {#node_height} methods instead.
-    #
-    # @return [Integer] depth of the node.
-    #
-    # @deprecated This method returns an incorrect value. Use the
-    # {#node_depth} method instead.
-    #
-    # @see #node_depth
-    def depth
-      warn DeprecatedMethodWarning,
-           "This method is deprecated.  "\
-           "Please use node_depth() or node_height() instead (bug # 22535)"
-
-      return 1 if is_leaf?
-      1 + @children.collect { |child| child.depth }.max
-    end
-
-    # @!attribute [r] breadth
-    # Breadth of the tree at this node's level.
-    # A single node without siblings has a breadth of 1.
-    #
-    # Breadth is defined to be:
-    # Breadth:: Number of sibling nodes to this node + 1 (this node itself),
-    # i.e., the number of children the parent of this node has.
-    #
-    # @return [Integer] breadth of the node's level.
-    def breadth
-      is_root? ? 1 : parent.children.size
-    end
-
-    # @!attribute [r] in_degree
-    # The incoming edge-count of this node.
-    #
-    # In-degree is defined as:
-    # In-degree:: Number of edges arriving at the node (0 for root, 1 for
-    # all other nodes)
-    #
-    # - In-degree = 0 for a root or orphaned node
-    # - In-degree = 1 for a node which has a parent
-    #
-    # @return [Integer] The in-degree of this node.
-    def in_degree
-      is_root? ? 0 : 1
-    end
-
-    # @!attribute [r] out_degree
-    # The outgoing edge-count of this node.
-    #
-    # Out-degree is defined as:
-    # Out-degree:: Number of edges leaving the node (zero for leafs)
-    #
-    # @return [Integer] The out-degree of this node.
-    def out_degree
-      is_leaf? ? 0 : children.size
-    end
-
-    # @!endgroup
-
-    # @!group Node Path
-
-    # Returns the path of this node from the root as a string, with the node
-    # names separated using the specified separator. The path is listed left
-    # to right from the root node.
-    #
-    # @param separator The optional separator to use. The default separator is
-    #                  '+=>+'.
-    #
-    # @return [String] The node path with names separated using the specified
-    #                  separator.
-    def path_as_string(separator = '=>')
-      path_as_array().join(separator)
-    end
-
-    # Returns the node-names from this node to the root as an array. The first
-    # element is the root node name, and the last element is this node's name.
-    #
-    # @return [Array] The array containing the node names for the path to this
-    # node
-    def path_as_array()
-      get_path_name_array().reverse
-    end
-
-    # @!visibility private
-    #
-    # Returns the path names in an array. The first element is the name of
-    # this node, and the last element is the root node name.
-    #
-    # @return [Array] An array of the node names for the path from this node
-    #                 to its root.
-    protected def get_path_name_array(current_array_path = [])
-      path_array = current_array_path + [name]
-
-      if !parent              # If detached node or root node.
-        return path_array
-      else                    # Else recurse to parent node.
-        path_array = parent.get_path_name_array(path_array)
-        return path_array
-      end
-    end
-
-    # @!endgroup
   end
 end

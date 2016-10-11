@@ -11,7 +11,7 @@ namespace :website do
   task build: :build
 
   desc "Preview the website"
-  task :preview do
+  task :serve do
     FileUtils.cd $cfg[:paths][:website] do
       sh "bundle exec middleman serve", verbose: :false
     end

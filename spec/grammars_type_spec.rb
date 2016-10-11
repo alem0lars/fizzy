@@ -1,6 +1,7 @@
 require "spec_helper"
 
 
+# TODO: Use shared examples (if it makes sense)
 describe Fizzy::TypeParser do
 
   include_context :grammars_type

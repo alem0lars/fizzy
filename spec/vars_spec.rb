@@ -1,6 +1,7 @@
 require "spec_helper"
 
 
+# TODO: Use shared examples (if it makes sense)
 describe Fizzy::Vars do
 
   let(:vars_mock) {

@@ -1,5 +1,6 @@
 require "spec_helper"
 
+# TODO: Use shared examples (if it makes sense)
 describe Fizzy::CFG.version do
 
   it "is compliant with the semver format" do

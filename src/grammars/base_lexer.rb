@@ -12,12 +12,20 @@ class Fizzy::BaseLexer
     @rules << [pattern, [:SKIP]]
   end
 
-  def tokens(pattern, *names)
-    @rules << [pattern, names]
+  def tokens(patterns, *names)
+    Array(patterns).map do |pattern|
+      case pattern
+      when Regexp then pattern
+      when String then Regexp.new(pattern)
+      else             Regexp.new(pattern.to_s)
+      end
+    end.each do |pattern|
+      @rules << [pattern, names]
+    end
   end
 
-  def token(pattern, name)
-    @rules << [pattern, [name]]
+  def token(patterns, name)
+    tokens(patterns, name)
   end
 
   def keyword(name)

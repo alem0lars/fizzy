@@ -12,18 +12,18 @@ The hassle free configuration manager
 The best way to learn how to use fizzy is to read the
 **Official End-User Guide**:
 
-- [**Read online**][read_end_user_guide]
-- [**Download as PDF**][download_pdf_end_user_guide]
-- [**Download as ePUB**][download_epub_end_user_guide]
-- [**Download it as MOBI**][download_mobi_end_user_guide]
+* [**Read online**][read_end_user_guide]
+* [**Download as PDF**][download_pdf_end_user_guide]
+* [**Download as ePUB**][download_epub_end_user_guide]
+* [**Download as MOBI**][download_mobi_end_user_guide]
 
 ## Installation
 
 Fizzy is distributed in two ways:
 
-- **Standalone**: it includes just fizzy, as any other project.
+* **Standalone**: it includes just fizzy, as any other project.
   This is the *preferred* way to use fizzy in your machines.
-- **Portable**: it includes everything:
+* **Portable**: it includes everything:
   fizzy, its dependencies, a ruby interpreter.
   You may want to use this if you don't want to leave any traces,
   can't use or don't have a Ruby interpreter,
@@ -84,6 +84,12 @@ See [CONTRIBUTING.md][contributing]
 
 **Contributions are welcome!**
 
+### Contributors
+
+* **Alessandro Molari** (`alem0lars`)
+* **Luca Molari** (`LMolr`)
+* **Giacomo Mantani** (`jak3`)
+
 ## Pointers
 
 * IRC channel: `#fizzy` at freenode
@@ -93,8 +99,9 @@ See [CONTRIBUTING.md][contributing]
 
 Made with ♥ by Alessandro Molari
 
-- [@alem0lars][twitter]
-- [molari.alessandro@gmail.com][send_email]
+* [@alem0lars][twitter]
+* [molari.alessandro@gmail.com][send_email]
+
 
 <!-- Link declarations -->
 

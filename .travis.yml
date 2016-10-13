@@ -2,8 +2,11 @@ sudo: required
 
 language: ruby
 
+rvm:
+  - 2.3.0
+
 services:
   - docker
-  
+
 script:
   - bundle exec rake docker:test

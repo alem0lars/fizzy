@@ -1,8 +1,11 @@
-require "helper"
+require "spec_helper"
 
+
+# TODO: Use shared examples (if it makes sense)
 describe Fizzy::Vars do
-  before do
-    @vars_mock = Fizzy::Mocks::Vars.new({
+
+  let(:vars_mock) {
+    Fizzy::Mocks::Vars.new({
       "foo"    => "bar",
       "notfoo" => "notbar",
       "qwe"    => "rty",
@@ -17,10 +20,11 @@ describe Fizzy::Vars do
         }
       }
     })
-  end
+  }
 
   describe "#get_var" do
-    it "should retrieve available values" do
+
+    context "when an available variable" do
       { "foo"                        => "bar",
         "(foo|qwe)"                  => %w(bar rty),
         "(foo|ewq)"                  => "bar",
@@ -31,13 +35,23 @@ describe Fizzy::Vars do
         "vip.(pluto|cingli)"         => "male",
         "vip.(others|cingli).dragon" => "ball"
       }.each do |key, expected|
-        @vars_mock.get_var(key).must_equal(expected)
+        context "`#{key} is retrieved" do
+          subject { vars_mock.get_var(key) }
+          it { is_expected.to eq(expected) }
+        end
       end
     end
 
-    it "should retrieve `nil` for unavailable values" do
-      @vars_mock.get_var("f00").must_be_nil
-      @vars_mock.get_var("(f00|b4r)").must_be_nil
+    context "when a unavailable variable" do
+      [ "f00",
+        "(f00|b4r)"
+      ].each do |key|
+        context "`#{key} is retrieved" do
+          subject { vars_mock.get_var(key) }
+          it { is_expected.to be_nil }
+        end
+      end
     end
+
   end
 end

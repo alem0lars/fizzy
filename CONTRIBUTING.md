@@ -14,7 +14,6 @@ to abide by the [Code of Conduct][code_of_conduct].
 ### 2: Make changes
 
 - Make your change.
-- Write specs (following the [guidelines][betterspecs]).
 - Follow the [Style Guide][style_guide].
 - Make the tests pass: `bundle exec rake docker:test`.
 - If you need to open a console inside the Docker container, you can run:
@@ -28,7 +27,6 @@ to abide by the [Code of Conduct][code_of_conduct].
 ### 3: Integrate changes
 
 - [Submit a pull request][send_pull_request].
-- If [Hound CI][houndci] catches style violations, fix them.
 
 ## Issues
 
@@ -74,6 +72,7 @@ Here are a few examples:
 
 **Thank you for your contribution!**
 
+
 <!-- Link declarations -->
 
 [style_guide]: ./STYLE_GUIDE.md
@@ -85,6 +84,5 @@ Here are a few examples:
 [houndci]: https://houndci.com
 
 [good_commit_message]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
-[betterspecs]: http://betterspecs.org
 
 [markdown_syntax]: http://daringfireball.net/projects/markdown/syntax

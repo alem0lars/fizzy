@@ -12,16 +12,18 @@ class Fizzy::LogicParser
 
 rule
 
-  target: exp
+  target
+    : exp
 
-  exp: LBRACKET exp RBRACKET
+  exp
+    : LBRACKET exp RBRACKET
 
-     | exp AND exp { @eval.and }
-     | exp OR  exp { @eval.or  }
+    | exp AND exp { @eval.and }
+    | exp OR  exp { @eval.or  }
 
-     | FEATURE_PREFIX FEATURE_NAME  { @eval.has_feature?(val[1])            }
-     | VAR_PREFIX VAR_NAME          { @eval.has_variable?(val[1])           }
-     | VAR_PREFIX VAR_NAME EQ VALUE { @eval.variable_value?(val[1], val[3]) }
+    | FEATURE_PREFIX FEATURE_NAME  { @eval.has_feature?(val[1])            }
+    | VAR_PREFIX VAR_NAME          { @eval.has_variable?(val[1])           }
+    | VAR_PREFIX VAR_NAME EQ VALUE { @eval.variable_value?(val[1], val[3]) }
 
 end
 
@@ -38,5 +40,6 @@ end
   def next_token
     @lexer.next_token
   end
+
 
 # vim: set filetype=racc :

@@ -77,10 +77,16 @@ module Fizzy::IO
   # Display an error message (`msg`) to the user. Before returning, the
   # program will exit (with exit status `-1`).
   #
-  def error(msg, status: -1)
-    error("Invalid status code `#{status}`: it's not negative") if status >= 0
+  def error(msg, exc: nil)
+    must "message", msg, be: String
+
     tell(colorize("☠ ", :magenta) + colorize(msg, :red))
-    exit(status)
+
+    if exc
+      raise exc.new(msg)
+    else
+      exit(-1)
+    end
   end
 
   # Tell something to the user.

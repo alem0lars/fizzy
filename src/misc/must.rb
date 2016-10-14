@@ -3,16 +3,28 @@ class Object
   def must(name,
            value,
            be: nil,
-           ge: nil, gt: nil, le: nil, lt: nil)
+           ge: nil, gt: nil, le: nil, lt: nil,
+           msg: nil)
+
+    def err(msg)
+      error msg, exc: ArgumentError
+    end
 
     if !be.nil?
       # 1: type condition.
-      if be.is_a?(Class) && !value.is_a?(be)
-        error "Invalid `#{name}` (value=`#{value}`): must be a `#{be}`"
+      if be.is_a?(Class)
+        unless value.is_a?(be)
+          err "Invalid `#{name}` (value=`#{value}`): must be a `#{be}`"
+        end
+      end
+      if be.is_a?(Array) && be.all? { |b| b.is_a?(Class) }
+        unless be.any? { |b| value.is_a?(b) }
+          err "Invalid `#{name}` (value=`#{value}`): must be any of `#{be}`"
+        end
       end
 
-      # 2: not nil condition.
-      error "Invalid `#{name}`: must be not nil" if be == :not_nil && value.nil?
+      # 2: not-`nil` condition.
+      err "Invalid `#{name}`: must be not nil" if be == :not_nil && value.nil?
     end
 
     # 3.1: greater-or-equal-than condition.
@@ -20,7 +32,7 @@ class Object
       must name, value, be: Number
       must :ge,  ge,    be: Number
       unless value >= ge
-        error "Invalid `#{name}`: `#{value}` must be greater or equal than `#{ge}`"
+        err "Invalid `#{name}`: `#{value}` must be greater or equal than `#{ge}`"
       end
     end
 
@@ -29,7 +41,7 @@ class Object
       must name, value, be: Number
       must :gt,  gt,    be: Number
       unless value > gt
-        error "Invalid `#{name}`: `#{value}` must be greater than `#{gt}`"
+        err "Invalid `#{name}`: `#{value}` must be greater than `#{gt}`"
       end
     end
 
@@ -38,7 +50,7 @@ class Object
       must name, value, be: Number
       must :le,  le,    be: Number
       unless value <= le
-        error "Invalid `#{name}`: `#{value}` must be lesser or equal than `#{le}`"
+        err "Invalid `#{name}`: `#{value}` must be lesser or equal than `#{le}`"
       end
     end
 
@@ -47,7 +59,7 @@ class Object
       must name, value, be: Number
       must :lt,  lt,    be: Number
       unless value < lt
-        error "Invalid `#{name}`: `#{value}` must be lesser than `#{lt}`"
+        err "Invalid `#{name}`: `#{value}` must be lesser than `#{lt}`"
       end
     end
 
@@ -55,9 +67,9 @@ class Object
     if block_given?
       result = yield(name, value)
       if result.is_a?(Array)
-        error "Invalid `#{name}`: #{result[1]}" unless result[0]
+        err "Invalid `#{name}`: #{result[1]}" unless result[0]
       else
-        error "Invalid `#{name}`: wrong value `#{value}`" unless result
+        err "Invalid `#{name}`: wrong value `#{value}`" unless result
       end
     end
   end

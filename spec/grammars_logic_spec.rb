@@ -1,20 +1,25 @@
 require "spec_helper"
 
 
+# TODO: Use shared examples (if it makes sense)
 describe Fizzy::LogicParser do
 
-  let(:avail_features)   { %w(accu amun-ra corr_disc the-eme_ward) }
-  let(:unavail_features) { %w(arti amun_ra corr-disc the-eme-ward empath) }
-  let(:avail_vars)       { %w(arte doc-rep flint_beast keep-of_the.lake) }
-  let(:unavail_vars)     { %w(accu doc_rep flint-beast keep_of_the.lake ophe) }
+  include_context :grammars_logic
 
-  let(:avail_var)       { "v?#{avail_vars.sample}" }
-  let(:avail_feature)   { "f?#{avail_features.sample}" }
-  let(:unavail_var)     { "v?#{unavail_vars.sample}" }
-  let(:unavail_feature) { "f?#{unavail_features.sample}" }
+  class << self
+    def avail_features;   %w(accu amun-ra corr_disc the-eme_ward)            end
+    def unavail_features; %w(arti amun_ra corr-disc the-eme-ward empath)     end
+    def avail_vars;       %w(arte doc-rep flint_beast keep-of_the.lake)      end
+    def unavail_vars;     %w(accu doc_rep flint-beast keep_of_the.lake ophe) end
 
-  before do
-    @vars_mock = Fizzy::Mocks::Vars.new({
+    def avail_var_expression;       "v?#{avail_vars.sample}"       end
+    def avail_feature_expression;   "f?#{avail_features.sample}"   end
+    def unavail_var_expression;     "v?#{unavail_vars.sample}"     end
+    def unavail_feature_expression; "f?#{unavail_features.sample}" end
+  end
+
+  let(:vars_mock) {
+    Fizzy::Mocks::Vars.new({
       "arte"        => "agility",
       "arti"        => "agility",
       "balpha"      => "strength",
@@ -26,80 +31,87 @@ describe Fizzy::LogicParser do
       },
       features: %w(accu aluna andro amun-ra corr_disc the-eme_ward)
     })
-  end
+  }
 
   describe "#parse" do
 
     context "when simple feature" do
-      it "should succeed for available features" do
-        @avail_features.each { |feature| assert_parse("f?#{feature}") }
+      avail_features.each do |feature|
+        context "`#{feature}` is available" do
+          subject { "f?#{feature}" }
+          it { is_expected.to be_evaluated_as_true(vars_mock) }
+        end
       end
 
-      it "should fail for unavailable features" do
-        @unavail_features.each { |feature| assert_not_parse("f?#{feature}") }
+      unavail_features.each do |feature|
+        context "`#{feature}` is unavailable" do
+          subject { "f?#{feature}" }
+          it { is_expected.to_not be_evaluated_as_true(vars_mock) }
+        end
       end
     end
 
     context "when simple variable" do
-      it "should succeed for available variables" do
-        @avail_vars.each { |variable| assert_parse("v?#{variable}") }
+      avail_vars.each do |variable|
+        context "`#{variable}` is available" do
+          subject { "v?#{variable}" }
+          it { is_expected.to be_evaluated_as_true(vars_mock) }
+        end
       end
 
-      it "should fail for unavailable variables" do
-        @unavail_vars.each { |variable| assert_not_parse("v?#{variable}") }
+      unavail_vars.each do |variable|
+        context "`#{variable}` is unavailable" do
+          subject { "v?#{variable}" }
+          it { is_expected.to_not be_evaluated_as_true(vars_mock) }
+        end
       end
     end
 
     context "when combined features" do
-
-
-      [ "#{avail_feature} && #{avail_feature}",
-        "#{unavail_feature} || #{avail_feature}"
+      [ "#{avail_feature_expression} && #{avail_feature_expression}",
+        "#{unavail_feature_expression} || #{avail_feature_expression}"
       ].each do |expression|
         context "when features are available" do
           subject { expression }
-          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+          it { is_expected.to be_evaluated_as_true(vars_mock) }
         end
       end
 
-      [ "#{unavail_feature} && #{avail_feature}",
-        "#{unavail_feature} || #{unavail_feature}"
+      [ "#{unavail_feature_expression} && #{avail_feature_expression}",
+        "#{unavail_feature_expression} || #{unavail_feature_expression}"
       ].each do |expression|
         context "when features are unavailable" do
           subject { expression }
-          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+          it { is_expected.to_not be_evaluated_as_true(vars_mock) }
         end
       end
 
     end
 
     context "when conditions are nested" do
-
-      [ "#{avail_var} && (#{avail_var} || #{unavail_var})",
-        "(#{avail_var} && #{avail_var}) && (#{avail_var} || #{unavail_var})"
+      [ "#{avail_var_expression} && (#{avail_var_expression} || #{unavail_var_expression})",
+        "(#{avail_var_expression} && #{avail_var_expression}) && (#{avail_var_expression} || #{unavail_var_expression})"
       ].each do |expression|
-        context "when using only variables: #{expression}" do
+        context "when is logically equivalent to true: #{expression}" do
           subject { expression }
-          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+          it { is_expected.to be_evaluated_as_true(vars_mock) }
         end
       end
+    end
 
-      [ "#{avail_feature} && (#{avail_feature} || #{unavail_feature})",
-        "(#{avail_feature} && #{avail_feature}) && (#{avail_feature} || #{unavail_feature})"
+    context "when conditions are nested" do
+      [ "#{avail_var_expression} && (#{avail_var_expression} || #{unavail_var_expression})",
+        "(#{avail_var_expression} && #{avail_var_expression}) && (#{avail_var_expression} || #{unavail_var_expression})",
+        "#{avail_feature_expression} && (#{avail_feature_expression} || #{unavail_feature_expression})",
+        "(#{avail_feature_expression} && #{avail_feature_expression}) && (#{avail_feature_expression} || #{unavail_feature_expression})",
+        "(#{avail_var_expression} && #{avail_feature_expression}) && (#{unavail_feature_expression} || (#{avail_var_expression} || #{unavail_feature_expression}))"
       ].each do |expression|
-        context "when using only features: #{expression}" do
+        context "when is logically equivalent to true: #{expression}" do
           subject { expression }
-          it { is_expected.to be_evaluated_as_true(@vars_mock) }
+          it { is_expected.to be_evaluated_as_true(vars_mock) }
         end
       end
-
-      context "when using both variables and features" do
-        subject { "(#{avail_var} && #{avail_feature}) && (#{unavail_feature} || (#{avail_var} || #{unavail_feature}))" }
-        it { is_expected.to be_evaluated_as_true(@vars_mock) }
-      end
-
     end
 
   end
-
 end

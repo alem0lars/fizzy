@@ -26,7 +26,6 @@
 * Migrate meta keys *from strings to symbols*
 * Migrate variables keys *from strings to symbols* (see `parse_vars(..)`)
   and have indifferent access (see `_get_var(..)`).
-  and have indifferent access (see `_get_var(..)`).
 * API documentation (using `yard`). The following tasks were added:
   * `rake doc:generate`: Generate the API documentation.
   * `rake doc:server`: Serve the API documentation in a local webserver
@@ -49,6 +48,8 @@
 * Integrate YARD API docs with fizzy website
 * Integrate test results with fizzy website
 * Integrate coverage results with fizzy website
+* Handle more than one feature `has_feature?` method. `true` when none of the
+  collection members are `false`. [@jak3][@jak3]
 
 
 ## Current and previous versions

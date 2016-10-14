@@ -48,11 +48,13 @@
 * Integrate YARD API docs with fizzy website
 * Integrate test results with fizzy website
 * Integrate coverage results with fizzy website
+* Handle more than one feature `has_feature?` method. `true` when none of the
+  collection members are `false`. [@jak3][@jak3]
 
 
 ## Current and previous versions
 
 See the release notes.
 
-
 <!-- Link declarations -->
+[@jak3]: https://github.com/jak3

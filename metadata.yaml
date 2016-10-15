@@ -13,7 +13,7 @@ traveling_ruby:
 
 grammars:
   - logic
-  - type
+#  - type
 
 sources:
   - requires
@@ -26,11 +26,11 @@ sources:
   - misc/must
   - misc/abstract_method
   - misc/typesystem
-  - misc/tree/hash_converter
-  - misc/tree/merge_handler
-  - misc/tree/metrics_methods
-  - misc/tree/path_methods
-  - misc/tree/node
+#  - misc/tree/hash_converter
+#  - misc/tree/merge_handler
+#  - misc/tree/metrics_methods
+#  - misc/tree/path_methods
+#  - misc/tree/node
   - core/io
   - grammars/base_lexer
   - <grammars>

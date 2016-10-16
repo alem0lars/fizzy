@@ -73,7 +73,7 @@ module Fizzy::MetaInfo
           .each do |subfile_path|
 
         subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
-                           Pathname.new(elems_base_path)).to_s
+                           Pathname.new(elems_base_path).join("elems")).to_s
         if md = Regexp.new(elem[:src]).match(subfile_rel_path.gsub(/\.tt$/, ''))
           found = true
           dst_path = elem[:dst].gsub(/<([0-9]+)>/) do

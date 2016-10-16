@@ -48,6 +48,7 @@
 * Integrate YARD API docs with fizzy website
 * Integrate test results with fizzy website
 * Integrate coverage results with fizzy website
+* Allow strict regex matching with '^'
 
 
 ## Current and previous versions

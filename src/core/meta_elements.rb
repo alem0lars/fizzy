@@ -55,7 +55,7 @@ module Fizzy::MetaElements
           elem[:fs_maps].each do |m|
             tell("Changing permissions of #{m[:src_path]} to " +
                  elem[:perms]) if @verbose
-            exec_cmd("chmod -R #{elem[:perms].shell_escape} " +
+            exec_cmd("chmod #{elem[:perms].shell_escape} " +
                      m[:src_path].shell_escape,
                      as_su: !File.owned?(m[:src_path]))
           end

@@ -14,21 +14,7 @@ module Fizzy::MetaElements
     [ lambda { |elem| # Create parent directories.
         elem[:fs_maps].each do |m|
           parent_dir = m[:dst_path].dirname
-          if elem.has_key?(:perms)
-            l_ex_dir_path = f_noex_dir_path = parent_dir
-            while !l_ex_dir_path.directory?
-              f_noex_dir_path = l_ex_dir_path
-              l_ex_dir_path   = l_ex_dir_path.dirname
-            end
-          else
-            l_ex_dir_path = f_noex_dir_path = nil
-          end
-          # From here, we have the following variable set:
-          # - `l_ex_dir_path`: Longest path prefix which points to an existing
-          #                    directory.
-          # - `f_noex_dir_path`: Path of the first directory after the prefix
-          #                      which points to an existing dir.
-          if !parent_dir.directory?
+          unless parent_dir.directory?
             exec_cmd("mkdir -p #{parent_dir.shell_escape}",
                      as_su: !existing_dir(parent_dir))
           end

@@ -48,7 +48,7 @@ module Fizzy::MetaInfo
         end
       end
 
-      # Step 1.3: Validate and normalize `name`, `src`, `dst`, `fs_maps`.
+      # Step 1.3: Validate and normalize `name`, `src`, `dst`, `fs_maps`, `perms`.
       if selected
         unless elem.has_key?(:src)
           error("Element `#{elem_identifier}` doesn't contain `src`.")
@@ -57,6 +57,9 @@ module Fizzy::MetaInfo
         unless elem.has_key?(:dst)
           error("Element `#{elem_identifier}` doesn't contain `dst`.")
         end
+	if elem.has_key?(:perms)
+	  elem[:perms] = elem[:perms].to_s
+	end
         elem[:fs_maps] = []
       end
 

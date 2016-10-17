@@ -1798,7 +1798,7 @@ module Fizzy::MetaInfo
       if selected
         elem.each do |k, v|
           unless elem_erb_excluded_fields.include?(k)
-            elem[k] = ERB.new(v).result(binding)
+            elem[k] = ERB.new(v.to_s).result(binding)
           end
         end
       end

@@ -58,11 +58,13 @@ module Fizzy::Filesystem
     cfg_path = root_path.join("cfg")
     cur_cfg_path = cfg_path.join(cur_cfg_name) if cur_cfg_name
     cur_cfg_vars_path = cur_cfg_path.join("vars") if cur_cfg_path
+    cur_cfg_elems_path = cur_cfg_path.join("elems") if cur_cfg_path
     cur_cfg_meta_path = find_yaml_path(cur_cfg_path.join(meta_name)) if cur_cfg_path && meta_name
 
     inst_path = root_path.join("inst")
     cur_inst_path = inst_path.join(cur_inst_name) if cur_inst_name
     cur_inst_vars_path = cur_inst_path.join("vars") if cur_inst_path
+    cur_inst_elems_path = cur_inst_path.join("elems") if cur_inst_path
     cur_inst_meta_path = find_yaml_path(cur_inst_path.join(meta_name)) if cur_inst_path && meta_name
 
     # Validate `root_path`.
@@ -138,10 +140,12 @@ module Fizzy::Filesystem
       cfg:           cfg_path,
       cur_cfg:       cur_cfg_path,
       cur_cfg_vars:  cur_cfg_vars_path,
+      cur_cfg_elems: cur_cfg_elems_path,
       cur_cfg_meta:  cur_cfg_meta_path,
       inst:          inst_path,
       cur_inst:      cur_inst_path,
       cur_inst_vars: cur_inst_vars_path,
+      cur_inst_elems: cur_inst_elems_path,
       cur_inst_meta: cur_inst_meta_path)
   end
 

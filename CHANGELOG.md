@@ -15,6 +15,8 @@
   [@alem0lars][@alem0lars]
 * Handle more than one feature `has_feature?` method.
   [@jak3][@jak3]
+* Add `match` (optional) argument to `has_feature?` method.
+  [@alem0lars][@alem0lars]
 
 ### Dev changes
 

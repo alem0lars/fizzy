@@ -39,7 +39,7 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
                             cur_inst_name: options.inst_name)
     setup_vars(paths.cur_inst_vars, options.vars_name)
 
-    meta = get_meta(paths.cur_inst_meta, paths.cur_inst_vars, paths.cur_inst,
+    meta = get_meta(paths.cur_inst_meta, paths.cur_inst_vars, paths.cur_inst_elems,
                     options.verbose)
 
     # 1. Install the instance into the system.

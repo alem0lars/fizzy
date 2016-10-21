@@ -149,7 +149,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             cur_inst_name: options.inst_name)
     setup_vars(paths.cur_cfg_vars, options.vars_name)
 
-    meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg,
+    meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg_elems,
                     options.verbose)
 
     info("meta: ", "#{colorize(meta[:elems].count, :green)}/" +

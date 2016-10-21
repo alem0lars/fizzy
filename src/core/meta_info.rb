@@ -57,9 +57,9 @@ module Fizzy::MetaInfo
         unless elem.has_key?(:dst)
           error("Element `#{elem_identifier}` doesn't contain `dst`.")
         end
-	if elem.has_key?(:perms)
-	  elem[:perms] = elem[:perms].to_s
-	end
+        if elem.has_key?(:perms)
+          elem[:perms] = elem[:perms].to_s
+        end
         elem[:fs_maps] = []
       end
 
@@ -72,11 +72,12 @@ module Fizzy::MetaInfo
       found = false
 
       Find.find(elems_base_path)
-          .select { |ebp| File.file?(ebp) }
+          .map { |ebp| Pathname.new(ebp).expand_path }
+          .select(&:file?)
           .each do |subfile_path|
 
-        subfile_rel_path = Pathname.new(subfile_path).relative_path_from(
-                           Pathname.new(elems_base_path).join("elems")).to_s
+        subfile_rel_path = subfile_path.relative_path_from(
+                           Pathname.new(elems_base_path)).to_s
         if md = Regexp.new(elem[:src]).match(subfile_rel_path.gsub(/\.tt$/, ''))
           found = true
           dst_path = elem[:dst].gsub(/<([0-9]+)>/) do
@@ -158,8 +159,8 @@ module Fizzy::MetaInfo
 
     # Build the list of excluded files (needed by thor's `directory(..)`).
     all_files = Set.new(Find.find(elems_base_path)
-                            .map{|f| Pathname.new(f).expand_path}
-                            .select{|f| f.file?})
+                            .map    { |f| Pathname.new(f).expand_path }
+                            .select { |f| f.file? })
     src_paths = Set.new(
       meta[:elems].collect_concat do |elem|
         elem[:fs_maps].map{|m| m[:src_path]}

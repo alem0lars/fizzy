@@ -917,35 +917,35 @@ Racc_debug_parser = false
 
 module_eval(<<'.,.,', 'parser.y', 20)
   def _reduce_3(val, _values, result)
-     @eval.and 
+     @eval.and
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 21)
   def _reduce_4(val, _values, result)
-     @eval.or  
+     @eval.or
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 23)
   def _reduce_5(val, _values, result)
-     @eval.has_feature?(val[1])            
+     @eval.has_feature?(val[1])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 24)
   def _reduce_6(val, _values, result)
-     @eval.has_variable?(val[1])           
+     @eval.has_variable?(val[1])
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'parser.y', 25)
   def _reduce_7(val, _values, result)
-     @eval.variable_value?(val[1], val[3]) 
+     @eval.variable_value?(val[1], val[3])
     result
   end
 .,.,
@@ -1550,9 +1550,9 @@ module Fizzy::Vars
   # Since the features are defined just using variables, before calling this
   # method be sure that `setup_vars` has already been called.
   #
-  def has_feature?(*feature_names)
+  def has_feature?(*feature_names, match: :all?)
     features = get_var!("features", single_match: :force)
-    feature_names.map(&:to_s).all? do |feature_name|
+    feature_names.map(&:to_s).send(match) do |feature_name|
       features.include? feature_name
     end
   end

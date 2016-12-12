@@ -30,7 +30,7 @@ class Fizzy::BaseCommand < Thor
       desc:    "Ask confirmation for each filesystem operation."
     },
     fizzy_dir: {
-      default: Fizzy::CFG.default_fizzy_dir,
+      default: Fizzy::CFG.default_fizzy_dir.to_s,
       aliases: :F,
       desc:    "The root path for the directory internally used by fizzy."
     },

@@ -7,10 +7,17 @@ class String
     Shellwords.shellescape(self)
   end
 
+  # Turn the underlying string to a title.
+  #
+  def titleize!
+    self.replace(self.split(/[_-]/).each { |s| s.capitalize! }.join(""))
+  end
+
   # Turn the underlying string to camel-case.
   #
   def camelize!
-    self.replace(self.split(/[_-]/).each { |s| s.capitalize! }.join(""))
+    self.titleize!
+    self.replace(self[0, 1].downcase + self[1..-1])
   end
 
   # Turn a camelized string into lowercase, separated with underscores.
@@ -23,6 +30,12 @@ class String
   #
   def dasherize!
     self.replace(self.scan(/[A-Z][a-z]*/).join("-").downcase)
+  end
+
+  # Create a new string as a titleized version of the underlying string.
+  #
+  def titleize
+    dup.tap(&:titleize!)
   end
 
   # Create a new string as a camelized version of the underlying string.

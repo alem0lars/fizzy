@@ -7,6 +7,12 @@ class Symbol
     self.to_s.shell_escape.to_sym
   end
 
+  # Create a new symbol as a titleized version of the underlying symbol.
+  #
+  def titleize
+    self.to_s.titleize.to_sym
+  end
+
   # Create a new symbol as a camelized version of the underlying symbol.
   #
   def camelize

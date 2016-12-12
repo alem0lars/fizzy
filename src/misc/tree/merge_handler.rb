@@ -47,7 +47,7 @@ module Fizzy::Tree
     #
     # @see #merge
     # @see #merge!
-    protected def check_merge_prerequisites(other_tree)
+    def check_merge_prerequisites(other_tree)
       unless other_tree.is_a?(Fizzy::Tree::Node)
         raise TypeError,
               'You can only merge in another instance of Fizzy::Tree::Node'
@@ -58,6 +58,7 @@ module Fizzy::Tree
               'Unable to merge trees as they do not share the same root'
       end
     end
+    protected :check_merge_prerequisites
 
     # @!visibility protected
     #
@@ -68,7 +69,7 @@ module Fizzy::Tree
     #                                  into target).
     #
     # @return [Fizzy::Tree::Node] The merged tree.
-    protected def merge_trees(tree1, tree2)
+    def merge_trees(tree1, tree2)
       names1 = tree1.has_children? ? tree1.children.map { |c| c.name } : []
       names2 = tree2.has_children? ? tree2.children.map { |c| c.name } : []
 
@@ -83,5 +84,6 @@ module Fizzy::Tree
 
       return tree1
     end
+    protected :merge_trees
   end
 end

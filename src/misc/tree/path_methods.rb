@@ -33,7 +33,7 @@ module Fizzy::Tree
       #
       # @return [Array] An array of the node names for the path from this node
       #                 to its root.
-      protected def get_path_name_array(current_array_path = [])
+      def get_path_name_array(current_array_path = [])
         path_array = current_array_path + [name]
 
         if !parent              # If detached node or root node.
@@ -43,6 +43,7 @@ module Fizzy::Tree
           return path_array
         end
       end
+      protected :get_path_name_array
 
       # @!endgroup
     end

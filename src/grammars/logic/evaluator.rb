@@ -58,8 +58,9 @@ class Fizzy::LogicEvaluator
     debug_stack_state
   end
 
-  protected def debug_stack_state
+  def debug_stack_state
     debug("Stack state is: `#{@stack}`.")
   end
+  protected :debug_stack_state
 
 end

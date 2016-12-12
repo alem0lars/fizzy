@@ -58,8 +58,6 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     false
   end
 
-protected
-
   # Normalize the remote git URL.
   #
   def normalize_url(url, default_protocol: :ssh)
@@ -85,12 +83,14 @@ protected
                         "`[#{protocols.join(", ")}]`.")
     end
   end
+  protected :normalize_url
 
   # Check if the local directory holds a valid git repository.
   #
   def local_valid_repo?
     @local_dir_path.directory? && @local_dir_path.join(".git").directory?
   end
+  protected :local_valid_repo?
 
   # Get the Working Tree (local) changes.
   #
@@ -100,12 +100,14 @@ protected
       return `git status -uall --porcelain`.strip
     end
   end
+  protected :working_tree_changes
 
   # Check if there are some changes in the Working Tree.
   #
   def working_tree_changes?
     !working_tree_changes.empty?
   end
+  protected :working_tree_changes?
 
   # Get a `Hash` containing information about the local and remote repository.
   #
@@ -121,18 +123,21 @@ protected
       return { local: local, remote: remote, base: base }
     end
   end
+  protected :info
 
   # Check if a `pull` operation is needed.
   #
   def should_pull?
     info[:remote] != info[:base]
   end
+  protected :should_pull?
 
   # Check if a `push` operation is needed.
   #
   def should_push?
     info[:local] != info[:base]
   end
+  protected :should_push?
 
   # Get the list of the available remote git repositories.
   #
@@ -142,6 +147,7 @@ protected
       return `git remote`.split(/\W+/).reject(&:empty?)
     end
   end
+  protected :remotes
 
   # Get the list of the available git branches.
   #
@@ -151,6 +157,7 @@ protected
       return `git branch`.split(/\W+/).reject(&:empty?)
     end
   end
+  protected :branches
 
   # Add the changes from the Working Tree to the stage.
   #
@@ -165,6 +172,7 @@ protected
     error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
     exec_cmd(cmd, as_su: !existing_dir(@local_dir_path), chdir: @local_dir_path)
   end
+  protected :perform_add
 
   # Commit the changes in the Working Tree.
   #
@@ -195,6 +203,7 @@ protected
 
     status
   end
+  protected :perform_commit
 
   def perform_fetch(remote: nil, branch: nil)
     error("Invalid remote `#{remote}`.") if remote && !remotes.include?(remote)
@@ -209,6 +218,7 @@ protected
     error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
     exec_cmd(cmd, as_su: !existing_dir(@local_dir_path), chdir: @local_dir_path)
   end
+  protected :perform_fetch
 
   def perform_clone(recursive: true)
     tell("Syncing from remote repository: `#{@remote_normalized_url}`", :blue)
@@ -224,6 +234,7 @@ protected
 
     exec_cmd(cmd, as_su: !existing_dir(parent_dir), chdir: parent_dir)
   end
+  protected :perform_clone
 
   # Pull from the provided `remote` in the provided `branch`.
   #
@@ -254,6 +265,7 @@ protected
 
     status
   end
+  protected :perform_pull
 
   # Push to the provided `remote` in the provided `branch`.
   #
@@ -278,5 +290,6 @@ protected
 
     status
   end
+  protected :perform_push
 
 end

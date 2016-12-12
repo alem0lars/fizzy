@@ -21,8 +21,6 @@ module Fizzy::Vars
       setup_vars(@vars_dir_path, @name)
     end
 
-  protected
-
     def setup_vars(vars_dir_path, name)
       fmt, content = read_vars(vars_dir_path, name)
       error("Invalid vars: `#{name}`.") if fmt == nil || content == nil
@@ -31,6 +29,7 @@ module Fizzy::Vars
       parents_vars = merge_parents_vars(vars_dir_path, parents)
       merge_with_parents_vars(self_vars, parents_vars)
     end
+    protected :setup_vars
 
     def read_vars(vars_dir_path, name)
       yaml_file_path = find_yaml_path(vars_dir_path.join(name)) unless vars_dir_path.nil? || name.nil?
@@ -43,6 +42,7 @@ module Fizzy::Vars
         [nil, nil]
       end
     end
+    protected :read_vars
 
     def parse_vars(name, fmt, content)
       content = ERB.new(content).result(@binding)
@@ -62,6 +62,7 @@ module Fizzy::Vars
         else error("Unrecognized format: `#{fmt}`")
       end.deep_symbolize_keys
     end
+    protected :parse_vars
 
     def parse_parents_vars(fmt, content)
       parents_regexp = case fmt
@@ -77,10 +78,12 @@ module Fizzy::Vars
         []
       end
     end
+    protected :parse_parents_vars
 
     def merge_with_parents_vars(self_vars, parents_vars)
       parents_vars.deep_merge(self_vars)
     end
+    protected :merge_with_parents_vars
 
     def merge_parents_vars(vars_dir_path, parents)
       parents.inject([]) do |acc, parent| # Vars for each parent.
@@ -90,6 +93,7 @@ module Fizzy::Vars
         acc.deep_merge(parent_vars)
       end
     end
+    protected :merge_parents_vars
 
   end
 end

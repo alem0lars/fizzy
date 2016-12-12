@@ -34,13 +34,14 @@ module Fizzy::Vars
     #
     # See `Fizzy::TypeSystem#typize` for more details.
     #
-    protected def _typize_var(name, variable, type, strict)
+    def _typize_var(name, variable, type, strict)
       Array(variable).map do |var|
         typize(name, var, type: type, strict: strict)
       end
     end
+    protected :_typize_var
 
-    protected def _ensure_type!(name, var, *types)
+    def _ensure_type!(name, var, *types)
       if types.any?{|type| var.is_a?(type)}
         var
       else
@@ -48,6 +49,7 @@ module Fizzy::Vars
               "it's not a `#{type.name}`.")
       end
     end
+    protected :_ensure_type!
 
     # Returns a list of variables matching the provided `name`, chosen from `vars`.
     #
@@ -56,7 +58,7 @@ module Fizzy::Vars
     #
     # This method effectively implements the logic to retrieve variables.
     #
-    protected def _get_var(vars, name, single_match: :force)
+    def _get_var(vars, name, single_match: :force)
       dot_split_regexp = /([^.]+)(?:\.|$)/
 
       name.to_s
@@ -116,6 +118,7 @@ module Fizzy::Vars
         next_objects
       end
     end
+    protected :_get_var
 
   end
 end

@@ -17,7 +17,9 @@
   [@jak3][@jak3]
 * Add `match` (optional) argument to `has_feature?` method.
   [@alem0lars][@alem0lars]
-* Add useful `String` operations (`camelize`, `underscorize`, `dasherize`).
+* Add `String` operations: `camelize`, `underscorize`, `dasherize`.
+  [@alem0lars][@alem0lars]
+* Add `Symbol` operations: `camelize`, `underscorize`, `dasherize`.
   [@alem0lars][@alem0lars]
 
 ### Dev changes

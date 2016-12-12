@@ -19,6 +19,7 @@ sources:
   - requires
   - configuration
   - exts/string
+  - exts/symbol
   - exts/hash
   - exts/pathname
   - exts/thor

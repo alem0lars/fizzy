@@ -21,6 +21,9 @@
   [@alem0lars][@alem0lars]
 * Add `Symbol` operations: `titleize`, `camelize`, `underscorize`, `dasherize`.
   [@alem0lars][@alem0lars]
+* Allow to pass block in `variable` to perform transformation of variable for
+  generating a new local.
+  [@alem0lars][@alem0lars]
 
 ### Dev changes
 

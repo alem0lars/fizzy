@@ -1726,8 +1726,10 @@ module Fizzy::Locals
 
       var = _get_var(name, **opts.slice(:type, :strict))
 
-      _set_local(opts.fetch(:as, name),
-                 var.nil? ? opts.fetch(:default, nil) : var)
+      name  = opts.fetch(:as, name)
+      value = var.nil? ? opts.fetch(:default, nil) : var
+      value = yield(value) if block_given?
+      _set_local(name, value)
     end
 
     # Create a new computed `local`, based upon other locals.

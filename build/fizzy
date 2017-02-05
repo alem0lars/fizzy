@@ -71,6 +71,21 @@ end
 module Fizzy
 end
 
+class String
+  VARIABLES_REGEX = /\$([a-zA-Z_]+[a-zA-Z0-9_]*)|\$\{(.+)\}/
+  
+  def expand_variables
+    self.gsub(VARIABLES_REGEX) { ENV[$1||$2] }
+  end
+end
+
+class Pathname
+
+  def expand_variables
+    Pathname.new(self.to_s.expand_variables)
+  end
+end
+
 # ───────────────────────────────────────────────────────────── Configuration ──
 
 Fizzy::CFG = OpenStruct.new
@@ -106,7 +121,7 @@ Fizzy::CFG.default_fizzy_dir = Pathname.new(
     when :osx     then "~/Library/Application Support/fizzy"
     when :windows then "~/fizzy"
   end
-).expand_path
+).expand_variables.expand_path
 
 # Default meta file name.
 Fizzy::CFG.default_meta_name = "meta.yml"
@@ -544,19 +559,19 @@ module Fizzy::TypeSystem
           if strict && !File.exist?(value)
             error("Invalid `#{name}`: `#{value}` doesn't exist")
           else
-            Pathname.new(value).expand_path
+            Pathname.new(value).expand_variables.expand_path
           end
         when :file then
           if strict && !File.file?(value)
             error("Invalid `#{name}`: `#{value}` isn't a file")
           else
-            Pathname.new(value).expand_path
+            Pathname.new(value).expand_variables.expand_path
           end
         when :directory, :dir then
           if strict && !File.directory?(value)
             error("Invalid `#{name}`: `#{value}` isn't a directory")
           else
-            Pathname.new(value).expand_path
+            Pathname.new(value).expand_variables.expand_path
           end
         else
           error("Unhandled type `#{type}`. If you need support for a new " +
@@ -1115,6 +1130,7 @@ module Fizzy::Environment
 
   def xdg_config_home(name)
     Pathname.new(get_env(:XDG_CONFIG_HOME) || "~/.config").
+      expand_variables.
       expand_path.
       join(name.to_s)
   end
@@ -1222,7 +1238,7 @@ module Fizzy::Filesystem
   def prepare_storage(root_path,
                       valid_meta: true, valid_cfg: true, valid_inst: true,
                       meta_name: nil, cur_cfg_name: nil, cur_inst_name: nil)
-    root_path = Pathname.new(root_path).expand_path
+    root_path = Pathname.new(root_path).expand_variables.expand_path
 
     # Paths based on internal conventions.
     parent_path = root_path.dirname
@@ -1819,7 +1835,7 @@ module Fizzy::MetaCommands
     { sync: {
         validator: lambda { |spec|
           if spec.has_key?(:dst)
-            spec[:dst] = Pathname.new(spec[:dst]).expand_path
+            spec[:dst] = Pathname.new(spec[:dst]).expand_variables.expand_path
           end
           spec.has_key?(:repo) && spec.has_key?(:dst)
         },
@@ -1833,7 +1849,7 @@ module Fizzy::MetaCommands
           # 2. Normalize.
           if status
             spec[:url] = URI(spec[:url])
-            spec[:dst] = Pathname.new(spec[:dst]).expand_path
+            spec[:dst] = Pathname.new(spec[:dst]).expand_variables.expand_path
           end
           status
         },
@@ -1930,7 +1946,7 @@ module Fizzy::MetaInfo
       found = false
 
       Find.find(elems_base_path)
-          .map { |ebp| Pathname.new(ebp).expand_path }
+          .map { |ebp| Pathname.new(ebp).expand_variables.expand_path }
           .select(&:file?)
           .each do |subfile_path|
 
@@ -1948,8 +1964,8 @@ module Fizzy::MetaInfo
             end
           end
           elem[:fs_maps] << {
-            src_path: Pathname.new(subfile_path).expand_path,
-            dst_path: Pathname.new(dst_path).expand_path
+            src_path: Pathname.new(subfile_path).expand_variables.expand_path,
+            dst_path: Pathname.new(dst_path).expand_variables.expand_path
           }
         end
       end
@@ -2017,7 +2033,7 @@ module Fizzy::MetaInfo
 
     # Build the list of excluded files (needed by thor's `directory(..)`).
     all_files = Set.new(Find.find(elems_base_path)
-                            .map    { |f| Pathname.new(f).expand_path }
+                            .map    { |f| Pathname.new(f).expand_variables.expand_path }
                             .select { |f| f.file? })
     src_paths = Set.new(
       meta[:elems].collect_concat do |elem|
@@ -2200,7 +2216,7 @@ class Fizzy::Sync::Base
     must "local directory path", local_dir_path, be: Pathname
 
     @name           = name
-    @local_dir_path = local_dir_path
+    @local_dir_path = local_dir_path.expand_variables.expand_path
     @remote_url     = remote_url
   end
 

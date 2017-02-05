@@ -50,7 +50,7 @@ module Fizzy::Filesystem
   def prepare_storage(root_path,
                       valid_meta: true, valid_cfg: true, valid_inst: true,
                       meta_name: nil, cur_cfg_name: nil, cur_inst_name: nil)
-    root_path = Pathname.new(root_path).expand_path
+    root_path = Pathname.new(root_path).expand_variables.expand_path
 
     # Paths based on internal conventions.
     parent_path = root_path.dirname

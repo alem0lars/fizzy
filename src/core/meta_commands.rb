@@ -16,7 +16,7 @@ module Fizzy::MetaCommands
     { sync: {
         validator: lambda { |spec|
           if spec.has_key?(:dst)
-            spec[:dst] = Pathname.new(spec[:dst]).expand_path
+            spec[:dst] = Pathname.new(spec[:dst]).expand_variables.expand_path
           end
           spec.has_key?(:repo) && spec.has_key?(:dst)
         },
@@ -30,7 +30,7 @@ module Fizzy::MetaCommands
           # 2. Normalize.
           if status
             spec[:url] = URI(spec[:url])
-            spec[:dst] = Pathname.new(spec[:dst]).expand_path
+            spec[:dst] = Pathname.new(spec[:dst]).expand_variables.expand_path
           end
           status
         },

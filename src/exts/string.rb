@@ -56,4 +56,9 @@ class String
     dup.tap(&:dasherize!)
   end
 
+  def expand_variables
+    vars_regexp = /\$([a-zA-Z_]+[a-zA-Z0-9_]*)|\$\{(.+)\}/
+    self.gsub(vars_regexp) { ENV[$1||$2] }
+  end
+
 end

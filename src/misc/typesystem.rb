@@ -39,19 +39,19 @@ module Fizzy::TypeSystem
           if strict && !File.exist?(value)
             error("Invalid `#{name}`: `#{value}` doesn't exist")
           else
-            Pathname.new(value).expand_path
+            Pathname.new(value).expand_variables.expand_path
           end
         when :file then
           if strict && !File.file?(value)
             error("Invalid `#{name}`: `#{value}` isn't a file")
           else
-            Pathname.new(value).expand_path
+            Pathname.new(value).expand_variables.expand_path
           end
         when :directory, :dir then
           if strict && !File.directory?(value)
             error("Invalid `#{name}`: `#{value}` isn't a directory")
           else
-            Pathname.new(value).expand_path
+            Pathname.new(value).expand_variables.expand_path
           end
         else
           error("Unhandled type `#{type}`. If you need support for a new " +

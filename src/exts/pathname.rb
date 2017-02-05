@@ -7,4 +7,8 @@ class Pathname
     Shellwords.shellescape(self)
   end
 
+  def expand_variables
+    Pathname.new(self.to_s.expand_variables)
+  end
+
 end

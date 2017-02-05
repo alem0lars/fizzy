@@ -72,7 +72,7 @@ module Fizzy::MetaInfo
       found = false
 
       Find.find(elems_base_path)
-          .map { |ebp| Pathname.new(ebp).expand_path }
+          .map { |ebp| Pathname.new(ebp).expand_variables.expand_path }
           .select(&:file?)
           .each do |subfile_path|
 
@@ -90,8 +90,8 @@ module Fizzy::MetaInfo
             end
           end
           elem[:fs_maps] << {
-            src_path: Pathname.new(subfile_path).expand_path,
-            dst_path: Pathname.new(dst_path).expand_path
+            src_path: Pathname.new(subfile_path).expand_variables.expand_path,
+            dst_path: Pathname.new(dst_path).expand_variables.expand_path
           }
         end
       end
@@ -159,7 +159,7 @@ module Fizzy::MetaInfo
 
     # Build the list of excluded files (needed by thor's `directory(..)`).
     all_files = Set.new(Find.find(elems_base_path)
-                            .map    { |f| Pathname.new(f).expand_path }
+                            .map    { |f| Pathname.new(f).expand_variables.expand_path }
                             .select { |f| f.file? })
     src_paths = Set.new(
       meta[:elems].collect_concat do |elem|

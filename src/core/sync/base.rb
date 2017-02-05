@@ -48,7 +48,7 @@ class Fizzy::Sync::Base
     must "local directory path", local_dir_path, be: Pathname
 
     @name           = name
-    @local_dir_path = local_dir_path
+    @local_dir_path = local_dir_path.expand_variables.expand_path
     @remote_url     = remote_url
   end
 

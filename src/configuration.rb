@@ -31,7 +31,7 @@ Fizzy::CFG.default_fizzy_dir = Pathname.new(
     when :osx     then "~/Library/Application Support/fizzy"
     when :windows then "~/fizzy"
   end
-).expand_path
+).expand_variables.expand_path
 
 # Default meta file name.
 Fizzy::CFG.default_meta_name = "meta.yml"

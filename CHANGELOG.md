@@ -24,6 +24,8 @@
 * Allow to pass block in `variable` to perform transformation of variable for
   generating a new local.
   [@alem0lars][@alem0lars]
+* Expand environment variables automatically
+  [@alem0lars][@alem0lars]
 
 ### Dev changes
 

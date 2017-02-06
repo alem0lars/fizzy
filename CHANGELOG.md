@@ -85,6 +85,8 @@
   [@alem0lars][@alem0lars]
 * Integrate coverage results with fizzy website
   [@alem0lars][@alem0lars]
+* Fix issue #46
+  [@alem0lars][@alem0lars]
 
 
 ## Current and previous versions

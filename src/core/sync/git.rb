@@ -75,7 +75,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     }xi
     md = url.match(regexp)
     return url unless md
-    protocol = (md[:protocol].gsub(/:$/, "") || default_protocol).to_sym
+    protocol = (md[:protocol] || default_protocol).gsub(/:$/, "").to_sym
     case protocol
       when :ssh   then "git@github.com:#{md[:username]}/#{md[:repository]}"
       when :https then "https://github.com/#{md[:username]}/#{md[:repository]}"

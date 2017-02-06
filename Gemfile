@@ -39,6 +39,8 @@ group :development do
 
 end
 
+gem "did_you_mean", "~> 0.9"
+
 group :website do
   # For faster file watcher updates on Windows.
   gem "wdm", "~> 0.1.0", platforms: [:mswin, :mingw]

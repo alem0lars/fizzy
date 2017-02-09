@@ -5,6 +5,7 @@ The hassle free configuration manager
 [![Bountysource][bountysource_image]][bountysource_link]
 [![Gitbook status][gitbook_status_image]][gitbook_status_link]
 [![Build Status][travis_status_image]][travis_status_link]
+[![Coverage Status][coveralls_status_image]](coveralls_status_link)
 
 ## Installation
 
@@ -95,3 +96,6 @@ Made with ♥ by Alessandro Molari
 
 [travis_status_image]: https://travis-ci.org/alem0lars/fizzy.svg?branch=master
 [travis_status_link]:  https://travis-ci.org/alem0lars/fizzy
+
+coveralls_status_image: https://coveralls.io/repos/github/alem0lars/fizzy/badge.svg?branch=develop
+coveralls_status_link: https://coveralls.io/github/alem0lars/fizzy?branch=develop

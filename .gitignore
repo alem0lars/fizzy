@@ -1,0 +1,6 @@
+# Project specific stuff
+target
+Cargo.lock
+
+# rustfmt
+*.bk

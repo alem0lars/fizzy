@@ -4,11 +4,13 @@
          width="400px" />
 </p>
 
-The hassle free configuration manager
+<p align="center">
+    The hassle free configuration manager
+</p>
 
 fizzy is an easy-to-use, learn-by-doing, lightweight, configuration management tool meant to be used by developers, hackers, experienced users
 
-it doesn't try to reimplement the wheel, instead it follows the unix philosophy do one thing and do it well making extremely easy to integrate with your existing ecosystem
+It doesn't try to reimplement the wheel, instead it follows the unix philosophy do one thing and do it well making extremely easy to integrate with your existing ecosystem
 
 ----
 

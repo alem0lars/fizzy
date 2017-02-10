@@ -90,7 +90,7 @@ Made with ♥ by Alessandro Molari
 [download_epub_end_user_guide]: https://www.gitbook.com/download/epub/book/alem0lars/fizzy
 [download_mobi_end_user_guide]: https://www.gitbook.com/download/mobi/book/alem0lars/fizzy
 
-[license_image]: https://img.shields.io/crates/l/fizzy.svg
+[license_image]: https://img.shields.io/github/license/alem0lars/fizzy.svg
 [license_link]:  ./LICENSE
 
 [bountysource_image]: https://img.shields.io/bountysource/team/fizzy/activity.svg

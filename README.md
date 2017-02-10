@@ -1,5 +1,5 @@
 <div style="text-align:center">
-    <img src ="https://raw.githubusercontent.com/alem0lars/fizzy/develop/data/logo.png" />
+    <img src ="http://raw.githubusercontent.com/alem0lars/fizzy/develop/data/logo.png" />
 </div>
 
 The hassle free configuration manager

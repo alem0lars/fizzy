@@ -1,5 +1,5 @@
 <div style="text-align:center">
-    ![Logo](https://raw.githubusercontent.com/alem0lars/fizzy/develop/data/logo.png)
+    [![Logo](https://raw.githubusercontent.com/alem0lars/fizzy/develop/data/logo.png)][homepage]
 </div>
 
 The hassle free configuration manager
@@ -83,6 +83,8 @@ Made with ♥ by Alessandro Molari
 * [molari.alessandro@gmail.com][send_email]
 
 <!-- Link declarations -->
+
+[homepage]: https://github.com/alem0lars/fizzy
 
 [twitter]:    https://twitter.com/alem0lars
 [send_email]: mailto:molari.alessandro@gmail.com

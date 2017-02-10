@@ -1,6 +1,10 @@
-# Fizzy
+<div style="text-align:center"><img src ="https://raw.githubusercontent.com/alem0lars/fizzy/develop/data/logo.svg" /></div>
 
 The hassle free configuration manager
+
+fizzy is an easy-to-use, learn-by-doing, lightweight, configuration management tool meant to be used by developers, hackers, experienced users
+
+it doesn't try to reimplement the wheel, instead it follows the unix philosophy do one thing and do it well making extremely easy to integrate with your existing ecosystem
 
 [![Latest version](https://img.shields.io/crates/v/abort_on_panic.svg)][crate]
 [![License][license_image]][license_link]

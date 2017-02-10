@@ -25,6 +25,7 @@ fn run_clog() {
     // TODO
     clog.repository("https://github.com/alem0lars/fizzy")
         .subtitle("fizzy changelog")
+        .from("374c7f4")
         .changelog("CHANGELOG.md")
         .version("0.1.0");
 

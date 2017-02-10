@@ -1,4 +1,6 @@
-<div style="text-align:center"><img src ="https://raw.githubusercontent.com/alem0lars/fizzy/develop/data/logo.svg" /></div>
+<div style="text-align:center">
+<img src ="https://raw.githubusercontent.com/alem0lars/fizzy/develop/data/logo.svg" />
+</div>
 
 The hassle free configuration manager
 

@@ -2,10 +2,12 @@
 
 The hassle free configuration manager
 
-[![Bountysource][bountysource_image]][bountysource_link]
-[![Gitbook status][gitbook_status_image]][gitbook_status_link]
+[![Latest version](https://img.shields.io/crates/v/abort_on_panic.svg)][crate]
+[![License][license_image]][license_link]
 [![Build Status][travis_status_image]][travis_status_link]
 [![Coverage Status][coveralls_status_image]](coveralls_status_link)
+[![Gitbook status][gitbook_status_image]][gitbook_status_link]
+[![Bountysource][bountysource_image]][bountysource_link]
 
 ## Installation
 
@@ -88,6 +90,9 @@ Made with ♥ by Alessandro Molari
 [download_epub_end_user_guide]: https://www.gitbook.com/download/epub/book/alem0lars/fizzy
 [download_mobi_end_user_guide]: https://www.gitbook.com/download/mobi/book/alem0lars/fizzy
 
+[license_image]: https://img.shields.io/crates/l/fizzy.svg
+[license_link]:  ./LICENSE
+
 [bountysource_image]: https://img.shields.io/bountysource/team/fizzy/activity.svg
 [bountysource_link]:  https://www.bountysource.com/teams/fizzy
 
@@ -98,4 +103,4 @@ Made with ♥ by Alessandro Molari
 [travis_status_link]:  https://travis-ci.org/alem0lars/fizzy
 
 [coveralls_status_image]: https://coveralls.io/repos/github/alem0lars/fizzy/badge.svg?branch=develop
-[coveralls_status_link]: https://coveralls.io/github/alem0lars/fizzy?branch=develop
+[coveralls_status_link]:  https://coveralls.io/github/alem0lars/fizzy?branch=develop

@@ -94,8 +94,8 @@ Made with ♥ by Alessandro Molari
 [gitbook_status_image]: https://www.gitbook.com/button/status/book/alem0lars/fizzy
 [gitbook_status_link]:  https://www.gitbook.io/book/alem0lars/fizzy/activity
 
-[travis_status_image]: https://travis-ci.org/alem0lars/fizzy.svg?branch=master
+[travis_status_image]: https://travis-ci.org/alem0lars/fizzy.svg?branch=develop
 [travis_status_link]:  https://travis-ci.org/alem0lars/fizzy
 
-coveralls_status_image: https://coveralls.io/repos/github/alem0lars/fizzy/badge.svg?branch=develop
-coveralls_status_link: https://coveralls.io/github/alem0lars/fizzy?branch=develop
+[coveralls_status_image]: https://coveralls.io/repos/github/alem0lars/fizzy/badge.svg?branch=develop
+[coveralls_status_link]: https://coveralls.io/github/alem0lars/fizzy?branch=develop

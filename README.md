@@ -1,5 +1,5 @@
 <div style="text-align:center">
-    <img src ="https://github.com/alem0lars/fizzy/raw/develop/data/logo.png" />
+    ![Logo](https://raw.githubusercontent.com/alem0lars/fizzy/develop/data/logo.png)
 </div>
 
 The hassle free configuration manager
@@ -14,6 +14,8 @@ it doesn't try to reimplement the wheel, instead it follows the unix philosophy 
 [![Coverage Status][coveralls_status_image]][coveralls_status_link]
 [![Gitbook status][gitbook_status_image]][gitbook_status_link]
 [![Bountysource][bountysource_image]][bountysource_link]
+
+----
 
 ## Installation
 

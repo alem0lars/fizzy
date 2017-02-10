@@ -5,7 +5,7 @@ The hassle free configuration manager
 [![Latest version](https://img.shields.io/crates/v/abort_on_panic.svg)][crate]
 [![License][license_image]][license_link]
 [![Build Status][travis_status_image]][travis_status_link]
-[![Coverage Status][coveralls_status_image]](coveralls_status_link)
+[![Coverage Status][coveralls_status_image]][coveralls_status_link]
 [![Gitbook status][gitbook_status_image]][gitbook_status_link]
 [![Bountysource][bountysource_image]][bountysource_link]
 

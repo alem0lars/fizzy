@@ -1,12 +1,16 @@
 extern crate fizzy;
+
+#[macro_use]
 extern crate clap;
+
 
 use clap::{Arg, App, SubCommand};
 
+
 pub fn main() {
     let matches = App::new("fizzy")
-        .version(env!("CARGO_PKG_VERSION"))
+        .version(crate_version!())
         .about("The hassle-free configuration manager")
-        .author("Alessandro Molari <molari.alessandro@gmail.com>")
+        .author(crate_authors!())
         .get_matches();
 }

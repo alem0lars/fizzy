@@ -21,7 +21,8 @@ doc = false
 clap = "~2"
 
 [dev-dependencies]
-skeptic = "0.5"
+skeptic = "~0.5"
 
 [build-dependencies]
-skeptic = "0.5"
+skeptic = "~0.5"
+clog = "~0.9"

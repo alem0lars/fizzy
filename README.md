@@ -10,12 +10,16 @@ fizzy is an easy-to-use, learn-by-doing, lightweight, configuration management t
 
 it doesn't try to reimplement the wheel, instead it follows the unix philosophy do one thing and do it well making extremely easy to integrate with your existing ecosystem
 
-[![Latest version](https://img.shields.io/crates/v/abort_on_panic.svg)][crate]
-[![License][license_image]][license_link]
-[![Build Status][travis_status_image]][travis_status_link]
-[![Coverage Status][coveralls_status_image]][coveralls_status_link]
-[![Gitbook status][gitbook_status_image]][gitbook_status_link]
-[![Bountysource][bountysource_image]][bountysource_link]
+----
+
+<p align="center">
+    [![Latest version](https://img.shields.io/crates/v/abort_on_panic.svg)][crate]
+    [![License][license_image]][license_link]
+    [![Build Status][travis_status_image]][travis_status_link]
+    [![Coverage Status][coveralls_status_image]][coveralls_status_link]
+    [![Gitbook status][gitbook_status_image]][gitbook_status_link]
+    [![Bountysource][bountysource_image]][bountysource_link]
+</p>
 
 ----
 

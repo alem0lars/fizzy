@@ -81,6 +81,7 @@ Made with ♥ by Alessandro Molari
 [irc]:        https://webchat.freenode.net/?channels=fizzy
 
 [technical_documentation]: https://docs.rs/fizzy/3.0.0
+[contributing]: ./CONTRIBUTING.md
 
 [release_latest]: https://github.com/alem0lars/fizzy/releases/latest
 [crate]:          https://crates.io/crates/fizzy

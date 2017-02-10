@@ -8,7 +8,7 @@ authors = ["Alessandro Molari <molari.alessandro@gmail.com>"]
 description = "The hassle-free configuration manager"
 homepage = "https://alem0lars.github.io/fizzy"
 repository = "https://github.com/alem0lars/fizzy"
-documentation = "https://docs.rs/fizzy/3.0.0"
+documentation = "https://alem0lars.github.io/fizzy"
 
 [lib]
 name = "fizzy"

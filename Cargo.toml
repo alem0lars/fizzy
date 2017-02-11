@@ -19,11 +19,14 @@ doc = false
 
 [dependencies]
 clap = "~2"
+log = "~0.3"
+env_logger = "~0.3"
+chrono = "~0.3"
 
 [dev-dependencies]
 skeptic = "~0.5"
-quickcheck = "0.3"
 
 [build-dependencies]
 skeptic = "~0.5"
 clog = "~0.9"
+clap = "~2"

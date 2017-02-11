@@ -8,8 +8,7 @@ to abide by the [Code of Conduct][code_of_conduct].
 ### 1: Prepare
 
 - Fork, then clone the repo: `git clone git@github.com:your-username/fizzy.git`.
-- Set up Ruby dependencies via Bundler: `bundle install`.
-- Make sure the tests pass: `bundle exec rake docker:test`.
+- Make sure the tests pass: `cargo test`.
 
 ### 2: Make changes
 

@@ -22,6 +22,7 @@ clap = "~2"
 
 [dev-dependencies]
 skeptic = "~0.5"
+quickcheck = "0.3"
 
 [build-dependencies]
 skeptic = "~0.5"

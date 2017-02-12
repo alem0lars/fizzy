@@ -1,4 +1,4 @@
-use chrono::prelude::*;
+use chrono::prelude::UTC;
 use env_logger::LogBuilder;
 use log::{LogRecord, LogLevelFilter};
 

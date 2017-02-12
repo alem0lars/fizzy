@@ -4,8 +4,8 @@
          width="400px" />
 </p>
 
-<p align="center">
-    The hassle free configuration manager
+<p>
+    <h1 align="center">the hassle free configuration manager</h1>
 </p>
 
 fizzy is an easy-to-use, learn-by-doing, lightweight, configuration management tool meant to be used by developers, hackers, experienced users
@@ -21,20 +21,20 @@ It doesn't try to reimplement the wheel, instead it follows the unix philosophy 
 [![Gitbook status][gitbook_status_image]][gitbook_status_link]
 [![Bountysource][bountysource_image]][bountysource_link]
 
-## Installation
+# Installation
 
-### Standalone program
+## Standalone program
 
 [Download][release_latest] the precompiled binary without any external
 dependency.
 
-### Library
+## Library
 
 Check out the [crate][crate].
 
-## Getting Started
+# Getting Started
 
-### Standalone program
+## Standalone program
 
 The best way to learn how to use fizzy is to read the
 **Official End-User Guide**:
@@ -44,7 +44,7 @@ The best way to learn how to use fizzy is to read the
 * [Download as ePUB][download_epub_end_user_guide]
 * [Download as MOBI][download_mobi_end_user_guide]
 
-### Library
+## Library
 
 fizzy is also available as a standalone library, meant to be used 
 programmatically.
@@ -52,30 +52,30 @@ programmatically.
 Please check out [technical documentation][technical_documentation] to get
 started.
 
-## LICENSE
+# License
 
 Apache Version 2.0
 
-## Supporting this project
+# Supporting
 
 If you would like to financially support this project please do the following:
 
 * [Become a supporter](https://www.bountysource.com/teams/fizzy)
 * [E-mail me](mailto:molari.alessandro@gmail.com) for one-time donation information
 
-## Contributing
+# Contributing
 
 See [CONTRIBUTING.md][contributing]
 
 **Contributions are welcome!**
 
-### Contributors
+## Contributors
 
 * **Alessandro Molari** (`alem0lars`)
 * **Luca Molari** (`LMolr`)
 * **Giacomo Mantani** (`jak3`)
 
-## Pointers
+# Pointers
 
 * IRC channel: `#fizzy` at [freenode][irc]
 

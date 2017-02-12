@@ -4,20 +4,14 @@ extern crate log;
 extern crate fizzy;
 
 fn main() {
-    // let default_cfg_file_path: &Path = Path::new("foo"); // TODO xdg
-
     let matches = fizzy::cli::build_cli().get_matches();
+    let cli_args = fizzy::cli::parse_arguments(&matches);
 
-    //let cfg_file_path: Path = value_t!(matches, "cfg", Path)
-    //    .unwrap_or(default_cfg_file_path);
-    let verbosity_level: u64 = matches.occurrences_of("verbose");
-    let simulate = matches.is_present("simulate");
-
-    fizzy::misc::log::init(verbosity_level);
+    fizzy::misc::log::init(cli_args.verbosity_level);
     debug!("Logger initialized");
 
     debug!("Successfully parsed commandline arguments:");
-    //debug!("Configuration file: {}", cfg_file_path.to_str());
-    debug!("Verbosity level: {}", verbosity_level);
-    debug!("Simulate: {}", simulate);
+    // TODO    debug!("Configuration file: {}", cli_args.cfg_file_path);
+    debug!("Verbosity level: {}", cli_args.verbosity_level);
+    debug!("Simulate: {}", cli_args.simulate);
 }

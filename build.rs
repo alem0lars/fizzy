@@ -5,6 +5,7 @@ extern crate clap;
 
 include!("src/cli.rs");
 
+/// Build script entry-point.
 fn main() {
     let mut cli_app = build_cli();
 

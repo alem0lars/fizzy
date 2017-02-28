@@ -1,11 +1,13 @@
 use clap::{Arg, App, ArgMatches};
 use std::path::Path;
 
+
 pub struct CliArgs<'a> {
     pub cfg_file_path: Option<&'a Path>,
     pub verbosity_level: u64,
     pub simulate: bool,
 }
+
 
 pub fn build_cli() -> App<'static, 'static> {
     return app_from_crate!()
@@ -30,6 +32,7 @@ pub fn build_cli() -> App<'static, 'static> {
             .help("Sets the level of verbosity"));
 }
 
+
 pub fn parse_arguments<'a>(matches: &'a ArgMatches) -> CliArgs<'a> {
     let cfg_file_path = match matches.value_of("cfg") {
         Some(val) => Some(Path::new(val)),
@@ -44,6 +47,7 @@ pub fn parse_arguments<'a>(matches: &'a ArgMatches) -> CliArgs<'a> {
         simulate: simulate,
     };
 }
+
 
 fn is_valid_cfg_file(val: String) -> Result<(), String> {
     let cfg_file_path = Path::new(&val);

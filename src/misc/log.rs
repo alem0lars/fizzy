@@ -2,6 +2,7 @@ use chrono::prelude::UTC;
 use env_logger::LogBuilder;
 use log::{LogRecord, LogLevelFilter};
 
+
 pub fn init(verbosity_level: u64) {
     let format = |record: &LogRecord| {
         let dt = UTC::now();

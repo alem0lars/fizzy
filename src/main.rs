@@ -3,6 +3,7 @@ extern crate log;
 
 extern crate fizzy;
 
+
 fn main() {
     let matches = fizzy::cli::build_cli().get_matches();
     let cli_args = fizzy::cli::parse_arguments(&matches);

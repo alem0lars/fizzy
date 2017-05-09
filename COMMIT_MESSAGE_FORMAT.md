@@ -18,7 +18,7 @@ to read on github as well as in various git tools.
 
 Must be one of the following:
 
-* **feat**: A new feature
+* **feature**: A new feature
 * **fix**: A bug fix
 * **docs**: Documentation only changes
 * **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing

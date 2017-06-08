@@ -13,7 +13,8 @@ traveling_ruby:
 
 grammars:
   - logic
-#  - type
+  # TODO
+  # - type
 
 sources:
   - requires

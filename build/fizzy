@@ -71,21 +71,6 @@ end
 module Fizzy
 end
 
-class String
-  VARIABLES_REGEX = /\$([a-zA-Z_]+[a-zA-Z0-9_]*)|\$\{(.+)\}/
-  
-  def expand_variables
-    self.gsub(VARIABLES_REGEX) { ENV[$1||$2] }
-  end
-end
-
-class Pathname
-
-  def expand_variables
-    Pathname.new(self.to_s.expand_variables)
-  end
-end
-
 # ───────────────────────────────────────────────────────────── Configuration ──
 
 Fizzy::CFG = OpenStruct.new
@@ -193,6 +178,11 @@ class String
   #
   def dasherize
     dup.tap(&:dasherize!)
+  end
+
+  def expand_variables
+    vars_regexp = /\$([a-zA-Z_]+[a-zA-Z0-9_]*)|\$\{(.+)\}/
+    self.gsub(vars_regexp) { ENV[$1||$2] }
   end
 
 end
@@ -313,7 +303,7 @@ class Hash
     deep_transform_keys_in_object!(self, &block)
   end
 
-  private def deep_transform_keys_in_object(object, &block)
+  def deep_transform_keys_in_object(object, &block)
     case object
       when Hash
         object.each_with_object({}) do |(key, value), result|
@@ -324,8 +314,9 @@ class Hash
       else object
     end
   end
+  private :deep_transform_keys_in_object
 
-  private def deep_transform_keys_in_object!(object, &block)
+  def deep_transform_keys_in_object!(object, &block)
     case object
       when Hash
         object.keys.each do |key|
@@ -338,6 +329,7 @@ class Hash
       else object
     end
   end
+  private :deep_transform_keys_in_object!
 
   # ────────────────────────────────────────────────────────────────────────────
 
@@ -352,6 +344,10 @@ class Pathname
   #
   def shell_escape
     Shellwords.shellescape(self)
+  end
+
+  def expand_variables
+    Pathname.new(self.to_s.expand_variables)
   end
 
 end
@@ -1130,7 +1126,7 @@ module Fizzy::Environment
 
   def xdg_config_home(name)
     Pathname.new(get_env(:XDG_CONFIG_HOME) || "~/.config").
-      expand_variables.
+      expanad_variables.
       expand_path.
       join(name.to_s)
   end
@@ -2392,7 +2388,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     }xi
     md = url.match(regexp)
     return url unless md
-    protocol = (md[:protocol].gsub(/:$/, "") || default_protocol).to_sym
+    protocol = (md[:protocol] || default_protocol).gsub(/:$/, "").to_sym
     case protocol
       when :ssh   then "git@github.com:#{md[:username]}/#{md[:repository]}"
       when :https then "https://github.com/#{md[:username]}/#{md[:repository]}"

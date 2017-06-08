@@ -1,6 +1,6 @@
 # Access informations declared in the meta file.
 #
-module Fizzy::MetaInfo
+module Fizzy::Meta::Info
 
   include Fizzy::IO
   include Fizzy::Vars
@@ -117,8 +117,7 @@ module Fizzy::MetaInfo
       selected = selected_by_only?(spec[:only], verbose)
 
       if selected
-
-        # Step 2.2: Pre-process strings with ERB.
+        # Step 2.1: Pre-process strings with ERB.
         spec.each do |key, value|
           unless command_excluded_erb_fields.include?(key)
             if value.is_a?(String)
@@ -127,32 +126,12 @@ module Fizzy::MetaInfo
           end
         end
 
-        # Step 2.3: Validate `type`, `validator`, `executor`.
-        if !spec.has_key?(:type) ||
-           !available_commands.keys.include?(spec[:type])
-          error("The command `#{spec[:name]}` has invalid `type`: it's " +
-                "not in `#{available_commands.keys}`.")
-        end
-        command = available_commands[spec[:type]]
-        if command.has_key?(:validator) && !command[:validator].is_a?(Proc)
-          error("Invalid validator for command `#{spec[:name]}`: if " +
-                "provided it should be a `Proc`.")
-        end
-        if !command.has_key?(:executor) || !command[:executor].is_a?(Proc)
-          error("Invalid executor for command `#{spec[:name]}`: it should " +
-                "be a `Proc`.")
-        end
-
-        # Step 2.4: Use type-specific validator if it's defined.
-        if command.has_key?(:validator) && (
-             !command[:validator].is_a?(Proc) ||
-             !command[:validator].call(spec)
-           )
-          error("The validator for command `#{spec[:name]}` didn't pass.")
-        end
+        # Step 2.2: Validate command.
+        command = Fizzy::Meta::Commands.find_by_type(spec[:type])
+        command.validate!
       end
 
-      selected ? spec : nil
+      selected ? command : nil
     end.compact
 
     # ──────────────────────────────────────────────────────────────────────────

@@ -44,9 +44,10 @@ sources:
   - core/vars/retriever
   - core/vars/api
   - core/locals
-  - core/meta_commands
-  - core/meta_info
-  - core/meta_elements
+  - core/meta/init
+  - core/meta/commands
+  - core/meta/info
+  - core/meta/elements
   - core/sync/base
   - core/sync/local
   - core/sync/git

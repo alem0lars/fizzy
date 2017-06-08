@@ -9,20 +9,20 @@ group :development do
   gem "rake", require: false
 
   # Generate ruby code from the grammars definitions.
-  gem "racc", "~> 1.4", require: false
+  gem "racc", require: false
 
-  # Lint
-  gem "rubocop",       require: false
-  gem "rubocop-rspec", require: false
+  # Lint.
+  gem "rainbow", "=2.0", require: false # XXX workaround, see issue #44.
+  gem "rubocop",         require: false
+  gem "rubocop-rspec",   require: false
 
-  # Testing
+  # Testing.
   gem "rspec",    require: false
   gem "fuubar",   require: false
   gem "cucumber", require: false
 
   # Improve IRB, adding some features.
-  gem "irbtools",      require: false
-  gem "irbtools-more", require: false
+  gem "irbtools", require: "irbtools/binding"
 
   # Print inspected Ruby objects; useful when debugging.
   gem "awesome_print"
@@ -38,8 +38,6 @@ group :development do
   gem "simplecov"
 
 end
-
-gem "did_you_mean", "~> 0.9"
 
 group :website do
   # For faster file watcher updates on Windows.

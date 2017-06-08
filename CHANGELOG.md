@@ -11,7 +11,7 @@
   [@alem0lars][@alem0lars]
 * Allow strict regex matching with '^'
   [@alem0lars][@alem0lars]
-* Enfore configuration elements to be inside `elems` directory.
+* Enforce configuration elements to be inside `elems` directory.
   [@alem0lars][@alem0lars]
 * Handle more than one feature `has_feature?` method.
   [@jak3][@jak3]
@@ -87,7 +87,10 @@
   [@alem0lars][@alem0lars]
 * Fix issue #46
   [@alem0lars][@alem0lars]
-
+* Fix sync issue, failing when both local and remote changed
+  [@alem0lars][@alem0lars]
+* Add `tree` data structure (based on the gem `evolve75/RubyTree`)
+  [@alem0lars][@alem0lars]
 
 ## Current and previous versions
 

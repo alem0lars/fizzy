@@ -35,9 +35,10 @@ class Fizzy::TypeEvaluator
     end
   end
 
-#  private def resolve_type(type)
+#  def resolve_type(type)
 #    @stack.each do |type|
 #      case type
 #    end
 #  end
+#  private :resolve_type
 end

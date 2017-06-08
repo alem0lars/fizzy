@@ -12,13 +12,15 @@ require "strscan"
 require "uri"
 require "yaml"
 
-# Try to require `thor` or raise an exception.
-begin
-  require "thor"
-rescue
-  puts("\e[31m☠ The gem `thor` is not installed. " +
-       "To install run: `gem install thor`. Aborting.\e[0m")
-  exit(-1)
+# Load external dependencies.
+%w(thor).each do |gem_name|
+  begin
+    require gem_name
+  rescue
+    puts("\e[31m☠ The gem `#{gem_name}` is not installed. " +
+        "To install run: `gem install #{gem_name}`. Aborting.\e[0m")
+    exit(-1)
+  end
 end
 
 # Top-level namespace.

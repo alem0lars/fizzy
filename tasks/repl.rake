@@ -1,6 +1,6 @@
 desc "Start a repl with fizzy preloaded"
 task repl: :build do
-  sh "irb -I . -r irbtools -r irbtools/more -r build/fizzy"
+  sh "irb -I . -r irbtools -r build/fizzy"
 end
 
 namespace :docker do

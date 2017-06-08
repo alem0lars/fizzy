@@ -1,6 +1,6 @@
 # Manage elements declared in the meta file.
 #
-module Fizzy::MetaElements
+module Fizzy::Meta::Elements
 
   include Fizzy::IO
   include Fizzy::Execution

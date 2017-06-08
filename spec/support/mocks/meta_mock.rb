@@ -1,6 +1,6 @@
 module Fizzy::Mocks
   class Meta
-    include Fizzy::MetaInfo
+    include Fizzy::Meta::Info
 
     def initialize(content)
       vars_name = SecureRandom.hex

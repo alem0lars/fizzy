@@ -1,6 +1,15 @@
 # Changes
 
-## Next version
+## Version 2.4.0
+
+### User changes
+
+### Dev changes
+
+* Refactor meta commands into separate classes
+  [@alem0lars][@alem0lars]
+
+## Version 2.3.0
 
 ### User changes
 
@@ -92,7 +101,7 @@
 * Add `tree` data structure (based on the gem `evolve75/RubyTree`)
   [@alem0lars][@alem0lars]
 
-## Current and previous versions
+## Previous versions
 
 See the release notes.
 

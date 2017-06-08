@@ -55,9 +55,9 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
       end
     end
     # 1.2: Install the commands.
-    meta[:commands].each do |spec|
-      tell("Executing command: `#{spec[:name]}`.", :cyan)
-      available_commands[spec[:type]][:executor].call(spec)
+    meta[:commands].each do |command|
+      tell("Executing command: `#{command.type}`.", :cyan)
+      command.execute
     end
 
     # Inform the user about installation status.

@@ -10,9 +10,8 @@ class Fizzy::BaseCommand < Thor
   include Fizzy::IO
   include Fizzy::Vars
   include Fizzy::Locals
-  include Fizzy::MetaInfo
-  include Fizzy::MetaElements
-  include Fizzy::MetaCommands
+  include Fizzy::Meta::Info
+  include Fizzy::Meta::Elements
 
   # Common options, shared by many commands.
   #

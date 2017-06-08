@@ -3146,66 +3146,118 @@ module Fizzy::Locals
 
 end
 
-# ────────────────────────────────────────────────────── Meta commands ← Core ──
+# ──────────────────────────────────────────────────────── Init ← Meta ← Core ──
+
+module Fizzy::Meta
+end
+
+# ──────────────────────────────────────────────────── Commands ← Meta ← Core ──
 
 # Manage commands declared in the meta file.
 #
-module Fizzy::MetaCommands
+module Fizzy::Meta::Commands
 
-  # Return a data structure containing the commands that can be specified in
-  # the meta file.
+  class Base
+    include Fizzy::IO
+
+    def type
+      self.class.type
+    end
+
+    def invalid_spec(name, value=nil)
+      msg  = "Invalid `#{name}` provided to command `#{type}`: "
+      msg += value.nil? ? "no value given." : "`#{value}`."
+
+      error(msg)
+    end
+    protected :invalid_spec
+  end
+
+  # Meta-Command that syncs a repository.
   #
-  # The data structure defines:
-  # - The available command types (`available_commands.keys`).
-  # - (Optionally) A validator that can be used to validate type-specific
-  #   validation rules.
-  # - The command executor: A `Lambda` containing the code used for executing
-  #   that command.
+  # Spec:
   #
-  def available_commands
-    { sync: {
-        validator: lambda { |spec|
-          if spec.has_key?(:dst)
-            spec[:dst] = Pathname.new(spec[:dst]).expand_variables.expand_path
-          end
-          spec.has_key?(:repo) && spec.has_key?(:dst)
-        },
-        executor: lambda{|spec| Fizzy::Sync.perform(spec[:dst], spec[:repo])}
-      },
-      download: {
-        validator: lambda { |spec|
-          # 1. Validate.
-          status   = spec.has_key?(:url)
-          status &&= spec.has_key?(:dst)
-          # 2. Normalize.
-          if status
-            spec[:url] = URI(spec[:url])
-            spec[:dst] = Pathname.new(spec[:dst]).expand_variables.expand_path
-          end
-          status
-        },
-        executor: lambda { |spec|
-          res = Net::HTTP.get_response(spec[:url])
-          if res.is_a?(Net::HTTPSuccess)
-            # TODO atm it requires the current user has write access.
-            #      refactor when a more robust permission mgmt is implemented.
-            FileUtils.mkdir_p(spec[:dst].dirname)
-            spec[:dst].write(res.body)
-          else
-            error("Network error: cannot retrieve `#{spec[:url]}`.")
-          end
-        }
-      }
-    }
+  # * `repo`: The repository specification.
+  # * `dst`: The destination path.
+  #
+  class Sync < Base
+    def validate!(spec)
+      # 1: Validate.
+      invalid_spec :repo unless spec.has_key?(:repo)
+      invalid_spec :dst  unless spec.has_key?(:dst)
+
+      # 2: Normalize.
+      @repo = spec[:repo]
+      @dst = Pathname.new(spec[:dst]).expand_variables.expand_path
+    end
+
+    def execute
+      Fizzy::Sync.perform(@dst, @repo)
+    end
+
+    def self.type
+      :sync
+    end
+  end
+
+  # Meta-Command that performs a file download.
+  #
+  # Spec:
+  #
+  # * `url`: The URL where the file should be downloaded.
+  # * `dst`: The destination path.
+  #
+  class Download < Base
+    def validate!(spec)
+      # 1: Validate.
+      invalid_spec :url unless spec.has_key?(:url)
+      invalid_spec :dst unless spec.has_key?(:dst)
+
+      # 2: Normalize.
+      @url = URI(spec[:url])
+      @dst = Pathname.new(spec[:dst]).expand_variables.expand_path
+    end
+
+    def execute
+      res = Net::HTTP.get_response(@url)
+      if res.is_a?(Net::HTTPSuccess)
+        # TODO atm it requires the current user has write access.
+        #      refactor when a more robust permission mgmt is implemented.
+        FileUtils.mkdir_p(@dst.dirname)
+        @dst.write(res.body)
+      else
+        error("Network error: cannot retrieve `#{@url}`.")
+      end
+    end
+
+    def self.type
+      :download
+    end
+  end
+
+  def self.available
+    [SyncMetaCommand, DownloadMetaCommand]
+  end
+
+  def self.find_by_type(type)
+    found = Fizzy::Meta::Commands.available.filter {|command| command.type == type}
+
+    if found.empty?
+      error "Failed to find a command with type `#{type}`."
+    elsif found.length != 1
+      error "[BUG] Multiple commands matched type `#{type}`"
+    else
+      found[0]
+    end
   end
 
 end
 
-# ────────────────────────────────────────────────────────── Meta info ← Core ──
+# ──────────────────────────────────────────────────────── Info ← Meta ← Core ──
 
 # Access informations declared in the meta file.
 #
-module Fizzy::MetaInfo
+module Fizzy::Meta::Info
 
   include Fizzy::IO
   include Fizzy::Vars
@@ -3322,8 +3374,7 @@ module Fizzy::MetaInfo
       selected = selected_by_only?(spec[:only], verbose)
 
       if selected
-
-        # Step 2.2: Pre-process strings with ERB.
+        # Step 2.1: Pre-process strings with ERB.
         spec.each do |key, value|
           unless command_excluded_erb_fields.include?(key)
             if value.is_a?(String)
@@ -3332,32 +3383,12 @@ module Fizzy::MetaInfo
           end
         end
 
-        # Step 2.3: Validate `type`, `validator`, `executor`.
-        if !spec.has_key?(:type) ||
-           !available_commands.keys.include?(spec[:type])
-          error("The command `#{spec[:name]}` has invalid `type`: it's " +
-                "not in `#{available_commands.keys}`.")
-        end
-        command = available_commands[spec[:type]]
-        if command.has_key?(:validator) && !command[:validator].is_a?(Proc)
-          error("Invalid validator for command `#{spec[:name]}`: if " +
-                "provided it should be a `Proc`.")
-        end
-        if !command.has_key?(:executor) || !command[:executor].is_a?(Proc)
-          error("Invalid executor for command `#{spec[:name]}`: it should " +
-                "be a `Proc`.")
-        end
-
-        # Step 2.4: Use type-specific validator if it's defined.
-        if command.has_key?(:validator) && (
-             !command[:validator].is_a?(Proc) ||
-             !command[:validator].call(spec)
-           )
-          error("The validator for command `#{spec[:name]}` didn't pass.")
-        end
+        # Step 2.2: Validate command.
+        command = Fizzy::Meta::Commands.find_by_type(spec[:type])
+        command.validate!
       end
 
-      selected ? spec : nil
+      selected ? command : nil
     end.compact
 
     # ──────────────────────────────────────────────────────────────────────────
@@ -3425,11 +3456,11 @@ module Fizzy::MetaInfo
 
 end
 
-# ────────────────────────────────────────────────────── Meta elements ← Core ──
+# ──────────────────────────────────────────────────── Elements ← Meta ← Core ──
 
 # Manage elements declared in the meta file.
 #
-module Fizzy::MetaElements
+module Fizzy::Meta::Elements
 
   include Fizzy::IO
   include Fizzy::Execution
@@ -3972,9 +4003,8 @@ class Fizzy::BaseCommand < Thor
   include Fizzy::IO
   include Fizzy::Vars
   include Fizzy::Locals
-  include Fizzy::MetaInfo
-  include Fizzy::MetaElements
-  include Fizzy::MetaCommands
+  include Fizzy::Meta::Info
+  include Fizzy::Meta::Elements
 
   # Common options, shared by many commands.
   #
@@ -4289,9 +4319,9 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
       end
     end
     # 1.2: Install the commands.
-    meta[:commands].each do |spec|
-      tell("Executing command: `#{spec[:name]}`.", :cyan)
-      available_commands[spec[:type]][:executor].call(spec)
+    meta[:commands].each do |command|
+      tell("Executing command: `#{command.type}`.", :cyan)
+      command.execute
     end
 
     # Inform the user about installation status.

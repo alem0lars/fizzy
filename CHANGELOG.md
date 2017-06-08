@@ -11,7 +11,7 @@
   [@alem0lars][@alem0lars]
 * Allow strict regex matching with '^'
   [@alem0lars][@alem0lars]
-* Enfore configuration elements to be inside `elems` directory.
+* Enforce configuration elements to be inside `elems` directory.
   [@alem0lars][@alem0lars]
 * Handle more than one feature `has_feature?` method.
   [@jak3][@jak3]

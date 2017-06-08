@@ -89,6 +89,8 @@
   [@alem0lars][@alem0lars]
 * Fix sync issue, failing when both local and remote changed
   [@alem0lars][@alem0lars]
+* Add `tree` data structure (based on the gem `evolve75/RubyTree`)
+  [@alem0lars][@alem0lars]
 
 ## Current and previous versions
 

@@ -24,7 +24,7 @@ describe Fizzy::Tree::Node do
 
   describe "#initialize" do
     context "with empty name and `nil` content" do
-      let (:tree) { Tree::TreeNode.new("") }
+      let (:tree) { described_class.new("") }
 
       it "creates the tree node with name as ''" do
         expect(tree.name).to eq("")
@@ -38,7 +38,7 @@ describe Fizzy::Tree::Node do
     end
 
     context "with name `'A'` and `nil` content" do
-      let (:tree) { Tree::TreeNode.new("A") }
+      let (:tree) { described_class.new("A") }
 
       it "creates the tree node with name as `'A'`" do
         expect(tree.name).to eq("A")
@@ -53,13 +53,13 @@ describe Fizzy::Tree::Node do
 
     context "with node name `'A'` and some content" do
       let(:sample) { "sample" }
-      let(:tree)   { Tree::TreeNode.new("A", sample) }
+      let(:tree)   { described_class.new("A", "sample") }
 
       it "creates the tree node with name as `'A'`" do
         expect(tree.name).to eq("A")
       end
 
-      it "has some content #{sample}" do
+      it "has some content" do
         expect(tree.content).to eq(sample)
       end
 

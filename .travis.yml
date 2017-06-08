@@ -1,33 +1,12 @@
-sudo: false
-language: rust
-addons:
-  apt:
-    packages:
-    - libcurl4-openssl-dev
-    - libelf-dev
-    - libdw-dev
-    - binutils-dev
-rust:
-- nightly
-- beta
-- stable
-matrix:
-  allow_failures:
-  - rust: nightly
-before_script:
-- |
-  pip install 'travis-cargo<0.2' --user &&
-  export PATH=$HOME/.local/bin:$PATH
+sudo: required
+
+language: ruby
+
+rvm:
+  - 2.3.0
+
+services:
+  - docker
+
 script:
-- |
-  travis-cargo build &&
-  travis-cargo test &&
-  travis-cargo bench &&
-  travis-cargo --only stable doc
-after_success:
-- travis-cargo --only stable doc-upload --branch develop
-- travis-cargo coveralls --no-sudo --verify
-env:
-  global:
-  - TRAVIS_CARGO_NIGHTLY_FEATURE=nightly
-  - secure: rFZXLopKhu9Q1xNe9MovZMzIRi9rOUEZtS6eBDDZlUN53XSzSdRlX2/E92qeF2BwGsRKhYp87xICxzL2kvRccbiImZnar8q0oM7GLYokdotH0S2PS+fPkzfOJJn/PhPD8laGF6WEXQHhHkBeo8XHGQTxU4qXUMXe8aDanI1TtSQ=
+  - bundle exec rake docker:test

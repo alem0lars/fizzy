@@ -28,11 +28,10 @@ Reliable way to reproduce the problem:
 
 ## Version
 
-Include the output of `fizzy -V`.
-
-Here's an example:
+Include the output of `fizzy version`. Here's an example:
 
 ```
-$ fizzy -V
-fizzy 3.0.0
+$ fizzy version
+☞ fizzy version 2.2.0
+☞ ruby version ruby 2.4.0p-1
 ```

@@ -79,4 +79,4 @@ version 1.4, available at
 [send_email]: mailto:molari.alessandro@gmail.com
 
 [cc_homepage]: http://contributor-covenant.org
-[cc_version]: http://contributor-covenant.org/version/1/4
+[cc_version]: http://contributor-covenant.org/version/1/4/

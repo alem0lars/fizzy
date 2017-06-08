@@ -75,7 +75,7 @@ class Hash
     deep_transform_keys_in_object!(self, &block)
   end
 
-  private def deep_transform_keys_in_object(object, &block)
+  def deep_transform_keys_in_object(object, &block)
     case object
       when Hash
         object.each_with_object({}) do |(key, value), result|
@@ -86,8 +86,9 @@ class Hash
       else object
     end
   end
+  private :deep_transform_keys_in_object
 
-  private def deep_transform_keys_in_object!(object, &block)
+  def deep_transform_keys_in_object!(object, &block)
     case object
       when Hash
         object.keys.each do |key|
@@ -100,6 +101,7 @@ class Hash
       else object
     end
   end
+  private :deep_transform_keys_in_object!
 
   # ────────────────────────────────────────────────────────────────────────────
 

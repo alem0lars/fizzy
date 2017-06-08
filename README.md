@@ -1,11 +1,23 @@
-Fizzy
-=====
+<p align="center">
+  <img title="fizzy"
+   src='https://raw.githubusercontent.com/alem0lars/fizzy/develop/data/logo.png'
+   width="400px" />
+</p>
 
-The hassle free configuration manager
+<p>
+  <h1 align="center">the hassle free configuration manager</h1>
+</p>
 
-[![Bountysource][bountysource_image]][bountysource_link]
-[![Gitbook status][gitbook_status_image]][gitbook_status_link]
+fizzy is an easy-to-use, learn-by-doing, lightweight, configuration management tool meant to be used by developers, hackers, experienced users
+
+It doesn't try to reimplement the wheel, instead it follows the unix philosophy do one thing and do it well making extremely easy to integrate with your existing ecosystem
+
+----
+
+[![License][license_image]][license_link]
 [![Build Status][travis_status_image]][travis_status_link]
+[![Gitbook status][gitbook_status_image]][gitbook_status_link]
+[![Bountysource][bountysource_image]][bountysource_link]
 
 ## Usage
 
@@ -92,8 +104,7 @@ See [CONTRIBUTING.md][contributing]
 
 ## Pointers
 
-* IRC channel: `#fizzy` at freenode
-* Slack team `fizzy-cfg`: [https://fizzy-cfg.slack.com](https://fizzy-cfg.slack.com)
+* IRC channel: `#fizzy` at [freenode][irc]
 
 ----
 
@@ -107,6 +118,9 @@ Made with ♥ by Alessandro Molari
 
 [twitter]:    https://twitter.com/alem0lars
 [send_email]: mailto:molari.alessandro@gmail.com
+[irc]:        https://webchat.freenode.net/?channels=fizzy
+
+[contributing]: ./CONTRIBUTING.md
 
 [ruby_homepage]: https://www.ruby-lang.org
 [thor_gem]:      https://rubygems.org/gems/thor
@@ -121,15 +135,10 @@ Made with ♥ by Alessandro Molari
 [travis_status_image]: https://travis-ci.org/alem0lars/fizzy.svg?branch=master
 [travis_status_link]:  https://travis-ci.org/alem0lars/fizzy
 
-[codecov_image]: https://codecov.io/gh/alem0lars/fizzy/branch/master/graph/badge.svg
-[codecov_link]:  https://codecov.io/gh/alem0lars/fizzy
-
 [read_end_user_guide]:          https://www.gitbook.com/read/book/alem0lars/fizzy
 [download_pdf_end_user_guide]:  https://www.gitbook.com/download/pdf/book/alem0lars/fizzy
 [download_epub_end_user_guide]: https://www.gitbook.com/download/epub/book/alem0lars/fizzy
 [download_mobi_end_user_guide]: https://www.gitbook.com/download/mobi/book/alem0lars/fizzy
 
-[download_bundle]: https://github.com/alem0lars/fizzy/releases
-
 [fizzy_bin]:    ./build/fizzy
-[contributing]: ./CONTRIBUTING.md
+[download_bundle]: https://github.com/alem0lars/fizzy/releases

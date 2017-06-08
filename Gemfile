@@ -22,8 +22,7 @@ group :development do
   gem "cucumber", require: false
 
   # Improve IRB, adding some features
-  gem "irbtools",      require: false
-  # gem "irbtools-more", require: false
+  gem "irbtools", require: "irbtools/binding"
 
   # Print inspected Ruby objects; useful when debugging
   gem "awesome_print"

@@ -31,8 +31,8 @@ module Fizzy::Sync
     tell("Using synchronizer: `#{colorize(synchronizer.name, :magenta)}`", :cyan)
 
     status   = true
-    status &&= synchronizer.update_remote if synchronizer.local_changed?
     status &&= synchronizer.update_local  if synchronizer.remote_changed?
+    status &&= synchronizer.update_remote if synchronizer.local_changed?
     status
   end
 end

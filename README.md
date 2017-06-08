@@ -127,7 +127,7 @@ Made with ♥ by Alessandro Molari
 [thor_homepage]: http://whatisthor.com
 
 [license_image]: https://img.shields.io/github/license/alem0lars/fizzy.svg
-[license_link]:  ./LICENSE
+[license_link]:  ./LICENSE.md
 
 [bountysource_image]: https://img.shields.io/bountysource/team/fizzy/activity.svg
 [bountysource_link]:  https://www.bountysource.com/teams/fizzy

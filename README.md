@@ -1,11 +1,11 @@
 <p align="center">
-    <img title="fizzy"
-         src='https://raw.githubusercontent.com/alem0lars/fizzy/develop/data/logo.png'
-         width="400px" />
+  <img title="fizzy"
+   src='https://raw.githubusercontent.com/alem0lars/fizzy/develop/data/logo.png'
+   width="400px" />
 </p>
 
 <p>
-    <h1 align="center">the hassle free configuration manager</h1>
+  <h1 align="center">the hassle free configuration manager</h1>
 </p>
 
 fizzy is an easy-to-use, learn-by-doing, lightweight, configuration management tool meant to be used by developers, hackers, experienced users

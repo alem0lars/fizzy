@@ -28,7 +28,8 @@ module Fizzy::Sync
 
   def self.perform(local_dir_path, remote_url)
     synchronizer = selected(local_dir_path, remote_url)
-    tell("Using synchronizer: `#{colorize(synchronizer.name, :magenta)}`", :cyan)
+    tell("Using synchronizer: `#{synchronizer.name.to_s.colorize(:magenta)}`",
+         :cyan)
 
     status   = true
     status &&= synchronizer.update_local  if synchronizer.remote_changed?

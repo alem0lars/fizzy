@@ -185,12 +185,12 @@ module Fizzy::Meta::Info
     if verbose
       if selected
         if only.nil?
-          info(" ↳ ", "#{✔} (`only` is empty).")
+          info(" ↳ ", "#{✔} `only` is empty.")
         else
-          info(" ↳ ", "#{✔} (`only` is present and satisfied).")
+          info(" ↳ ", "#{✔} `only` is present and satisfied.")
         end
       else
-        info(" ↳ ", "#{✘} (`only` didn't match).")
+        info(" ↳ ", "#{✘} `only` didn't match.")
       end
     end
 

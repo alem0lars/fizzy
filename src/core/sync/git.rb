@@ -181,7 +181,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
     if working_tree_changes?
       tell "The configuration has the following local changes:\n" +
-           "#{colorize(working_tree_changes, :white)}", :cyan
+           "#{working_tree_changes.colorize(:white)}", :cyan
       if message || quiz("Do you want to commit them all")
         status &&= perform_add # Add from Working Tree to stage.
         if status

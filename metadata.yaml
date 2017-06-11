@@ -18,13 +18,14 @@ grammars:
 
 sources:
   - requires
+  - misc/ansi_colors
   - exts/string
   - exts/symbol
   - exts/hash
   - exts/pathname
   - exts/thor
   - configuration
-  - core/io
+  - core/io/log
   - misc/caller
   - misc/must
   - misc/abstract_method

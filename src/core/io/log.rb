@@ -46,11 +46,11 @@ module Fizzy::IO
       uniq[0..2].
       join(" → ")
 
-    tell(colorize("⚫ ", :magenta) +
-         colorize("<", :blue) +
-         colorize(caller_info, :cyan) +
-         colorize(">", :blue) +
-         colorize(": #{msg}", :white)) if Fizzy::CFG.debug
+    tell("⚫".colorize(:magenta) +
+         "<".colorize(:blue) +
+         caller_info.colorize(:cyan) +
+         ">".colorize(:blue) +
+         ": #{msg}".colorize(:white)) if Fizzy::CFG.debug
   end
 
   # Display an informative message (`msg`) to the user.
@@ -59,9 +59,9 @@ module Fizzy::IO
   # message, typically to show the context which the message belongs to.
   #
   def info(prefix, msg)
-    tell(colorize("☞ ", :magenta) +
-         colorize(prefix, :cyan) +
-         colorize(" #{msg}", :white))
+    tell("☞ ".colorize(:magenta) +
+         prefix.colorize(:cyan) +
+         " #{msg}".colorize(:white))
   end
 
   # Display an informative message (`msg`) to the user.
@@ -70,7 +70,7 @@ module Fizzy::IO
   # the program or exit (with exit status `-1`).
   #
   def warning(msg, ask_continue: true)
-    tell(colorize("☞ ", :magenta) + colorize(msg, :yellow))
+    tell("☞ ".colorize(:magenta) + msg.colorize(:yellow))
     exit(-1) if ask_continue && !quiz("continue")
   end
 
@@ -80,7 +80,7 @@ module Fizzy::IO
   def error(msg, exc: nil)
     must "message", msg, be: String
 
-    tell(colorize("☠ ", :magenta) + colorize(msg, :red))
+    tell("☠ ".colorize(:magenta) + msg.colorize(:red))
 
     if exc
       raise exc.new(msg)
@@ -96,26 +96,19 @@ module Fizzy::IO
     shell.say(*args)
   end
 
-  # Colorize the provided string.
-  # It's a proxy method to `Thor::Shell::Color.set_color`.
-  #
-  def colorize(*args)
-    shell.set_color(*args)
-  end
-
   # ──────────────────────────────────────────────────────────────────────────
   # ☞ Well-known messages
 
   # Get colorized success symbol.
   #
   def ✔
-    colorize("✔", :green)
+    "✔".colorize(:green)
   end
 
   # Get colorized error symbol.
   #
   def ✘
-    colorize("✘", :red)
+    "✘".colorize(:red)
   end
 
   # ──────────────────────────────────────────────────────────────────────────

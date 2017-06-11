@@ -18,7 +18,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     tell("Available variable files:", :cyan)
     avail_vars(paths.cur_cfg_vars).each do |path|
       name = path.basename(path.extname)
-      tell("\t→ #{colorize(name, :magenta)}")
+      tell("\t→ #{name.colorize(:magenta)}")
     end
   end
 
@@ -152,9 +152,9 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg_elems,
                     options.verbose)
 
-    info("meta: ", "#{colorize(meta[:elems].count, :green)}/" +
+    info("meta: ", "#{meta[:elems].count.to_s.colorize(:green)}/" +
                    "#{meta[:all_elems_count]} elem(s) selected.")
-    info("meta: ", "#{colorize(meta[:excluded_files].count, :red)}/" +
+    info("meta: ", "#{meta[:excluded_files].count.to_s.colorize(:red)}/" +
                    "#{meta[:all_files_count]} file(s) excluded.")
     tell
 

@@ -1,6 +1,10 @@
-module Fizzy
-end
 module Fizzy::ANSIColors
+
+  # Proxy method to `Fizzy::ANSIColors.colorize`.
+  #
+  def colorize(*args, **kwargs)
+    Fizzy::ANSIColors.colorize(*args, **kwargs)
+  end
 
   class << self
     def default_open_tag_regexp
@@ -217,9 +221,9 @@ module Fizzy::ANSIColors
 end
 
 # TEST
-
 # TODO move to the specs
-input = "{b{gogo{r{the quick {g{brown fox {y{jumps over}} the {m{lazy}} dog}} the {c{quick}} brown fox jumps}}}} over the {g{lazy}} dog"
-actual = Fizzy::ANSIColors.colorize(input)
-expected = "\e[0m\e[34mgogo\e[31mthe quick \e[32mbrown fox \e[33mjumps over\e[32m the \e[35mlazy\e[32m dog\e[31m the \e[36mquick\e[31m brown fox jumps\e[34m\e[0m over the \e[32mlazy\e[0m dog\e[0m"
-puts actual == expected
+# input = "{b{gogo{r{the quick {g{brown fox {y{jumps over}} the {m{lazy}} dog}} the {c{quick}} brown fox jumps}}}} over the {g{lazy}} dog"
+#
+# actual = Fizzy::ANSIColors.colorize(input)
+# expected = "\e[0m\e[34mgogo\e[31mthe quick \e[32mbrown fox \e[33mjumps over\e[32m the \e[35mlazy\e[32m dog\e[31m the \e[36mquick\e[31m brown fox jumps\e[34m\e[0m over the \e[32mlazy\e[0m dog\e[0m"
+# puts actual == expected

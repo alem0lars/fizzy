@@ -22,7 +22,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def update_local
     if local_valid_repo?
       # Update existing local from remote, i.e. perform `git pull`.
-      tell "Syncing from `origin` to local", :blue
+      tell("{b{Syncing from `{m{origin}}` to `{m{local}}`.}}")
       status   = perform_commit
       status &&= perform_pull
     else
@@ -34,7 +34,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Update remote from local.
   #
   def update_remote
-    tell "Syncing from local to `origin`", :blue
+    tell("{b{Syncing from `{m{local}}` to `{m{origin}}`.}}")
     status   = perform_commit
     status &&= perform_push
   end
@@ -42,7 +42,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Check if local is changed, and now is different from latest remote state.
   #
   def local_changed?
-    tell "Checking if local repository is changed", :blue
+    tell("{b{Checking if local repository is changed.}}")
     return false unless local_valid_repo?
     return true  if     working_tree_changes?
     return true  if     perform_fetch && should_push?
@@ -52,7 +52,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Check if remote is changed, and now is different from latest local state.
   #
   def remote_changed?
-    tell "Checking if remote repository is changed", :blue
+    tell("{b{Checking if remote repository is changed.}}")
     return true unless local_valid_repo?
     return true if     perform_fetch && should_pull?
     false
@@ -79,8 +79,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     case protocol
       when :ssh   then "git@github.com:#{md[:username]}/#{md[:repository]}"
       when :https then "https://github.com/#{md[:username]}/#{md[:repository]}"
-      else        error("Invalid protocol for `#{url}`: `#{protocol}` not in " +
-                        "`[#{protocols.join(", ")}]`.")
+      else        error("Invalid protocol for `{m{#{url}}}`: `{m{#{protocol}}}` not in `{m{[#{protocols.join(", ")}]}}`.")
     end
   end
   protected :normalize_url
@@ -95,7 +94,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Get the Working Tree (local) changes.
   #
   def working_tree_changes
-    error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
+    error("Invalid local repo: `#{@local_dir_path}`.") unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
       return `git status -uall --porcelain`.strip
     end
@@ -180,12 +179,11 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     status = true
 
     if working_tree_changes?
-      tell "The configuration has the following local changes:\n" +
-           "#{working_tree_changes.colorize(:white)}", :cyan
+      tell("{c{The configuration has the following local changes:\n{w{#{working_tree_changes}}}.}}")
       if message || quiz("Do you want to commit them all")
         status &&= perform_add # Add from Working Tree to stage.
         if status
-          tell("Performing commit", :blue)
+          tell("{b{Performing commit.}}")
 
           message ||= quiz("Type the commit message", type: :string)
 
@@ -193,7 +191,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
           cmd << "--allow-empty-message" if     message.nil?
           cmd += ["-m", message]         unless message.nil?
 
-          error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
+          error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
           status &&= exec_cmd(cmd,
                               as_su: !existing_dir(@local_dir_path),
                               chdir: @local_dir_path)
@@ -209,7 +207,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     error("Invalid remote `#{remote}`.") if remote && !remotes.include?(remote)
     error("Invalid branch `#{branch}`.") if branch && !branches.include?(branch)
 
-    tell("Fetching information from remote", :blue)
+    tell("{b{Fetching information from remote.}}")
 
     cmd  = ["git", "fetch"]
     cmd << remote.shell_escape unless remote.nil?
@@ -221,7 +219,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   protected :perform_fetch
 
   def perform_clone(recursive: true)
-    tell("Syncing from remote repository: `#{@remote_normalized_url}`", :blue)
+    tell("{b{Syncing from remote repository: `{m{#{@remote_normalized_url}}`.}}")
     error("Invalid url: can't be empty.") if @remote_normalized_url.nil?
 
     parent_dir = @local_dir_path.dirname
@@ -239,19 +237,19 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Pull from the provided `remote` in the provided `branch`.
   #
   def perform_pull(remote: nil, branch: nil, with_submodules: true)
-    error("Invalid remote `#{remote}`") if remote && !remotes.include?(remote)
-    error("Invalid branch `#{branch}`") if branch && !branches.include?(branch)
+    error("Invalid remote `#{remote}`.") if remote && !remotes.include?(remote)
+    error("Invalid branch `#{branch}`.") if branch && !branches.include?(branch)
 
     status = true
 
     if should_pull?
-      tell("Performing pull", :blue)
+      tell("{b{Performing pull.}}")
 
       cmd  = ["git", "pull"]
       cmd << remote.shell_escape unless remote.nil?
       cmd << branch.shell_escape unless branch.nil?
 
-      error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+      error("Invalid local repo: `{m{#{@local_dir_path}}}`.") unless local_valid_repo?
       status = exec_cmd(cmd,
                         as_su: !existing_dir(@local_dir_path),
                         chdir: @local_dir_path)
@@ -276,13 +274,13 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     status = true
 
     if should_push?
-      tell("Pushing to remote", :blue)
+      tell("{b{Pushing to remote.}}")
 
       cmd  = ["git", "push"]
       cmd << remote.shell_escape unless remote.nil?
       cmd << branch.shell_escape unless branch.nil?
 
-      error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+      error("Invalid local repo: `{m{#{@local_dir_path}}}`.") unless local_valid_repo?
       status &&= exec_cmd(cmd,
                           as_su: !existing_dir(@local_dir_path),
                           chdir: @local_dir_path)

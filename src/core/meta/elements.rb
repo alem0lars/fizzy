@@ -22,13 +22,12 @@ module Fizzy::Meta::Elements
       },
       lambda { |elem| # Create a symlink for each elements' `src_path`.
         elem[:fs_maps].each do |m|
-          tell("  #{m[:src_path]} ← #{m[:dst_path]}") if @verbose
+          tell("  {m{#{m[:src_path]}}} ← {m{#{m[:dst_path]}}}") if @verbose
           cmd = "ln -s"
           should_link = if m[:dst_path].file?
             if m[:dst_path].realpath != m[:src_path]
               cmd << " -f"
-              quiz("The destination file `#{m[:dst_path]}` already " +
-                   "exists. Overwrite")
+              quiz("The destination file `#{m[:dst_path]}` already exists. Overwrite")
             else
               false
             end
@@ -53,10 +52,10 @@ module Fizzy::Meta::Elements
       lambda { |elem| # Change perms of the instantiated files (if specified).
         if elem.has_key?(:perms)
           elem[:fs_maps].each do |m|
-            tell("Changing permissions of #{m[:src_path]} to " +
-                 elem[:perms]) if @verbose
-            exec_cmd("chmod #{elem[:perms].shell_escape} " +
-                     m[:src_path].shell_escape,
+            if @verbose
+              tell("Changing permissions of `{m{#{m[:src_path]}}}` to `{m{#{elem[:perms]}}}`.")
+            end
+            exec_cmd("chmod #{elem[:perms].shell_escape} #{m[:src_path].shell_escape}",
                      as_su: !File.owned?(m[:src_path]))
           end
         end

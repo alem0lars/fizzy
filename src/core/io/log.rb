@@ -1,5 +1,7 @@
 module Fizzy::IO
 
+  include Fizzy::ANSIColors
+
   # Get the shell object.
   # It will be lazily instantiated.
   def shell
@@ -26,7 +28,7 @@ module Fizzy::IO
         elsif answer =~ /n|no|fuck|fuck\s+you|fuck\s+off/i
           false
         else
-          tell("Answer misunderstood", :yellow)
+          tell("{y{Answer misunderstood.}}")
           quiz(question, type: type)
         end
       when :string
@@ -45,12 +47,9 @@ module Fizzy::IO
       map { |c| c[/`.*'/][1..-2].split(" ").first }.
       uniq[0..2].
       join(" → ")
-
-    tell("⚫".colorize(:magenta) +
-         "<".colorize(:blue) +
-         caller_info.colorize(:cyan) +
-         ">".colorize(:blue) +
-         ": #{msg}".colorize(:white)) if Fizzy::CFG.debug
+    if Fizzy::CFG.debug
+      tell("{m{⚫}}{b{<}}{c{#{caller_info.colorize(:cyan)}}}{b{>}}{w{: #{msg}}}")
+    end
   end
 
   # Display an informative message (`msg`) to the user.
@@ -59,9 +58,7 @@ module Fizzy::IO
   # message, typically to show the context which the message belongs to.
   #
   def info(prefix, msg)
-    tell("☞ ".colorize(:magenta) +
-         prefix.colorize(:cyan) +
-         " #{msg}".colorize(:white))
+    tell("{m{☞ }}{c{#{prefix.colorize(:cyan)}}}{w{ #{msg}.}}")
   end
 
   # Display an informative message (`msg`) to the user.
@@ -70,7 +67,7 @@ module Fizzy::IO
   # the program or exit (with exit status `-1`).
   #
   def warning(msg, ask_continue: true)
-    tell("☞ ".colorize(:magenta) + msg.colorize(:yellow))
+    tell("{m{☞ }}{y{#{msg}}}")
     exit(-1) if ask_continue && !quiz("continue")
   end
 
@@ -78,9 +75,9 @@ module Fizzy::IO
   # program will exit (with exit status `-1`).
   #
   def error(msg, exc: nil)
-    must "message", msg, be: String
+    must("message", msg, be: String)
 
-    tell("☠ ".colorize(:magenta) + msg.colorize(:red))
+    tell("{m{☠ }}{r{#{msg}}}")
 
     if exc
       raise exc.new(msg)
@@ -90,27 +87,26 @@ module Fizzy::IO
   end
 
   # Tell something to the user.
-  # It's a proxy method to `Thor::Shell::Color.say`.
   #
-  def tell(*args)
-    shell.say(*args)
+  def tell(*args, **kwargs)
+    puts colorize(*args, **kwargs)
   end
 
-  # ──────────────────────────────────────────────────────────────────────────
+  # ────────────────────────────────────────────────────────────────────────────
   # ☞ Well-known messages
 
   # Get colorized success symbol.
   #
   def ✔
-    "✔".colorize(:green)
+    "{g{✔}}"
   end
 
   # Get colorized error symbol.
   #
   def ✘
-    "✘".colorize(:red)
+    "{r{✘}}"
   end
 
-  # ──────────────────────────────────────────────────────────────────────────
+  # ────────────────────────────────────────────────────────────────────────────
 
 end

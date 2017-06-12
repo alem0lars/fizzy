@@ -10,7 +10,7 @@ module Fizzy::Meta::Info
   # Be sure to call `setup_vars` before calling this method.
   #
   def get_meta(meta_path, vars_path, elems_base_path, verbose)
-    tell("Getting meta informations.", :blue)
+    tell("{b{Getting meta informations.}}")
 
     begin
       meta = YAML.load(File.read(meta_path)).deep_symbolize_keys

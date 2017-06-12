@@ -24,7 +24,7 @@ module Fizzy::Execution
                  end
 
     if really_run || run_mode == :dry
-      tell(as_su ? "[sudo] #{cmd}" : cmd, :magenta)
+      tell(as_su ? "{m{[sudo]}} #{cmd}" : cmd)
     end
 
     status = nil

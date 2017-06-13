@@ -614,46 +614,6 @@ module Fizzy::IO
 
   include Fizzy::ANSIColors
 
-  # Get the shell object.
-  # It will be lazily instantiated.
-  def shell
-    @shell ||= Thor::Shell::Color.new
-  end
-
-  # Ask a question to the user.
-  #
-  # The message is made by the `question` string, with some additions (like
-  # `?` sign).
-  #
-  # The available quiz types are:
-  # - `:bool`: Boolean quiz, the user can respond with `yes` or `no` (or
-  #            alternatives, see regexes below). A boolean value is returned.
-  # - `:string`: Normal quiz, the user is prompt for a question and if the
-  #              answer isn't empty is returned.
-  #
-  def quiz(question, type: :bool)
-    answer = shell.ask("#{question.strip}? ", :magenta)
-    case type
-      when :bool
-        if answer =~ /y|ye|yes|yeah|ofc/i
-          true
-        elsif answer =~ /n|no|fuck|fuck\s+you|fuck\s+off/i
-          false
-        else
-          tell("{y{Answer misunderstood}}.")
-          quiz(question, type: type)
-        end
-      when :string
-        if answer.empty?
-          warning("Empty answer", ask_continue: false)
-          quiz(question, type: type)
-        else
-          answer
-        end
-      else error("Unhandled question type: `{m{#{type}}}`.")
-    end
-  end
-
   def debug(msg)
     caller_info = caller.
       map { |c| c[/`.*'/][1..-2].split(" ").first }.
@@ -680,7 +640,7 @@ module Fizzy::IO
   #
   def warning(msg, ask_continue: true)
     tell("{y{☞ #{msg}}}")
-    exit(-1) if ask_continue && !quiz("continue")
+    exit(-1) if ask_continue && !ask("continue")
   end
 
   # Display an error message (`msg`) to the user. Before returning, the
@@ -720,6 +680,52 @@ module Fizzy::IO
   end
 
   # ────────────────────────────────────────────────────────────────────────────
+
+end
+
+# ─────────────────────────────────────────────────────────── Ask ← Io ← Core ──
+
+module Fizzy::IO
+
+  # Ask a question to the user.
+  #
+  # The message is made by the `question` string, with some additions (like
+  # `?` sign if not already present).
+  #
+  # The available ask types are:
+  # - `:bool`: Boolean ask, the user can respond with `yes` or `no` (or
+  #            alternatives, see regexes below). A boolean value is returned.
+  # - `:string`: Normal ask, the user is prompt for a question and if the
+  #              answer isn't empty is returned.
+  #
+  def ask(question, type: :bool)
+    question = question.gsub(/[?]*/, "")
+    question.strip!
+    question << "? "
+
+    tell("{Ml{ ? }}#{question}")
+    answer = gets.chomp
+
+    case type
+    when :bool
+      if answer =~ /(y|ye|yes|yeah|ofc)$/i
+        true
+      elsif answer =~ /(n|no|fuck|fuck\s+you|fuck\s+off)$/i
+        false
+      else
+          tell("{y{Answer misunderstood}}.")
+          ask(question, type: type)
+      end
+    when :string
+      if answer.empty?
+          warning("Empty answer", ask_continue: false)
+          ask(question, type: type)
+      else
+        answer
+      end
+    else error("Unhandled question type: `{m{#{type}}}`.")
+    end
+  end
 
 end
 
@@ -2717,7 +2723,7 @@ module Fizzy::Execution
     really_run = case run_mode
                    when :normal then true
                    when :paranoid
-                     quiz("Do you want to run command `#{full_cmd}`")
+                     ask("Do you want to run command `#{full_cmd}`")
                    when :dry then false
                    else true
                  end
@@ -2818,7 +2824,7 @@ module Fizzy::Filesystem
       error("Cannot create directory: `#{root_path}`.")
     end
     if root_path.file?
-      if quiz("`#{root_path}` already exists but is a regular file. Remove")
+      if ask("`#{root_path}` already exists but is a regular file. Remove")
         exec_cmd("rm #{root_path.shell_escape}",
                  as_su: File.owned?(root_path))
       else
@@ -3714,13 +3720,13 @@ module Fizzy::Meta::Elements
           should_link = if m[:dst_path].file?
             if m[:dst_path].realpath != m[:src_path]
               cmd << " -f"
-              quiz("The destination file `#{m[:dst_path]}` already exists. Overwrite")
+              ask("The destination file `#{m[:dst_path]}` already exists. Overwrite")
             else
               false
             end
           elsif m[:dst_path].directory?
-            if quiz("The destination file `#{m[:dst_path]}` is a " +
-                    "directory. Delete it")
+            if ask("The destination file `#{m[:dst_path]}` is a " +
+                   "directory. Delete it")
               exec_cmd("rm -Rf #{m[:dst_path]}",
                        as_su: !existing_dir(m[:dst_path].dirname))
             end
@@ -4085,12 +4091,12 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
     if working_tree_changes?
       tell("{c{The configuration has the following local changes:\n{w{#{working_tree_changes}}}.}}")
-      if message || quiz("Do you want to commit them all")
+      if message || ask("Do you want to commit them all")
         status &&= perform_add # Add from Working Tree to stage.
         if status
           tell("{b{Performing commit.}}")
 
-          message ||= quiz("Type the commit message", type: :string)
+          message ||= ask("Type the commit message", type: :string)
 
           cmd  = ["git", "commit", "-a"]
           cmd << "--allow-empty-message" if     message.nil?
@@ -4337,7 +4343,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst: false)
 
     # Perform cleanup.
-    status = if quiz("Remove the fizzy root directory (`#{paths.root}`)")
+    status = if ask("Remove the fizzy root directory (`#{paths.root}`)")
       paths.root.rmtree
     else
       nil # Cleanup skipped.

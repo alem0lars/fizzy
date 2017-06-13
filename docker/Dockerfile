@@ -7,54 +7,15 @@ MAINTAINER Alessandro Molari <molari.alessandro@gmail.com> (alem0lars)
 RUN apk update \
  && apk upgrade
 
-# Install libraries
+# Install libraries.
 RUN apk add --update --no-cache \
     linux-headers build-base openssl-dev libc-dev libxml2-dev libxslt-dev \
-    libffi-dev readline-dev jemalloc-dev
+    libffi-dev readline-dev jemalloc-dev \
+    g++ musl-dev make
 
-# Install programs
+# Install programs.
 RUN apk add --update --no-cache \
     git bash curl wget zsh
-
-## Install common libraries.
-#RUN apk add --update --no-cache                                                \
-#    curl-dev                                                                   \
-#    db-dev                                                                     \
-#    geoip-dev                                                                  \
-#    glib-dev                                                                   \
-#    krb5-dev                                                                   \
-#    libevent-dev                                                               \
-#    libffi-dev                                                                 \
-#    libbz2                                                                     \
-#    libxml2-dev                                                                \
-#    libxslt-dev                                                                \
-#    libssl1.0                                                                  \
-#    libtool                                                                    \
-#    libwebp-dev                                                                \
-#    libjpeg-turbo-dev                                                          \
-#    libpng-dev                                                                 \
-#    libpq                                                                      \
-#    linux-headers                                                              \
-#    ncurses                                                                    \
-#    ncurses-dev                                                                \
-#    readline-dev                                                               \
-#    sqlite-dev                                                                 \
-#    yaml-dev
-#
-## Install basic packages.
-#RUN apk add --update --no-cache                                                \
-#    autoconf                                                                   \
-#    automake                                                                   \
-#    ca-certificates                                                            \
-#    curl                                                                       \
-#    file                                                                       \
-#    g++                                                                        \
-#    gcc                                                                        \
-#    make                                                                       \
-#    tar                                                                        \
-#    vim                                                                        \
-#    xz                                                                         \
-#    zsh
 
 # ─────────────────────────────────────────────────────────────────────────────┘
 
@@ -66,28 +27,101 @@ ENV HOME /root
 
 # ─────────────────────────────────────────────────────────── Setup ruby (1) ──┐
 
-ENV RUBY_MAJOR=2.3                                                             \
-    RUBY_VERSION=2.3.1                                                         \
-    RUBY_DOWNLOAD_SHA1=c39b4001f7acb4e334cb60a0f4df72d434bef711                \
-    RUBYGEMS_VERSION=2.6.6
+ENV RUBY_MAJOR 2.4
+ENV RUBY_VERSION 2.4.1
+ENV RUBY_DOWNLOAD_SHA256 4fc8a9992de3e90191de369270ea4b6c1b171b7941743614cc50822ddc1fe654
+ENV RUBYGEMS_VERSION 2.6.12
 
-ENV BUNDLER_VERSION 1.12.5
+# skip installing gem documentation
+RUN mkdir -p /usr/local/etc \
+  && { \
+    echo 'install: --no-document'; \
+    echo 'update: --no-document'; \
+  } >> /usr/local/etc/gemrc
 
-# TODO check if needed
-# # Install ruby dependencies.
-# RUN apk add --update --no-cache                                                \
-#     bison                                                                      \
-#     gdbm-dev
+# some of ruby's build scripts are written in ruby
+#   we purge system ruby later to make sure our final image uses what we just built
+# readline-dev vs libedit-dev: https://bugs.ruby-lang.org/issues/11869 and https://github.com/docker-library/ruby/issues/75
+RUN set -ex \
+  && apk add --no-cache --virtual .ruby-builddeps \
+    autoconf \
+    bison \
+    bzip2 \
+    bzip2-dev \
+    ca-certificates \
+    coreutils \
+    dpkg-dev dpkg \
+    gcc \
+    gdbm-dev \
+    glib-dev \
+    libc-dev \
+    libffi-dev \
+    libxml2-dev \
+    libxslt-dev \
+    linux-headers \
+    make \
+    ncurses-dev \
+    openssl \
+    openssl-dev \
+    procps \
+    readline-dev \
+    ruby \
+    tar \
+    yaml-dev \
+    zlib-dev \
+    xz \
+  && wget -O ruby.tar.xz "https://cache.ruby-lang.org/pub/ruby/${RUBY_MAJOR%-rc}/ruby-$RUBY_VERSION.tar.xz" \
+  && echo "$RUBY_DOWNLOAD_SHA256 *ruby.tar.xz" | sha256sum -c - \
+  && mkdir -p /usr/src/ruby \
+  && tar -xJf ruby.tar.xz -C /usr/src/ruby --strip-components=1 \
+  && rm ruby.tar.xz \
+  && cd /usr/src/ruby \
+  # XXX hack in "ENABLE_PATH_CHECK" disabling to suppress:
+  #   warning: Insecure world writable dir
+  && { \
+    echo '#define ENABLE_PATH_CHECK 0'; \
+    echo; \
+    cat file.c; \
+  } > file.c.new \
+  && mv file.c.new file.c \
+  && autoconf \
+  && gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
+  # the configure script does not detect isnan/isinf as macros
+  && export ac_cv_func_isnan=yes ac_cv_func_isinf=yes \
+  && ./configure \
+    --build="$gnuArch" \
+    --disable-install-doc \
+    --enable-shared \
+  && make -j "$(nproc)" \
+  && make install \
+  && runDeps="$( \
+    scanelf --needed --nobanner --recursive /usr/local \
+      | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
+      | sort -u \
+      | xargs -r apk info --installed \
+      | sort -u \
+  )" \
+  && apk add --virtual .ruby-rundeps $runDeps \
+    bzip2 \
+    ca-certificates \
+    libffi-dev \
+    openssl-dev \
+    yaml-dev \
+    procps \
+    zlib-dev \
+  && apk del .ruby-builddeps \
+  && cd / \
+  && rm -r /usr/src/ruby \
+  && gem update --system "$RUBYGEMS_VERSION"
 
-# Install ruby-install
-RUN wget -O ruby-install-0.6.0.tar.gz https://github.com/postmodern/ruby-install/archive/v0.6.0.tar.gz
-RUN tar -xzvf ruby-install-0.6.0.tar.gz
-RUN cd ruby-install-0.6.0/ && make install
+# ─────────────────────────────────────────────────────────────────────────────┘
 
-# Install ruby
-RUN ruby-install --system ruby $RUBY_VERSION
+# ─────────────────────────────────────────────────────────── Setup ruby (2) ──┐
 
-# Install things globally and don't create `.bundle` in all our apps
+# Install bundler.
+RUN gem install bundler
+
+# Install things globally and don't create `.bundle` in all our apps.
 ENV GEM_HOME /usr/local/bundle
 ENV BUNDLE_PATH="${GEM_HOME}"                                                  \
     BUNDLE_BIN="${GEM_HOME}/bin"                                               \
@@ -97,37 +131,34 @@ ENV PATH $BUNDLE_BIN:$PATH
 RUN mkdir -p  "${GEM_HOME}" "${BUNDLE_BIN}"                                    \
  && chmod 777 "${GEM_HOME}" "${BUNDLE_BIN}"
 
-# Install bundler
-RUN gem install bundler --version "${BUNDLER_VERSION}"
-
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ──────────────────────────────────────────────────────────────── Setup ssh ──┐
 
-# Install ssh daemon
+# Install ssh daemon.
 RUN apk add --update --no-cache                                                \
     openssh
 
-# Generate fresh keys
+# Generate fresh keys.
 RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa                       \
  && ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa
 
-# Prepare ssh run directory
+# Prepare ssh run directory.
 RUN mkdir -p /var/run/sshd
 
-# Configure ssh
+# Configure ssh.
 RUN echo "StrictHostKeyChecking=no" >> /etc/ssh/ssh_config
 RUN sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g'      \
     /etc/ssh/sshd_config
 
-# Expose ssh port
+# Expose ssh port.
 EXPOSE 22
 
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 # ──────────────────────────────────────────────────────────────── Setup git ──┐
 
-ARG GIT_PWD="git"
+ENV GIT_PWD="git"
 ENV GIT_USER="git"
 ENV GIT_GROUP="git"
 ENV GIT_REPOS_DIR="/git"
@@ -184,7 +215,7 @@ RUN curl -sL                                                                   \
 
 # ─────────────────────────────────────────────────────────────────────────────┘
 
-# ─────────────────────────────────────────────────────────── Setup ruby (2) ──┐
+# ─────────────────────────────────────────────────────────── Setup ruby (3) ──┐
 
 # Configure ruby
 RUN fizzy cfg s -C ruby -U https:alem0lars/configs-ruby                        \
@@ -198,25 +229,36 @@ ENV APP_DIR="${HOME}/fizzy"
 
 # ──────────────────────────── (trick to allow caching) Install dependencies ──┤
 
-# WORKDIR /tmp
-# ADD ./Gemfile      Gemfile
-# ADD ./Gemfile.lock Gemfile.lock
-# RUN bundle install
-# RUN rm ./Gemfile                                                               \
-#  && rm ./Gemfile.lock
+WORKDIR /tmp
+ADD ./Gemfile      Gemfile
+ADD ./Gemfile.lock Gemfile.lock
+RUN bundle install
+RUN rm ./Gemfile                                                               \
+ && rm ./Gemfile.lock
 
 # ────────────────────────────────────────────────────────────── Add the app ──┤
 
 ADD . "${APP_DIR}"
 WORKDIR "${APP_DIR}"
-# RUN bundle install
-# RUN bundle exec rake build
+RUN bundle install
+RUN bundle exec rake build
 
 # ─────────────────────────────────────────────────────────────────────────────┘
 
-# ADD docker/entrypoint.sh /usr/local/bin/docker_entrypoint.sh
-# RUN chmod +x /usr/local/bin/docker_entrypoint.sh
-#
-# ENTRYPOINT ["/usr/local/bin/docker_entrypoint.sh"]
+# ──────────────────────────────────────────────────────── Setup supervisord ──┐
 
-CMD ["/bin/bash"]
+RUN apk add --update --no-cache rsyslog
+
+ADD docker/rsyslog.conf /etc/rsyslog.d/90-fizzy.conf
+
+# ─────────────────────────────────────────────────────────────────────────────┘
+
+# ──────────────────────────────────────────────────────── Setup supervisord ──┐
+
+RUN apk add --update --no-cache supervisor
+
+ADD docker/supervisord.ini /etc/supervisor.d/supervisord.ini
+
+# ─────────────────────────────────────────────────────────────────────────────┘
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

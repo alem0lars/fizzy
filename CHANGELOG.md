@@ -6,9 +6,14 @@
 
 ### Dev changes
 
-* Refactor meta commands into separate classes
+* Refactor meta commands into separate classes.
   [@alem0lars][@alem0lars]
-* Refactor strings colorization, using an internal parser instead of thor
+* Refactor `colorize` (for strings colorization), using an internal parser
+  instead of using gem thor.
+  All output strings have been updated to use the new format string.
+  [@alem0lars][@alem0lars]
+* Refactor `quiz` into `ask`, using an internal implementation instead of using
+  gem thor.
   [@alem0lars][@alem0lars]
 
 ## Version 2.3.0

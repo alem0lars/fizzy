@@ -72,7 +72,7 @@ module Fizzy::Filesystem
       error("Cannot create directory: `#{root_path}`.")
     end
     if root_path.file?
-      if quiz("`#{root_path}` already exists but is a regular file. Remove")
+      if ask("`#{root_path}` already exists but is a regular file. Remove")
         exec_cmd("rm #{root_path.shell_escape}",
                  as_su: File.owned?(root_path))
       else

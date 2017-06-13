@@ -77,61 +77,239 @@ end
 
 module Fizzy::ANSIColors
 
-  def self.fg_colors
-    {
-      black: "\e[30m",
-      red: "\e[31m",
-      green: "\e[32m",
-      yellow: "\e[33m",
-      blue: "\e[34m",
-      magenta: "\e[35m",
-      cyan: "\e[36m",
-      white: "\e[37m"
-    }
+  # Proxy method to `Fizzy::ANSIColors.colorize`.
+  #
+  def colorize(*args, **kwargs)
+    Fizzy::ANSIColors.colorize(*args, **kwargs)
   end
 
-  def self.bg_colors
-    {
-      black: "\e[40m",
-      red: "\e[41m",
-      green: "\e[42m",
-      yellow: "\e[43m",
-      blue: "\e[44m",
-      magenta: "\e[45m",
-      cyan: "\e[46m",
-      white: "\e[47m"
-    }
+  class << self
+    def default_open_tag_regexp
+      /(\{(?<color_spec>[lrgybmcwLRGYBMCW]+)\{)/
+    end
+
+    def default_close_tag_regexp
+      /(\}\})/
+    end
+
+    def colorize(str, open_tag_regexp: nil, close_tag_regexp: nil)
+      open_tag_regexp = default_open_tag_regexp if open_tag_regexp.nil?
+      close_tag_regexp = default_close_tag_regexp if close_tag_regexp.nil?
+
+      tree = TreeBuilder.new(open_tag_regexp, close_tag_regexp).build(str)
+
+      colorized_str = str.dup
+      escapes_size = 0
+      tree.visit do |node|
+        if node.is_a?(StartTagNode)
+          color_escape = Fizzy::ANSIColors.spec_to_color(node.color_spec)
+        elsif node.is_a?(EndTagNode)
+          color_escape = Fizzy::ANSIColors.spec_to_color(node.parent.color_spec)
+        end
+        colorized_str.insert(escapes_size + node.end_idx, color_escape)
+        escapes_size += color_escape.length
+      end
+      colorized_str.gsub!(open_tag_regexp, "")
+      colorized_str.gsub!(close_tag_regexp, "")
+      colorized_str
+    end
+
+    # Convert a color specification to an ansi color escape.
+    #
+    # * Upcase is for background colors
+    # * Downcase is for foreground colors
+    #
+    def spec_to_color(color_spec)
+      names = {
+        l: :black,
+        r: :red,
+        g: :green,
+        y: :yellow,
+        b: :blue,
+        m: :magenta,
+        c: :cyan,
+        w: :white
+      }
+
+      if color_spec.nil?
+        ""
+      else
+        color_spec = color_spec.to_s
+        color_name = names[color_spec.downcase.to_sym]
+
+        if color_spec == "CLEAR"
+          Fizzy::ANSIColors.clear_colors
+        else
+          if color_spec == color_spec.upcase # background color
+            Fizzy::ANSIColors.bg_colors[color_name]
+          else # foreground color
+            Fizzy::ANSIColors.fg_colors[color_name]
+          end
+        end
+      end
+    end
   end
 
-  def self.bold
-    "\e[1m"
+  class TreeBuilder
+    def initialize(open_tag_regexp, close_tag_regexp)
+      @open_tag_regexp = open_tag_regexp
+      @close_tag_regexp = close_tag_regexp
+    end
+
+    def build(str)
+      start_tag_nodes = str.to_enum(:scan, @open_tag_regexp).map do
+        m = Regexp.last_match
+        StartTagNode.new(m.begin(0), m.end(0), m[0].length, m[:color_spec])
+      end
+
+      end_tag_nodes = str.to_enum(:scan, @close_tag_regexp).map do
+        m = Regexp.last_match
+        EndTagNode.new(m.begin(0), m.end(0), m[0].length)
+      end
+
+      tag_nodes = (start_tag_nodes + end_tag_nodes).sort
+
+      root_node = StartTagNode.new(0, 0, 0, :CLEAR)
+
+      parent_node = root_node
+      previous_node = root_node
+      tag_nodes.each do |current_node|
+        if previous_node.is_a?(StartTagNode) && current_node.is_a?(StartTagNode)
+          parent_node = previous_node
+        end
+        if previous_node.is_a?(EndTagNode) && current_node.is_a?(EndTagNode)
+          parent_node = parent_node.parent
+        end
+        current_node.parent = parent_node
+        parent_node.children.push(current_node)
+        previous_node = current_node
+      end
+
+      # Add the end tag for the root node.
+      final_node = EndTagNode.new(str.length, str.length, 0)
+      final_node.parent = root_node
+      root_node.children.push(final_node)
+
+      return root_node
+    end
   end
 
-  def self.clear_colors
-    "\e[0m"
+  class Node
+    attr_accessor :parent, :children
+    attr_reader :start_idx, :end_idx, :size
+
+    include Comparable
+
+    def initialize(start_idx, end_idx, size)
+      @parent = nil
+      @children = []
+      @start_idx = start_idx
+      @end_idx = end_idx
+      @size = size
+    end
+
+    def <=>(another)
+      self.start_idx <=> another.start_idx
+    end
+
+    def visit(&block)
+      yield(self)
+      children.each {|c| c.visit(&block)}
+    end
+
+    def to_pretty_str(indent_lvl=0, include_children: true)
+      "#{"\t" * indent_lvl}#{self.class.name}(#{to_fields_str(indent_lvl, include_children)})"
+    end
+
+    def to_fields_str(indent_lvl, include_children)
+      indent_str = "#{"\t" * indent_lvl}"
+      if children.empty? || !include_children
+        children_str = ""
+      else
+        children_str = "children="
+        children_str = "\n#{indent_str}[\n"
+        children_str += children.map do |c|
+          c.to_pretty_str(indent_lvl + 1, include_children: include_children)
+        end.join("\n")
+        children_str += "\n#{indent_str}]"
+      end
+      "start_idx=`#{start_idx}` end_idx=`#{end_idx}` size=`#{size}`#{children_str}"
+    end
+    protected :to_fields_str
   end
 
-  def fg_colors
-    self.class.fg_colors
+  class StartTagNode < Node
+    attr_reader :color_spec
+
+    def initialize(start_idx, end_idx, size, color_spec)
+      super(start_idx, end_idx, size)
+      @color_spec = color_spec
+    end
+
+    def to_fields_str(indent_lvl, include_children)
+      "color_spec=`#{color_spec}` #{super}"
+    end
+    protected :to_fields_str
   end
 
-  def bg_colors
-    self.class.bg_colors
+  class EndTagNode < Node
   end
 
-  def bold
-    self.class.bold
-  end
+  # ─────────────────────────────────────────────────────── Colors definition ──
 
-  def clear_colors
-    self.class.clear_colors
+  class << self
+
+    # Definition of ANSI foreground colors.
+    #
+    def fg_colors
+      {
+        black: "\e[30m",
+        red: "\e[31m",
+        green: "\e[32m",
+        yellow: "\e[33m",
+        blue: "\e[34m",
+        magenta: "\e[35m",
+        cyan: "\e[36m",
+        white: "\e[37m"
+      }
+    end
+
+    # Definition of ANSI background colors.
+    #
+    def bg_colors
+      {
+        black: "\e[40m",
+        red: "\e[41m",
+        green: "\e[42m",
+        yellow: "\e[43m",
+        blue: "\e[44m",
+        magenta: "\e[45m",
+        cyan: "\e[46m",
+        white: "\e[47m"
+      }
+    end
+
+    def clear_colors
+      "\e[0m"
+    end
+
   end
 
 end
 
+# TEST
+# TODO move to the specs
+# input = "{b{gogo{r{the quick {g{brown fox {y{jumps over}} the {m{lazy}} dog}} the {c{quick}} brown fox jumps}}}} over the {g{lazy}} dog"
+#
+# actual = Fizzy::ANSIColors.colorize(input)
+# expected = "\e[0m\e[34mgogo\e[31mthe quick \e[32mbrown fox \e[33mjumps over\e[32m the \e[35mlazy\e[32m dog\e[31m the \e[36mquick\e[31m brown fox jumps\e[34m\e[0m over the \e[32mlazy\e[0m dog\e[0m"
+# puts actual == expected
+
 # ───────────────────────────────────────────────────────────── String ← Exts ──
 
 class String
+
+  include Fizzy::ANSIColors
 
   # ───────────────────────────────────────────────────────────────── Escapes ──
 
@@ -197,84 +375,6 @@ class String
     vars_regexp = /\$([a-zA-Z_]+[a-zA-Z0-9_]*)|\$\{(.+)\}/
     self.gsub(vars_regexp) { ENV[$1||$2] }
   end
-
-  # ────────────────────────────────────────────────────────────────── Colors ──
-
-  # Apply provided colors to the underlying string.
-  #
-  def colorize(*args)
-    # 1: Compute `next_colors`.
-    next_colors = {}
-    args.map {|arg| arg.to_s.to_sym}.each do |arg|
-      if next_colors[:fg_color].nil?
-        next_colors[:fg_color] = Fizzy::ANSIColors.fg_colors[arg]
-      end
-
-      if next_colors[:bg_color].nil? && /^on_/ =~ arg
-        next_colors[:bg_color] = Fizzy::ANSIColors.bg_colors[arg.gsub(/^on_/, "")]
-      end
-
-      if arg == :bold && next_colors[:bold].nil?
-        next_colors[:bold] = Fizzy::ANSIColors.bold
-      end
-    end
-
-    # 2: Apply colors ONLY to the given string.
-    puts "---"
-    ap last_colors
-    ap current_colors
-    ap next_colors
-    puts "---"
-    update_current_colors(next_colors)
-    puts "---"
-    ap last_colors
-    ap current_colors
-    ap next_colors
-    puts "---"
-    restore_last_colors
-    puts "---"
-    ap last_colors
-    ap current_colors
-    ap next_colors
-    puts "---"
-
-    # 3: Return the colorized string
-    self
-  end
-
-  # Remove all colors from the underlying string.
-  #
-  def clear_colors
-    self.replace("#{self}#{Fizzy::ANSIColors.clear_colors}")
-  end
-
-  def update_current_colors(next_colors)
-    last_colors.replace(current_colors) unless current_colors.empty?
-    current_colors.replace(next_colors)
-    self.replace("#{current_colors.values.join}#{self}")
-  end
-  protected :update_current_colors
-
-  def restore_last_colors
-    unless last_colors.empty?
-      current_colors.replace(last_colors)
-      self.replace("#{self}#{current_colors.values.join}")
-      last_colors.clear
-    end
-  end
-  protected :restore_last_colors
-
-  def current_colors
-    # Lazy property.
-    @current_colors ||= {}
-  end
-  protected :current_colors
-
-  def last_colors
-    # Lazy property.
-    @last_colors ||= {}
-  end
-  protected :last_colors
 
 end
 
@@ -512,6 +612,8 @@ Fizzy::CFG.instantiate_exclude_pattern = /\.git|README/
 
 module Fizzy::IO
 
+  include Fizzy::ANSIColors
+
   # Get the shell object.
   # It will be lazily instantiated.
   def shell
@@ -538,7 +640,7 @@ module Fizzy::IO
         elsif answer =~ /n|no|fuck|fuck\s+you|fuck\s+off/i
           false
         else
-          tell("Answer misunderstood", :yellow)
+          tell("{y{Answer misunderstood}}.")
           quiz(question, type: type)
         end
       when :string
@@ -548,7 +650,7 @@ module Fizzy::IO
         else
           answer
         end
-      else error("Unhandled question type: `#{type}`.")
+      else error("Unhandled question type: `{m{#{type}}}`.")
     end
   end
 
@@ -557,12 +659,9 @@ module Fizzy::IO
       map { |c| c[/`.*'/][1..-2].split(" ").first }.
       uniq[0..2].
       join(" → ")
-
-    tell("⚫".colorize(:magenta) +
-         "<".colorize(:blue) +
-         caller_info.colorize(:cyan) +
-         ">".colorize(:blue) +
-         ": #{msg}".colorize(:white)) if Fizzy::CFG.debug
+    if Fizzy::CFG.debug
+      tell("{m{⚫}}{b{<}}{c{#{caller_info}}}{b{>}}{w{: #{msg}}}")
+    end
   end
 
   # Display an informative message (`msg`) to the user.
@@ -571,9 +670,7 @@ module Fizzy::IO
   # message, typically to show the context which the message belongs to.
   #
   def info(prefix, msg)
-    tell("☞ ".colorize(:magenta) +
-         prefix.colorize(:cyan) +
-         " #{msg}".colorize(:white))
+    tell("{b{☞ }}{c{#{prefix}}}{w{ #{msg}}}")
   end
 
   # Display an informative message (`msg`) to the user.
@@ -582,7 +679,7 @@ module Fizzy::IO
   # the program or exit (with exit status `-1`).
   #
   def warning(msg, ask_continue: true)
-    tell("☞ ".colorize(:magenta) + msg.colorize(:yellow))
+    tell("{y{☞ #{msg}}}")
     exit(-1) if ask_continue && !quiz("continue")
   end
 
@@ -590,9 +687,9 @@ module Fizzy::IO
   # program will exit (with exit status `-1`).
   #
   def error(msg, exc: nil)
-    must "message", msg, be: String
+    must("message", msg, be: String)
 
-    tell("☠ ".colorize(:magenta) + msg.colorize(:red))
+    tell("{r{☠ #{msg}}}")
 
     if exc
       raise exc.new(msg)
@@ -602,28 +699,27 @@ module Fizzy::IO
   end
 
   # Tell something to the user.
-  # It's a proxy method to `Thor::Shell::Color.say`.
   #
-  def tell(*args)
-    shell.say(*args)
+  def tell(*args, **kwargs)
+    puts colorize(*args, **kwargs)
   end
 
-  # ──────────────────────────────────────────────────────────────────────────
+  # ────────────────────────────────────────────────────────────────────────────
   # ☞ Well-known messages
 
   # Get colorized success symbol.
   #
   def ✔
-    "✔".colorize(:green)
+    "{g{✔}}"
   end
 
   # Get colorized error symbol.
   #
   def ✘
-    "✘".colorize(:red)
+    "{r{✘}}"
   end
 
-  # ──────────────────────────────────────────────────────────────────────────
+  # ────────────────────────────────────────────────────────────────────────────
 
 end
 
@@ -2627,7 +2723,7 @@ module Fizzy::Execution
                  end
 
     if really_run || run_mode == :dry
-      tell(as_su ? "[sudo] #{cmd}" : cmd, :magenta)
+      tell(as_su ? "{m{[sudo]}} #{cmd}" : cmd)
     end
 
     status = nil
@@ -3398,7 +3494,7 @@ module Fizzy::Meta::Info
   # Be sure to call `setup_vars` before calling this method.
   #
   def get_meta(meta_path, vars_path, elems_base_path, verbose)
-    tell("Getting meta informations.", :blue)
+    tell("{b{Getting meta informations.}}")
 
     begin
       meta = YAML.load(File.read(meta_path)).deep_symbolize_keys
@@ -3613,13 +3709,12 @@ module Fizzy::Meta::Elements
       },
       lambda { |elem| # Create a symlink for each elements' `src_path`.
         elem[:fs_maps].each do |m|
-          tell("  #{m[:src_path]} ← #{m[:dst_path]}") if @verbose
+          tell("  {m{#{m[:src_path]}}} ← {m{#{m[:dst_path]}}}") if @verbose
           cmd = "ln -s"
           should_link = if m[:dst_path].file?
             if m[:dst_path].realpath != m[:src_path]
               cmd << " -f"
-              quiz("The destination file `#{m[:dst_path]}` already " +
-                   "exists. Overwrite")
+              quiz("The destination file `#{m[:dst_path]}` already exists. Overwrite")
             else
               false
             end
@@ -3644,10 +3739,10 @@ module Fizzy::Meta::Elements
       lambda { |elem| # Change perms of the instantiated files (if specified).
         if elem.has_key?(:perms)
           elem[:fs_maps].each do |m|
-            tell("Changing permissions of #{m[:src_path]} to " +
-                 elem[:perms]) if @verbose
-            exec_cmd("chmod #{elem[:perms].shell_escape} " +
-                     m[:src_path].shell_escape,
+            if @verbose
+              tell("Changing permissions of `{m{#{m[:src_path]}}}` to `{m{#{elem[:perms]}}}`.")
+            end
+            exec_cmd("chmod #{elem[:perms].shell_escape} #{m[:src_path].shell_escape}",
                      as_su: !File.owned?(m[:src_path]))
           end
         end
@@ -3689,8 +3784,7 @@ module Fizzy::Sync
 
   def self.perform(local_dir_path, remote_url)
     synchronizer = selected(local_dir_path, remote_url)
-    tell("Using synchronizer: `#{synchronizer.name.to_s.colorize(:magenta)}`",
-         :cyan)
+    tell("{c{Using synchronizer: `{m{#{synchronizer.name}}}`.}}")
 
     status   = true
     status &&= synchronizer.update_local  if synchronizer.remote_changed?
@@ -3833,7 +3927,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def update_local
     if local_valid_repo?
       # Update existing local from remote, i.e. perform `git pull`.
-      tell "Syncing from `origin` to local", :blue
+      tell("{b{Syncing from `{m{origin}}` to `{m{local}}`.}}")
       status   = perform_commit
       status &&= perform_pull
     else
@@ -3845,7 +3939,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Update remote from local.
   #
   def update_remote
-    tell "Syncing from local to `origin`", :blue
+    tell("{b{Syncing from `{m{local}}` to `{m{origin}}`.}}")
     status   = perform_commit
     status &&= perform_push
   end
@@ -3853,7 +3947,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Check if local is changed, and now is different from latest remote state.
   #
   def local_changed?
-    tell "Checking if local repository is changed", :blue
+    tell("{b{Checking if local repository is changed.}}")
     return false unless local_valid_repo?
     return true  if     working_tree_changes?
     return true  if     perform_fetch && should_push?
@@ -3863,7 +3957,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Check if remote is changed, and now is different from latest local state.
   #
   def remote_changed?
-    tell "Checking if remote repository is changed", :blue
+    tell("{b{Checking if remote repository is changed.}}")
     return true unless local_valid_repo?
     return true if     perform_fetch && should_pull?
     false
@@ -3890,8 +3984,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     case protocol
       when :ssh   then "git@github.com:#{md[:username]}/#{md[:repository]}"
       when :https then "https://github.com/#{md[:username]}/#{md[:repository]}"
-      else        error("Invalid protocol for `#{url}`: `#{protocol}` not in " +
-                        "`[#{protocols.join(", ")}]`.")
+      else        error("Invalid protocol for `{m{#{url}}}`: `{m{#{protocol}}}` not in `{m{[#{protocols.join(", ")}]}}`.")
     end
   end
   protected :normalize_url
@@ -3906,7 +3999,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Get the Working Tree (local) changes.
   #
   def working_tree_changes
-    error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
+    error("Invalid local repo: `#{@local_dir_path}`.") unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
       return `git status -uall --porcelain`.strip
     end
@@ -3991,12 +4084,11 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     status = true
 
     if working_tree_changes?
-      tell "The configuration has the following local changes:\n" +
-           "#{working_tree_changes.colorize(:white)}", :cyan
+      tell("{c{The configuration has the following local changes:\n{w{#{working_tree_changes}}}.}}")
       if message || quiz("Do you want to commit them all")
         status &&= perform_add # Add from Working Tree to stage.
         if status
-          tell("Performing commit", :blue)
+          tell("{b{Performing commit.}}")
 
           message ||= quiz("Type the commit message", type: :string)
 
@@ -4004,7 +4096,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
           cmd << "--allow-empty-message" if     message.nil?
           cmd += ["-m", message]         unless message.nil?
 
-          error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
+          error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
           status &&= exec_cmd(cmd,
                               as_su: !existing_dir(@local_dir_path),
                               chdir: @local_dir_path)
@@ -4020,7 +4112,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     error("Invalid remote `#{remote}`.") if remote && !remotes.include?(remote)
     error("Invalid branch `#{branch}`.") if branch && !branches.include?(branch)
 
-    tell("Fetching information from remote", :blue)
+    tell("{b{Fetching information from remote.}}")
 
     cmd  = ["git", "fetch"]
     cmd << remote.shell_escape unless remote.nil?
@@ -4032,7 +4124,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   protected :perform_fetch
 
   def perform_clone(recursive: true)
-    tell("Syncing from remote repository: `#{@remote_normalized_url}`", :blue)
+    tell("{b{Syncing from remote repository: `{m{#{@remote_normalized_url}}`.}}")
     error("Invalid url: can't be empty.") if @remote_normalized_url.nil?
 
     parent_dir = @local_dir_path.dirname
@@ -4050,19 +4142,19 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Pull from the provided `remote` in the provided `branch`.
   #
   def perform_pull(remote: nil, branch: nil, with_submodules: true)
-    error("Invalid remote `#{remote}`") if remote && !remotes.include?(remote)
-    error("Invalid branch `#{branch}`") if branch && !branches.include?(branch)
+    error("Invalid remote `#{remote}`.") if remote && !remotes.include?(remote)
+    error("Invalid branch `#{branch}`.") if branch && !branches.include?(branch)
 
     status = true
 
     if should_pull?
-      tell("Performing pull", :blue)
+      tell("{b{Performing pull.}}")
 
       cmd  = ["git", "pull"]
       cmd << remote.shell_escape unless remote.nil?
       cmd << branch.shell_escape unless branch.nil?
 
-      error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+      error("Invalid local repo: `{m{#{@local_dir_path}}}`.") unless local_valid_repo?
       status = exec_cmd(cmd,
                         as_su: !existing_dir(@local_dir_path),
                         chdir: @local_dir_path)
@@ -4087,13 +4179,13 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     status = true
 
     if should_push?
-      tell("Pushing to remote", :blue)
+      tell("{b{Pushing to remote.}}")
 
       cmd  = ["git", "push"]
       cmd << remote.shell_escape unless remote.nil?
       cmd << branch.shell_escape unless branch.nil?
 
-      error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
+      error("Invalid local repo: `{m{#{@local_dir_path}}}`.") unless local_valid_repo?
       status &&= exec_cmd(cmd,
                           as_su: !existing_dir(@local_dir_path),
                           chdir: @local_dir_path)
@@ -4228,10 +4320,10 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst:   false,
                             cur_cfg_name: options.cfg_name)
     # Print details.
-    tell("Available variable files:", :cyan)
+    tell("{c{Available variable files:}}")
     avail_vars(paths.cur_cfg_vars).each do |path|
       name = path.basename(path.extname)
-      tell("\t→ #{name.colorize(:magenta)}")
+      tell("\t→ {m{#{name}}}")
     end
   end
 
@@ -4253,7 +4345,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
     # Inform user about the cleanup status.
     case status
-      when true  then tell("Successfully cleaned: `#{paths.root}`.", :green)
+      when true  then tell("{g{Successfully cleaned: `#{paths.root}`.}}")
       when false then error("Failed to cleanup: `#{paths.root}`.", :red)
       when nil   then warning("Cleanup skipped.", ask_continue: false)
     end
@@ -4274,12 +4366,12 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
     # Changing directory.
     dir_path = paths.cur_cfg || paths.cfg
-    tell("Changing directory to: `#{dir_path}`.", :cyan)
+    tell("{c{Changing directory to: `#{dir_path}`.}}")
     FileUtils.cd(dir_path)
     system(get_env!(:SHELL))
 
     # Inform user about the changing directory status.
-    tell("CD done in: `#{dir_path}`.", :green)
+    tell("{g{CD done in: `#{dir_path}`.}}")
   end
 
   method_option(*shared_option(:fizzy_dir))
@@ -4310,13 +4402,13 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
               ask_continue: false)
       nil
     else
-      tell("Editing configuration file(s): `#{cfg_files_arg}`.", :cyan)
+      tell("{c{Editing configuration file(s): `#{cfg_files_arg}`.}}")
       system("#{Fizzy::CFG.editor} #{cfg_files_arg}")
     end
 
     # Inform user about the editing status.
     case status
-      when true  then tell("Successfully edited: `#{cfg_files_arg}`.", :green)
+      when true  then tell("{g{Successfully edited: `#{cfg_files_arg}`.}}")
       when false then error("Failed to edit: `#{cfg_files_arg}`.", :red)
       when nil   then warning("Editing skipped.", ask_continue: false)
     end
@@ -4339,7 +4431,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
     # Inform user about sync status.
     if sync_result
-      tell("Synced to: `#{paths.cur_cfg}`.", :green)
+      tell("{g{Synced to: `#{paths.cur_cfg}`.}}")
     else
       error("Unable to sync.")
     end
@@ -4365,15 +4457,14 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg_elems,
                     options.verbose)
 
-    info("meta: ", "#{meta[:elems].count.to_s.colorize(:green)}/" +
+    info("meta: ", "{g{#{meta[:elems].count}}}/" +
                    "#{meta[:all_elems_count]} elem(s) selected.")
-    info("meta: ", "#{meta[:excluded_files].count.to_s.colorize(:red)}/" +
+    info("meta: ", "{r{#{meta[:excluded_files].count}}}/" +
                    "#{meta[:all_files_count]} file(s) excluded.")
     tell
 
     # Create a configuration instance.
-    tell("Creating a configuration instance named `#{options.inst_name}` " +
-         "from: `#{paths.cur_cfg}`.", :blue)
+    tell("{b{Creating a configuration instance named `#{options.inst_name}`}} from: `{m{#{paths.cur_cfg}}}`.")
 
     exclude_pattern = Fizzy::CFG.instantiate_exclude_pattern
     meta[:excluded_files].each do |excluded_file|
@@ -4387,7 +4478,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     end
 
     # After instantiation.
-    tell("Created the configuration instance in: `#{paths.cur_inst}`.", :green)
+    tell("{g{Created the configuration instance in: `#{paths.cur_inst}`.}}")
   end
 
 end
@@ -4399,7 +4490,7 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
   method_option(*shared_option(:fizzy_dir))
   method_option(*shared_option(:inst_name))
   desc("cd", "Change directory to the instance directory " +
-             "(useful for extensive filesystem manipulations).")
+       "(useful for extensive filesystem manipulations).")
   def cd
     # Prepare stuff for changing directory.
     paths = prepare_storage(options.fizzy_dir,
@@ -4410,12 +4501,12 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
 
     # Changing directory.
     dir_path = paths.cur_inst || paths.inst
-    tell("Changing directory to: `#{dir_path}`.", :cyan)
+    tell("{c{Changing directory to: `{m{#{dir_path}}}`}}.")
     FileUtils.cd(dir_path)
     system get_env!(:SHELL)
 
     # Inform user about the changing directory status.
-    tell("CD done in: `#{dir_path}`.", :green)
+    tell("{g{CD done in: `#{dir_path}`.}}")
   end
 
   method_option(*shared_option(:verbose))
@@ -4439,26 +4530,24 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
                     options.verbose)
 
     # 1: Install the instance into the system.
-    tell("Installing the configuration instance `#{options.inst_name}` " +
-         "into the system.", :blue)
+    tell("{b{Installing the configuration instance `#{options.inst_name}` into the system.}}")
     # 1.1: Install the elements.
     meta[:elems].each do |elem|
-      tell("Installing element: `#{elem[:name]}`.", :cyan)
+      tell("{c{Installing element: `#{elem[:name]}`.}}")
       elements_appliers.each { |applier| applier.call(elem) }
       if elem[:notes]
-        tell("Notes for `#{elem[:name]}`:", :yellow)
-        tell(elem[:notes].split("\n").collect { |s| "  #{s}" }.join("\n"))
+        tell("{y{Notes for `#{elem[:name]}`:}}\n" +
+             elem[:notes].split("\n").collect { |s| "  #{s}" }.join("\n"))
       end
     end
     # 1.2: Install the commands.
     meta[:commands].each do |command|
-      tell("Executing command: `#{command.type}`.", :cyan)
+      tell("{c{Executing command: `#{command.type}`.}}")
       command.execute
     end
 
     # Inform the user about installation status.
-    tell("The configuration instance `#{options.inst_name}` has been " +
-         "installed into the system", :green)
+    tell("{g{The configuration instance `#{options.inst_name}` has been installed into the system.}}")
   end
 
 end
@@ -4487,8 +4576,8 @@ class Fizzy::MainCommand < Fizzy::BaseCommand
 
   desc("version", "Show fizzy version.")
   def version
-    info "fizzy version", Fizzy::CFG.version
-    info "ruby version", "ruby #{RUBY_VERSION}p#{RUBY_PATCHLEVEL}"
+    info("fizzy version", "{m{#{Fizzy::CFG.version}}}")
+    info("ruby version", "{m{ruby #{RUBY_VERSION}p#{RUBY_PATCHLEVEL}}}")
   end
 
   method_option(*shared_option(:verbose))
@@ -4515,7 +4604,7 @@ class Fizzy::MainCommand < Fizzy::BaseCommand
            run_mode:  options.run_mode,
            verbose:   options.verbose)
   end
-  map :qi => :quick_install
+  map qi: :quick_install
 
 end
 

@@ -13,13 +13,13 @@ module Fizzy::IO
   # The message is made by the `question` string, with some additions (like
   # `?` sign).
   #
-  # The available quiz types are:
-  # - `:bool`: Boolean quiz, the user can respond with `yes` or `no` (or
+  # The available ask types are:
+  # - `:bool`: Boolean ask, the user can respond with `yes` or `no` (or
   #            alternatives, see regexes below). A boolean value is returned.
-  # - `:string`: Normal quiz, the user is prompt for a question and if the
+  # - `:string`: Normal ask, the user is prompt for a question and if the
   #              answer isn't empty is returned.
   #
-  def quiz(question, type: :bool)
+  def ask(question, type: :bool)
     answer = shell.ask("#{question.strip}? ", :magenta)
     case type
       when :bool
@@ -29,12 +29,12 @@ module Fizzy::IO
           false
         else
           tell("{y{Answer misunderstood}}")
-          quiz(question, type: type)
+          ask(question, type: type)
         end
       when :string
         if answer.empty?
           warning("Empty answer", ask_continue: false)
-          quiz(question, type: type)
+          ask(question, type: type)
         else
           answer
         end
@@ -66,7 +66,7 @@ module Fizzy::IO
   #
   def warning(msg, ask_continue: true)
     tell("{m{☞}} {y{#{msg}}}")
-    exit(-1) if ask_continue && !quiz("continue")
+    exit(-1) if ask_continue && !ask("continue")
   end
 
   # Display an error message (`msg`) to the user. Before returning, the

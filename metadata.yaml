@@ -26,6 +26,7 @@ sources:
   - exts/thor
   - configuration
   - core/io/log
+  - core/io/ask
   - misc/caller
   - misc/must
   - misc/abstract_method

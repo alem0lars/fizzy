@@ -180,12 +180,12 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
     if working_tree_changes?
       tell("{c{The configuration has the following local changes:\n{w{#{working_tree_changes}}}.}}")
-      if message || quiz("Do you want to commit them all")
+      if message || ask("Do you want to commit them all")
         status &&= perform_add # Add from Working Tree to stage.
         if status
           tell("{b{Performing commit.}}")
 
-          message ||= quiz("Type the commit message", type: :string)
+          message ||= ask("Type the commit message", type: :string)
 
           cmd  = ["git", "commit", "-a"]
           cmd << "--allow-empty-message" if     message.nil?

@@ -18,7 +18,7 @@ module Fizzy::Execution
     really_run = case run_mode
                    when :normal then true
                    when :paranoid
-                     quiz("Do you want to run command `#{full_cmd}`")
+                     ask("Do you want to run command `#{full_cmd}`")
                    when :dry then false
                    else true
                  end

@@ -8,6 +8,8 @@
 
 * Refactor meta commands into separate classes
   [@alem0lars][@alem0lars]
+* Refactor strings colorization, using an internal parser instead of thor
+  [@alem0lars][@alem0lars]
 
 ## Version 2.3.0
 

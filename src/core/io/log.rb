@@ -2,53 +2,13 @@ module Fizzy::IO
 
   include Fizzy::ANSIColors
 
-  # Get the shell object.
-  # It will be lazily instantiated.
-  def shell
-    @shell ||= Thor::Shell::Color.new
-  end
-
-  # Ask a question to the user.
-  #
-  # The message is made by the `question` string, with some additions (like
-  # `?` sign).
-  #
-  # The available quiz types are:
-  # - `:bool`: Boolean quiz, the user can respond with `yes` or `no` (or
-  #            alternatives, see regexes below). A boolean value is returned.
-  # - `:string`: Normal quiz, the user is prompt for a question and if the
-  #              answer isn't empty is returned.
-  #
-  def quiz(question, type: :bool)
-    answer = shell.ask("#{question.strip}? ", :magenta)
-    case type
-      when :bool
-        if answer =~ /y|ye|yes|yeah|ofc/i
-          true
-        elsif answer =~ /n|no|fuck|fuck\s+you|fuck\s+off/i
-          false
-        else
-          tell("{y{Answer misunderstood.}}")
-          quiz(question, type: type)
-        end
-      when :string
-        if answer.empty?
-          warning("Empty answer", ask_continue: false)
-          quiz(question, type: type)
-        else
-          answer
-        end
-      else error("Unhandled question type: `#{type}`.")
-    end
-  end
-
   def debug(msg)
     caller_info = caller.
       map { |c| c[/`.*'/][1..-2].split(" ").first }.
       uniq[0..2].
       join(" → ")
     if Fizzy::CFG.debug
-      tell("{m{⚫}}{b{<}}{c{#{caller_info.colorize(:cyan)}}}{b{>}}{w{: #{msg}}}")
+      tell("{m{⚫}}{b{<}}{c{#{caller_info}}}{b{>}}{w{: #{msg}}}")
     end
   end
 
@@ -58,7 +18,7 @@ module Fizzy::IO
   # message, typically to show the context which the message belongs to.
   #
   def info(prefix, msg)
-    tell("{m{☞ }}{c{#{prefix.colorize(:cyan)}}}{w{ #{msg}.}}")
+    tell("{b{☞ }}{c{#{prefix}}}{w{ #{msg}}}")
   end
 
   # Display an informative message (`msg`) to the user.
@@ -67,8 +27,8 @@ module Fizzy::IO
   # the program or exit (with exit status `-1`).
   #
   def warning(msg, ask_continue: true)
-    tell("{m{☞ }}{y{#{msg}}}")
-    exit(-1) if ask_continue && !quiz("continue")
+    tell("{y{☞ #{msg}}}")
+    exit(-1) if ask_continue && !ask("continue")
   end
 
   # Display an error message (`msg`) to the user. Before returning, the
@@ -77,7 +37,7 @@ module Fizzy::IO
   def error(msg, exc: nil)
     must("message", msg, be: String)
 
-    tell("{m{☠ }}{r{#{msg}}}")
+    tell("{r{☠ #{msg}}}")
 
     if exc
       raise exc.new(msg)

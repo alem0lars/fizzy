@@ -27,13 +27,13 @@ module Fizzy::Meta::Elements
           should_link = if m[:dst_path].file?
             if m[:dst_path].realpath != m[:src_path]
               cmd << " -f"
-              quiz("The destination file `#{m[:dst_path]}` already exists. Overwrite")
+              ask("The destination file `#{m[:dst_path]}` already exists. Overwrite")
             else
               false
             end
           elsif m[:dst_path].directory?
-            if quiz("The destination file `#{m[:dst_path]}` is a " +
-                    "directory. Delete it")
+            if ask("The destination file `#{m[:dst_path]}` is a " +
+                   "directory. Delete it")
               exec_cmd("rm -Rf #{m[:dst_path]}",
                        as_su: !existing_dir(m[:dst_path].dirname))
             end

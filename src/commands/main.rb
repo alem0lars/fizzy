@@ -20,8 +20,8 @@ class Fizzy::MainCommand < Fizzy::BaseCommand
 
   desc("version", "Show fizzy version.")
   def version
-    info "fizzy version", Fizzy::CFG.version
-    info "ruby version", "ruby #{RUBY_VERSION}p#{RUBY_PATCHLEVEL}"
+    info("fizzy version", "{m{#{Fizzy::CFG.version}}}")
+    info("ruby version", "{m{ruby #{RUBY_VERSION}p#{RUBY_PATCHLEVEL}}}")
   end
 
   method_option(*shared_option(:verbose))
@@ -48,6 +48,6 @@ class Fizzy::MainCommand < Fizzy::BaseCommand
            run_mode:  options.run_mode,
            verbose:   options.verbose)
   end
-  map :qi => :quick_install
+  map qi: :quick_install
 
 end

@@ -18,7 +18,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     tell("{c{Available variable files:}}")
     avail_vars(paths.cur_cfg_vars).each do |path|
       name = path.basename(path.extname)
-      tell("\t→ #{name.colorize(:magenta)}")
+      tell("\t→ {m{#{name}}}")
     end
   end
 
@@ -32,7 +32,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst: false)
 
     # Perform cleanup.
-    status = if quiz("Remove the fizzy root directory (`#{paths.root}`)")
+    status = if ask("Remove the fizzy root directory (`#{paths.root}`)")
       paths.root.rmtree
     else
       nil # Cleanup skipped.
@@ -152,9 +152,9 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg_elems,
                     options.verbose)
 
-    info("meta: ", "#{meta[:elems].count.to_s.colorize(:green)}/" +
+    info("meta: ", "{g{#{meta[:elems].count}}}/" +
                    "#{meta[:all_elems_count]} elem(s) selected.")
-    info("meta: ", "#{meta[:excluded_files].count.to_s.colorize(:red)}/" +
+    info("meta: ", "{r{#{meta[:excluded_files].count}}}/" +
                    "#{meta[:all_files_count]} file(s) excluded.")
     tell
 

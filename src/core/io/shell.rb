@@ -2,12 +2,6 @@ module Fizzy::IO
 
   include Fizzy::ANSIColors
 
-  # Get the shell object.
-  # It will be lazily instantiated.
-  def shell
-    @shell ||= Thor::Shell::Color.new
-  end
-
   # Ask a question to the user.
   #
   # The message is made by the `question` string, with some additions (like

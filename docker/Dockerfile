@@ -217,9 +217,24 @@ RUN curl -sL                                                                   \
 
 # ─────────────────────────────────────────────────────────── Setup ruby (3) ──┐
 
-# Configure ruby
-RUN fizzy cfg s -C ruby -U https:alem0lars/configs-ruby                        \
+RUN fizzy cfg s -C ruby -U https:alem0lars/configs-ruby
 RUN fizzy qi -V docker-test-box -C ruby -I ruby
+
+# ─────────────────────────────────────────────────────────────────────────────┘
+
+# ──────────────────────────────────────────────────────────── Setup rsyslog ──┐
+
+RUN apk add --update --no-cache rsyslog
+
+ADD docker/rsyslog.conf /etc/rsyslog.d/90-fizzy.conf
+
+# ─────────────────────────────────────────────────────────────────────────────┘
+
+# ──────────────────────────────────────────────────────── Setup supervisord ──┐
+
+RUN apk add --update --no-cache supervisor
+
+ADD docker/supervisord.ini /etc/supervisor.d/supervisord.ini
 
 # ─────────────────────────────────────────────────────────────────────────────┘
 
@@ -242,22 +257,6 @@ ADD . "${APP_DIR}"
 WORKDIR "${APP_DIR}"
 RUN bundle install
 RUN bundle exec rake build
-
-# ─────────────────────────────────────────────────────────────────────────────┘
-
-# ──────────────────────────────────────────────────────── Setup supervisord ──┐
-
-RUN apk add --update --no-cache rsyslog
-
-ADD docker/rsyslog.conf /etc/rsyslog.d/90-fizzy.conf
-
-# ─────────────────────────────────────────────────────────────────────────────┘
-
-# ──────────────────────────────────────────────────────── Setup supervisord ──┐
-
-RUN apk add --update --no-cache supervisor
-
-ADD docker/supervisord.ini /etc/supervisor.d/supervisord.ini
 
 # ─────────────────────────────────────────────────────────────────────────────┘
 

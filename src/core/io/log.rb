@@ -49,7 +49,11 @@ module Fizzy::IO
   # Tell something to the user.
   #
   def tell(*args, **kwargs)
-    puts colorize(*args, **kwargs)
+    unless args.empty?
+      puts colorize(*args, **kwargs)
+    else
+      puts
+    end
   end
 
   # ────────────────────────────────────────────────────────────────────────────

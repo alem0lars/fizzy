@@ -4,6 +4,9 @@
 
 ### User changes
 
+* Minor bug fixes
+  [@alem0lars][@alem0lars]
+
 ### Dev changes
 
 * Refactor meta commands into separate classes.

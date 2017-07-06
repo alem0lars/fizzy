@@ -16,25 +16,31 @@ module Fizzy::ANSIColors
     end
 
     def colorize(str, open_tag_regexp: nil, close_tag_regexp: nil)
-      open_tag_regexp = default_open_tag_regexp if open_tag_regexp.nil?
-      close_tag_regexp = default_close_tag_regexp if close_tag_regexp.nil?
+      begin
+        open_tag_regexp = default_open_tag_regexp if open_tag_regexp.nil?
+        close_tag_regexp = default_close_tag_regexp if close_tag_regexp.nil?
 
-      tree = TreeBuilder.new(open_tag_regexp, close_tag_regexp).build(str)
+        tree = TreeBuilder.new(open_tag_regexp, close_tag_regexp).build(str)
 
-      colorized_str = str.dup
-      escapes_size = 0
-      tree.visit do |node|
-        if node.is_a?(StartTagNode)
-          color_escape = Fizzy::ANSIColors.spec_to_color(node.color_spec)
-        elsif node.is_a?(EndTagNode)
-          color_escape = Fizzy::ANSIColors.spec_to_color(node.parent.color_spec)
+        colorized_str = str.dup
+        escapes_size = 0
+        tree.visit do |node|
+          if node.is_a?(StartTagNode)
+            color_escape = Fizzy::ANSIColors.spec_to_color(node.color_spec)
+          elsif node.is_a?(EndTagNode)
+            color_escape = Fizzy::ANSIColors.spec_to_color(node.parent.color_spec)
+          end
+          colorized_str.insert(escapes_size + node.end_idx, color_escape)
+          escapes_size += color_escape.length
         end
-        colorized_str.insert(escapes_size + node.end_idx, color_escape)
-        escapes_size += color_escape.length
+        colorized_str.gsub!(open_tag_regexp, "")
+        colorized_str.gsub!(close_tag_regexp, "")
+        colorized_str
+      rescue StandardError => error
+        # TODO find a way to use function `Fizzy::IO#error`.
+        puts("Invalid string to be colorized `#{str}`: #{error}.")
+        exit(-1)
       end
-      colorized_str.gsub!(open_tag_regexp, "")
-      colorized_str.gsub!(close_tag_regexp, "")
-      colorized_str
     end
 
     # Convert a color specification to an ansi color escape.
@@ -58,16 +64,19 @@ module Fizzy::ANSIColors
         ""
       else
         color_spec = color_spec.to_s
-        color_name = names[color_spec.downcase.to_sym]
-
         if color_spec == "CLEAR"
           Fizzy::ANSIColors.clear_colors
         else
-          if color_spec == color_spec.upcase # background color
-            Fizzy::ANSIColors.bg_colors[color_name]
-          else # foreground color
-            Fizzy::ANSIColors.fg_colors[color_name]
-          end
+          color_spec.chars.collect do |char|
+            puts char
+            color_name = names[char.downcase.to_sym]
+
+              if char == char.upcase # background color
+                Fizzy::ANSIColors.bg_colors[color_name]
+              else # foreground color
+                Fizzy::ANSIColors.fg_colors[color_name]
+              end
+          end.join
         end
       end
     end
@@ -222,8 +231,18 @@ end
 
 # TEST
 # TODO move to the specs
+# ###################
 # input = "{b{gogo{r{the quick {g{brown fox {y{jumps over}} the {m{lazy}} dog}} the {c{quick}} brown fox jumps}}}} over the {g{lazy}} dog"
 #
 # actual = Fizzy::ANSIColors.colorize(input)
 # expected = "\e[0m\e[34mgogo\e[31mthe quick \e[32mbrown fox \e[33mjumps over\e[32m the \e[35mlazy\e[32m dog\e[31m the \e[36mquick\e[31m brown fox jumps\e[34m\e[0m over the \e[32mlazy\e[0m dog\e[0m"
 # puts actual == expected
+# ###################
+# input = {Ml{ ? }}Do you want to commit them all?
+# expected_tree =
+#     Fizzy::ANSIColors::StartTagNode(color_spec=`CLEAR` start_idx=`0` end_idx=`0` size=`0`
+#     [
+#             Fizzy::ANSIColors::StartTagNode(color_spec=`Ml` start_idx=`0` end_idx=`4` size=`4`)
+#             Fizzy::ANSIColors::EndTagNode(start_idx=`7` end_idx=`9` size=`2`)
+#             Fizzy::ANSIColors::EndTagNode(start_idx=`41` end_idx=`41` size=`0`)
+#     ])

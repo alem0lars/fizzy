@@ -17,7 +17,7 @@ module Fizzy::IO
     question << "? "
 
     tell("{Ml{ ? }}#{question}")
-    answer = gets.chomp
+    answer = $stdin.gets.chomp
 
     case type
     when :bool

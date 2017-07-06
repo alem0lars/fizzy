@@ -68,7 +68,6 @@ module Fizzy::ANSIColors
           Fizzy::ANSIColors.clear_colors
         else
           color_spec.chars.collect do |char|
-            puts char
             color_name = names[char.downcase.to_sym]
 
               if char == char.upcase # background color

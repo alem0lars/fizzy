@@ -678,9 +678,15 @@ module Fizzy::IO
 
   # Tell something to the user.
   #
-  def tell(*args, **kwargs)
+  def tell(*args, newline: true, **kwargs)
     unless args.empty?
-      puts colorize(*args, **kwargs)
+      colorized_str = colorize(*args, **kwargs)
+      if newline
+        $stdout.puts(colorized_str)
+      else
+        $stdout.print(colorized_str)
+      end
+      $stdout.flush
     else
       puts
     end
@@ -725,7 +731,7 @@ module Fizzy::IO
     question.strip!
     question << "? "
 
-    tell("{Ml{ ? }}#{question}")
+    tell("{Ml{ ? }}#{question}", newline: false)
     answer = $stdin.gets.chomp
 
     case type

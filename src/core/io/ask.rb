@@ -16,7 +16,7 @@ module Fizzy::IO
     question.strip!
     question << "? "
 
-    tell("{Ml{ ? }}#{question}")
+    tell("{Ml{ ? }}#{question}", newline: false)
     answer = $stdin.gets.chomp
 
     case type

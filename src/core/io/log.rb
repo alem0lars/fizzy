@@ -48,9 +48,15 @@ module Fizzy::IO
 
   # Tell something to the user.
   #
-  def tell(*args, **kwargs)
+  def tell(*args, newline: true, **kwargs)
     unless args.empty?
-      puts colorize(*args, **kwargs)
+      colorized_str = colorize(*args, **kwargs)
+      if newline
+        $stdout.puts(colorized_str)
+      else
+        $stdout.print(colorized_str)
+      end
+      $stdout.flush
     else
       puts
     end

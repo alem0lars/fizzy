@@ -85,7 +85,7 @@ module Fizzy::Meta::Commands
   end
 
   def self.find_by_type(type)
-    found = Fizzy::Meta::Commands.available.filter {|command| command.type == type}
+    found = Fizzy::Meta::Commands.available.select {|command| command.type == type}
 
     if found.empty?
       error "Failed to find a command with type `#{type}`."

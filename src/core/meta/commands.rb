@@ -81,7 +81,7 @@ module Fizzy::Meta::Commands
   end
 
   def self.available
-    [SyncMetaCommand, DownloadMetaCommand]
+    [Sync, Download] 
   end
 
   def self.find_by_type(type)

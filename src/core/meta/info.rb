@@ -127,8 +127,8 @@ module Fizzy::Meta::Info
         end
 
         # Step 2.2: Validate command.
-        command = Fizzy::Meta::Commands.find_by_type(spec[:type])
-        command.validate!
+        command = Fizzy::Meta::Commands.find_by_type(spec[:type]).new
+        command.validate!(spec) 
       end
 
       selected ? command : nil

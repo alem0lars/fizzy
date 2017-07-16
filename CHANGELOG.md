@@ -4,6 +4,8 @@
 
 ### User changes
 
+* Add basic questions completion (if readline is available)
+  [@alem0lars][@alem0lars]
 * Minor bug fixes
   [@alem0lars][@alem0lars]
 * Remove dependency `thor`: now fizzy is without any dependency!

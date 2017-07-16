@@ -67,7 +67,7 @@ module Fizzy::Environment
 
   def xdg_config_home(name)
     Pathname.new(get_env(:XDG_CONFIG_HOME) || "~/.config").
-      expanad_variables.
+      expand_variables.
       expand_path.
       join(name.to_s)
   end

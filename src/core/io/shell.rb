@@ -1,23 +1,19 @@
 module Fizzy::IO
 
-  # Get the shell object.
-  # It will be lazily instantiated.
-  def shell
-    @shell ||= Thor::Shell::Color.new
-  end
+  include Fizzy::ANSIColors
 
   # Ask a question to the user.
   #
   # The message is made by the `question` string, with some additions (like
   # `?` sign).
   #
-  # The available quiz types are:
-  # - `:bool`: Boolean quiz, the user can respond with `yes` or `no` (or
+  # The available ask types are:
+  # - `:bool`: Boolean ask, the user can respond with `yes` or `no` (or
   #            alternatives, see regexes below). A boolean value is returned.
-  # - `:string`: Normal quiz, the user is prompt for a question and if the
+  # - `:string`: Normal ask, the user is prompt for a question and if the
   #              answer isn't empty is returned.
   #
-  def quiz(question, type: :bool)
+  def ask(question, type: :bool)
     answer = shell.ask("#{question.strip}? ", :magenta)
     case type
       when :bool
@@ -26,13 +22,13 @@ module Fizzy::IO
         elsif answer =~ /n|no|fuck|fuck\s+you|fuck\s+off/i
           false
         else
-          tell("Answer misunderstood", :yellow)
-          quiz(question, type: type)
+          tell("{y{Answer misunderstood}}")
+          ask(question, type: type)
         end
       when :string
         if answer.empty?
           warning("Empty answer", ask_continue: false)
-          quiz(question, type: type)
+          ask(question, type: type)
         else
           answer
         end
@@ -45,12 +41,7 @@ module Fizzy::IO
       map { |c| c[/`.*'/][1..-2].split(" ").first }.
       uniq[0..2].
       join(" → ")
-
-    tell(colorize("⚫ ", :magenta) +
-         colorize("<", :blue) +
-         colorize(caller_info, :cyan) +
-         colorize(">", :blue) +
-         colorize(": #{msg}", :white)) if Fizzy::CFG.debug
+    tell("{m{⚫}}{b{<}}{c{#{caller_info}}}{b{>}}{w{: #{msg}}}") if Fizzy::CFG.debug
   end
 
   # Display an informative message (`msg`) to the user.
@@ -59,9 +50,7 @@ module Fizzy::IO
   # message, typically to show the context which the message belongs to.
   #
   def info(prefix, msg)
-    tell(colorize("☞ ", :magenta) +
-         colorize(prefix, :cyan) +
-         colorize(" #{msg}", :white))
+    tell("{m{☞}} {c{#{prefix}}} {w{#{msg}}}")
   end
 
   # Display an informative message (`msg`) to the user.
@@ -70,8 +59,8 @@ module Fizzy::IO
   # the program or exit (with exit status `-1`).
   #
   def warning(msg, ask_continue: true)
-    tell(colorize("☞ ", :magenta) + colorize(msg, :yellow))
-    exit(-1) if ask_continue && !quiz("continue")
+    tell("{m{☞}} {y{#{msg}}}")
+    exit(-1) if ask_continue && !ask("continue")
   end
 
   # Display an error message (`msg`) to the user. Before returning, the
@@ -80,7 +69,7 @@ module Fizzy::IO
   def error(msg, exc: nil)
     must "message", msg, be: String
 
-    tell(colorize("☠ ", :magenta) + colorize(msg, :red))
+    tell("{m{☠}} {r{#{msg}}}")
 
     if exc
       raise exc.new(msg)
@@ -90,17 +79,9 @@ module Fizzy::IO
   end
 
   # Tell something to the user.
-  # It's a proxy method to `Thor::Shell::Color.say`.
   #
-  def tell(*args)
-    shell.say(*args)
-  end
-
-  # Colorize the provided string.
-  # It's a proxy method to `Thor::Shell::Color.set_color`.
-  #
-  def colorize(*args)
-    shell.set_color(*args)
+  def tell(*args, **kwargs)
+    puts colorize(*args, **kwargs)
   end
 
   # ──────────────────────────────────────────────────────────────────────────
@@ -108,14 +89,14 @@ module Fizzy::IO
 
   # Get colorized success symbol.
   #
-  def ✔
-    colorize("✔", :green)
+  def ✔(str)
+    "{g{✔}}"
   end
 
   # Get colorized error symbol.
   #
-  def ✘
-    colorize("✘", :red)
+  def ✘(str)
+    "{r{✘}}"
   end
 
   # ──────────────────────────────────────────────────────────────────────────

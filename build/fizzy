@@ -591,7 +591,7 @@ end
 Fizzy::CFG = OpenStruct.new
 
 # Fizzy version.
-Fizzy::CFG.version = "2.3.1"
+Fizzy::CFG.version = "2.3.2"
 
 # URL for reporting fizzy issues.
 Fizzy::CFG.issues_url = "https://github.com/alem0lars/fizzy/issues"

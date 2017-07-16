@@ -15,10 +15,10 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst:   false,
                             cur_cfg_name: options.cfg_name)
     # Print details.
-    tell("Available variable files:", :cyan)
+    tell("{c{Available variable files:}}")
     avail_vars(paths.cur_cfg_vars).each do |path|
       name = path.basename(path.extname)
-      tell("\t→ #{colorize(name, :magenta)}")
+      tell("\t→ {m{#{name}}}")
     end
   end
 
@@ -32,7 +32,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
                             valid_inst: false)
 
     # Perform cleanup.
-    status = if quiz("Remove the fizzy root directory (`#{paths.root}`)")
+    status = if ask("Remove the fizzy root directory (`#{paths.root}`)")
       paths.root.rmtree
     else
       nil # Cleanup skipped.
@@ -40,7 +40,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
     # Inform user about the cleanup status.
     case status
-      when true  then tell("Successfully cleaned: `#{paths.root}`.", :green)
+      when true  then tell("{g{Successfully cleaned: `#{paths.root}`.}}")
       when false then error("Failed to cleanup: `#{paths.root}`.", :red)
       when nil   then warning("Cleanup skipped.", ask_continue: false)
     end
@@ -61,12 +61,12 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
     # Changing directory.
     dir_path = paths.cur_cfg || paths.cfg
-    tell("Changing directory to: `#{dir_path}`.", :cyan)
+    tell("{c{Changing directory to: `#{dir_path}`.}}")
     FileUtils.cd(dir_path)
     system(get_env!(:SHELL))
 
     # Inform user about the changing directory status.
-    tell("CD done in: `#{dir_path}`.", :green)
+    tell("{g{CD done in: `#{dir_path}`.}}")
   end
 
   method_option(*shared_option(:fizzy_dir))
@@ -97,13 +97,13 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
               ask_continue: false)
       nil
     else
-      tell("Editing configuration file(s): `#{cfg_files_arg}`.", :cyan)
+      tell("{c{Editing configuration file(s): `#{cfg_files_arg}`.}}")
       system("#{Fizzy::CFG.editor} #{cfg_files_arg}")
     end
 
     # Inform user about the editing status.
     case status
-      when true  then tell("Successfully edited: `#{cfg_files_arg}`.", :green)
+      when true  then tell("{g{Successfully edited: `#{cfg_files_arg}`.}}")
       when false then error("Failed to edit: `#{cfg_files_arg}`.", :red)
       when nil   then warning("Editing skipped.", ask_continue: false)
     end
@@ -126,7 +126,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
     # Inform user about sync status.
     if sync_result
-      tell("Synced to: `#{paths.cur_cfg}`.", :green)
+      tell("{g{Synced to: `#{paths.cur_cfg}`.}}")
     else
       error("Unable to sync.")
     end
@@ -152,15 +152,14 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg_elems,
                     options.verbose)
 
-    info("meta: ", "#{colorize(meta[:elems].count, :green)}/" +
+    info("meta: ", "{g{#{meta[:elems].count}}}/" +
                    "#{meta[:all_elems_count]} elem(s) selected.")
-    info("meta: ", "#{colorize(meta[:excluded_files].count, :red)}/" +
+    info("meta: ", "{r{#{meta[:excluded_files].count}}}/" +
                    "#{meta[:all_files_count]} file(s) excluded.")
     tell
 
     # Create a configuration instance.
-    tell("Creating a configuration instance named `#{options.inst_name}` " +
-         "from: `#{paths.cur_cfg}`.", :blue)
+    tell("{b{Creating a configuration instance named `#{options.inst_name}`}} from: `{m{#{paths.cur_cfg}}}`.")
 
     exclude_pattern = Fizzy::CFG.instantiate_exclude_pattern
     meta[:excluded_files].each do |excluded_file|
@@ -174,7 +173,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
     end
 
     # After instantiation.
-    tell("Created the configuration instance in: `#{paths.cur_inst}`.", :green)
+    tell("{g{Created the configuration instance in: `#{paths.cur_inst}`.}}")
   end
 
 end

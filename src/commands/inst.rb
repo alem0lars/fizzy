@@ -3,7 +3,7 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
   method_option(*shared_option(:fizzy_dir))
   method_option(*shared_option(:inst_name))
   desc("cd", "Change directory to the instance directory " +
-             "(useful for extensive filesystem manipulations).")
+       "(useful for extensive filesystem manipulations).")
   def cd
     # Prepare stuff for changing directory.
     paths = prepare_storage(options.fizzy_dir,
@@ -14,12 +14,12 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
 
     # Changing directory.
     dir_path = paths.cur_inst || paths.inst
-    tell("Changing directory to: `#{dir_path}`.", :cyan)
+    tell("{c{Changing directory to: `{m{#{dir_path}}}`}}.")
     FileUtils.cd(dir_path)
     system get_env!(:SHELL)
 
     # Inform user about the changing directory status.
-    tell("CD done in: `#{dir_path}`.", :green)
+    tell("{g{CD done in: `#{dir_path}`.}}")
   end
 
   method_option(*shared_option(:verbose))
@@ -43,26 +43,24 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
                     options.verbose)
 
     # 1: Install the instance into the system.
-    tell("Installing the configuration instance `#{options.inst_name}` " +
-         "into the system.", :blue)
+    tell("{b{Installing the configuration instance `#{options.inst_name}` into the system.}}")
     # 1.1: Install the elements.
     meta[:elems].each do |elem|
-      tell("Installing element: `#{elem[:name]}`.", :cyan)
+      tell("{c{Installing element: `#{elem[:name]}`.}}")
       elements_appliers.each { |applier| applier.call(elem) }
       if elem[:notes]
-        tell("Notes for `#{elem[:name]}`:", :yellow)
-        tell(elem[:notes].split("\n").collect { |s| "  #{s}" }.join("\n"))
+        tell("{y{Notes for `#{elem[:name]}`:}}\n" +
+             elem[:notes].split("\n").collect { |s| "  #{s}" }.join("\n"))
       end
     end
     # 1.2: Install the commands.
-    meta[:commands].each do |spec|
-      tell("Executing command: `#{spec[:name]}`.", :cyan)
-      available_commands[spec[:type]][:executor].call(spec)
+    meta[:commands].each do |command|
+      tell("{c{Executing command: `#{command.type}`.}}")
+      command.execute
     end
 
     # Inform the user about installation status.
-    tell("The configuration instance `#{options.inst_name}` has been " +
-         "installed into the system", :green)
+    tell("{g{The configuration instance `#{options.inst_name}` has been installed into the system.}}")
   end
 
 end

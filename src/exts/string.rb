@@ -1,11 +1,17 @@
 class String
 
+  include Fizzy::ANSIColors
+
+  # ───────────────────────────────────────────────────────────────── Escapes ──
+
   # Escapes the underlying object so that it can be safely used in a Bourne
   # shell commandline.
   #
   def shell_escape
     Shellwords.shellescape(self)
   end
+
+  # ────────────────────────────────────────────────────────────── Formatting ──
 
   # Turn the underlying string to a title.
   #

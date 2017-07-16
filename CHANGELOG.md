@@ -10,7 +10,7 @@
 
 ### Dev changes
 
-
+* Update dependencies
 
 ## Previous versions
 

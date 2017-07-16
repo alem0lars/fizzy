@@ -3497,11 +3497,11 @@ module Fizzy::Meta::Commands
   end
 
   def self.available
-    [SyncMetaCommand, DownloadMetaCommand]
+    [Sync, Download] 
   end
 
   def self.find_by_type(type)
-    found = Fizzy::Meta::Commands.available.filter {|command| command.type == type}
+    found = Fizzy::Meta::Commands.available.select {|command| command.type == type}
 
     if found.empty?
       error "Failed to find a command with type `#{type}`."
@@ -3645,8 +3645,8 @@ module Fizzy::Meta::Info
         end
 
         # Step 2.2: Validate command.
-        command = Fizzy::Meta::Commands.find_by_type(spec[:type])
-        command.validate!
+        command = Fizzy::Meta::Commands.find_by_type(spec[:type]).new
+        command.validate!(spec) 
       end
 
       selected ? command : nil

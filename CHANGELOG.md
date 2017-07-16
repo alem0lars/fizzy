@@ -12,27 +12,6 @@
 
 
 
-## Version 2.3.2
-
-### User changes
-
-* Add basic questions completion (if readline is available)
-  [@alem0lars][@alem0lars]
-* Minor bug fixes
-  [@alem0lars][@alem0lars]
-
-### Dev changes
-
-* Refactor meta commands into separate classes.
-  [@alem0lars][@alem0lars]
-* Refactor `colorize` (for strings colorization), using an internal parser
-  instead of using gem thor.
-  All output strings have been updated to use the new format string.
-  [@alem0lars][@alem0lars]
-* Refactor `quiz` into `ask`, using an internal implementation instead of using
-  gem thor.
-  [@alem0lars][@alem0lars]
-
 ## Previous versions
 
 See the release notes.

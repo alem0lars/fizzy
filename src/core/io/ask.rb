@@ -16,8 +16,19 @@ module Fizzy::IO
     question.strip!
     question << "? "
 
-    tell("{Ml{ ? }}#{question}", newline: false)
-    answer = $stdin.gets.chomp
+    options = case type
+              when :bool
+                { limited_to: %i(yes no) }
+              when :path
+                { path: true }
+              when :string
+                {}
+              else
+                error("Unhandled question type: `{m{#{type}}}`.")
+              end
+
+    line_editor = Fizzy::LineEditor.enabled.new("{Ml{ ? }}#{question}", options)
+    answer = line_editor.readline
 
     case type
     when :bool
@@ -26,17 +37,18 @@ module Fizzy::IO
       elsif answer =~ /(n|no|fuck|fuck\s+you|fuck\s+off)$/i
         false
       else
-          tell("{y{Answer misunderstood}}.")
-          ask(question, type: type)
+        tell("{y{Answer misunderstood}}.")
+        ask(question, type: type)
       end
-    when :string
+    when :string, :path
       if answer.empty?
-          warning("Empty answer", ask_continue: false)
-          ask(question, type: type)
+        warning("Empty answer", ask_continue: false)
+        ask(question, type: type)
       else
         answer
       end
-    else error("Unhandled question type: `{m{#{type}}}`.")
+    else
+      error("Unhandled question type: `{m{#{type}}}`.")
     end
   end
 

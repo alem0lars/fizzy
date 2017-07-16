@@ -2,6 +2,8 @@ module Fizzy::IO
 
   include Fizzy::ANSIColors
 
+  # Display a debug message (with caller info).
+  #
   def debug(msg)
     caller_info = caller.
       map { |c| c[/`.*'/][1..-2].split(" ").first }.

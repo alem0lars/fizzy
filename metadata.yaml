@@ -26,6 +26,7 @@ sources:
   - exts/thor
   - configuration
   - core/io/log
+  - misc/line_editor
   - core/io/ask
   - misc/caller
   - misc/must

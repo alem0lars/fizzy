@@ -11,11 +11,11 @@ require "uri"
 Bundler.require(:default, :development)
 
 $:.unshift(File.dirname(__FILE__))
-require "tasks/commons/funcs"
-require "tasks/commons/cfg"
-require "tasks/commons/erb"
-require "tasks/commons/bin_utils"
-require "tasks/commons/grammars"
-require "tasks/commons/package"
-require "tasks/commons/docker"
-Rake.add_rakelib "tasks"
+require "task/common/funcs"
+require "task/common/cfg"
+require "task/common/erb"
+require "task/common/bin_util"
+require "task/common/grammars"
+require "task/common/package"
+require "task/common/docker"
+Rake.add_rakelib("task")

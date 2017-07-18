@@ -15,6 +15,11 @@ $cfg[:paths][:bin]      = $cfg[:paths][:build].join("fizzy")
 $cfg[:paths][:old_bin]  = $cfg[:paths][:build].join("fizzy_old")
 $cfg[:paths][:bin_rb]   = Pathname.new("#{$cfg[:paths][:bin]}.rb")
 
+$cfg[:api_doc] = { markup: {} }
+$cfg[:api_doc][:markup][:provider] = "kramdown"
+$cfg[:api_doc][:markup][:name] = "markdown"
+$cfg[:api_doc][:main] = "README.md"
+
 $cfg[:grammars_source_name] = "<grammars>"
 
 $cfg[:paths][:build].mkpath unless $cfg[:paths][:build].directory?

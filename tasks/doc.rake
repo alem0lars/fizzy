@@ -1,13 +1,18 @@
 namespace :doc do
   YARD::Rake::YardocTask.new do |t|
     t.name = "generate"
-    # TODO
-    # t.files = ["src/**/*.rb", "-", "CHANGELOG.md"]#] + Dir["*.md"].reject{|e| e == $cfg[:api_doc][:main]}
-    # t.options = %W[
-    #   --markup-provider #{$cfg[:api_doc][:markup][:provider]}
-    #   --markup #{$cfg[:api_doc][:markup][:name]}
-    #   --main #{$cfg[:api_doc][:main]}
-    # ]
+
+    t.files = FileList["src/**/*.rb", "-", *Dir["*.md"]]
+
+    t.options += ["--protected"]
+
+    t.options += ["--title", "fizzy documentation"]
+
+    t.options += ["--markup",          $cfg[:api_doc][:markup][:name]]
+    t.options += ["--markup-provider", $cfg[:api_doc][:markup][:provider]]
+    t.options += ["--main",            $cfg[:api_doc][:main]]
+
+    t.options += ["--output-dir", "website/source/docs/api"]
   end
   task generate: :build
 

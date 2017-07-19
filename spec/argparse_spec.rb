@@ -1,51 +1,54 @@
 require "spec_helper"
 
 
-describe Fizzy::ArgParse::RootParser do
+describe Fizzy::ArgParse::Command do
 
   include_context :output
 
-=begin
-  before(:each) { silence_output }
-  after(:each) { enable_output }
-=end
+  let(:command) { described_class.new }
 
-  let(:root_parser) { described_class.new }
+  context "#parse" do
+    {
+      ["-h"] => {status: true, options: {help: true}},
+      ["-h", "-v"] => {status: true, options: {help: true, verbose: true}},
+      ["foo"] => {status: true, options: {command: "foo"}},
+      ["foo", "--no-verbose"] => {status: true, options: {command: "foo", verbose: false}},
+      ["foo", "-h"] => {status: true, options: {command: "foo", help: true}},
+      ["-h", "foo"] => {status: true, options: {command: "foo", help: true}},
+      ["bar"] => {status: false, options: {command: "bar"}}
+    }.each do |arguments, info|
+      context("arguments `#{arguments}` are provided") do
+        subject { command.parse(arguments) }
 
-  {
-    ["-h"] => {help: true},
-    ["foo"] => {command: "foo"},
-    ["foo", "-h"] => {command: "foo", help: true},
-    ["-h", "foo"] => {command: "foo", help: true}
-  }.each do |arguments, options|
-    context("arguments `#{arguments}` are provided") do
-      subject { root_parser.parse(arguments) }
-      before(:each) do
-        root_parser.add_subcommand_parser(
-          Fizzy::ArgParse::CommandParser.new("foo", "this is command foo")
-        )
-        root_parser.add_subcommand_parser(
-          Fizzy::ArgParse::CommandParser.new("bar", "this is command bar", {
-            delay: {
-              required: true,
-              abbrev: "d",
-              desc: "specify delay",
-              type: Fixnum
-            },
-            mood: {
-              abbrev: "m",
-              desc: "specify your mood",
-              type: [:good, :bad]
-            },
-            happy: {
-              abbrev: "H",
-              desc: "specify if you are happy (or not)",
-              type: :boolean
-            }
-          })
-        )
+        before(:each) do
+          command.add_subcommand(
+            Fizzy::ArgParse::SubCommand.new("foo", "this is sub-command foo")
+          )
+          command.add_subcommand(
+            Fizzy::ArgParse::SubCommand.new("bar", "this is sub-command bar", {
+              delay: {
+                required: true,
+                abbrev: "d",
+                desc: "specify delay",
+                type: Integer
+              },
+              mood: {
+                abbrev: "m",
+                desc: "specify your mood",
+                type: [:good, :bad]
+              },
+              happy: {
+                abbrev: "H",
+                desc: "specify if you are happy (or not)",
+                type: :boolean
+              }
+            })
+          )
+        end
+
+        it { is_expected.to eq(info[:status]) }
+        it { expect(command.options).to eq(info[:options]) }
       end
-      it { is_expected.to eq(options) }
     end
   end
 

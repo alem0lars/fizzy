@@ -5,6 +5,10 @@ require "spec_helper"
 describe Fizzy::LogicParser do
 
   include_context :grammars_logic
+  include_context :output
+
+  before(:each) { silence_output }
+  after(:each) { enable_output }
 
   class << self
     def avail_features;   %w(accu amun-ra corr_disc the-eme_ward)            end

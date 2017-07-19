@@ -1,8 +1,9 @@
 require "spec_helper"
 
 
-# TODO: Use shared examples (if it makes sense)
 describe Fizzy::Meta::Info do
+
+  include_context :output
 
   let(:verbose) { true }
 
@@ -12,6 +13,9 @@ describe Fizzy::Meta::Info do
       features: %i(foo bar)
     })
   }
+
+  before(:each) { silence_output }
+  after(:each) { enable_output }
 
   describe "#selected_by_only?" do
 

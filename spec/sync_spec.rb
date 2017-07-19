@@ -1,7 +1,6 @@
 require "spec_helper"
 
 
-# TODO: Use shared examples (if it makes sense)
 describe Fizzy::Sync do
 
   include_context :docker

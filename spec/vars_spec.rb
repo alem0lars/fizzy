@@ -1,8 +1,9 @@
 require "spec_helper"
 
 
-# TODO: Use shared examples (if it makes sense)
 describe Fizzy::Vars do
+
+  include_context :output
 
   let(:vars_mock) {
     Fizzy::Mocks::Vars.new({
@@ -24,6 +25,9 @@ describe Fizzy::Vars do
 
   describe "#get_var" do
 
+    before(:each) { silence_output }
+    after(:each) { enable_output }
+
     context "when an available variable" do
       { "foo"                        => "bar",
         "(foo|qwe)"                  => %w(bar rty),
@@ -35,7 +39,7 @@ describe Fizzy::Vars do
         "vip.(pluto|cingli)"         => "male",
         "vip.(others|cingli).dragon" => "ball"
       }.each do |key, expected|
-        context "`#{key} is retrieved" do
+        context "`#{key}` is retrieved" do
           subject { vars_mock.get_var(key) }
           it { is_expected.to eq(expected) }
         end

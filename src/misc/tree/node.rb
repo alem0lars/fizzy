@@ -104,17 +104,17 @@ module Fizzy::Tree
     # @return [Fizzy::Tree::Node] Root of the (sub)tree.
     def root
       root = self
-      root = root.parent while !root.is_root?
+      root = root.parent while !root.root?
       root
     end
 
-    # @!attribute [r] is_root?
+    # @!attribute [r] root?
     # Returns `true` if this is a root node.
     #
     # Note that orphaned children will also be reported as root nodes.
     #
     # @return [Boolean] `true` if this is a root node.
-    def is_root?
+    def root?
       @parent.nil?
     end
 
@@ -126,13 +126,13 @@ module Fizzy::Tree
       @content != nil
     end
 
-    # @!attribute [r] is_leaf?
+    # @!attribute [r] leaf?
     # `true` if this node is a `leaf` - i.e., one without any children.
     #
     # @return [Boolean] `true` if this is a leaf node.
     #
     # @see #has_children?
-    def is_leaf?
+    def leaf?
       !has_children?
     end
 
@@ -145,7 +145,7 @@ module Fizzy::Tree
     # @return [Array<Fizzy::Tree::Node>] An array of ancestors of this node
     # @return [nil] if this is a root node.
     def parentage
-      return nil if is_root?
+      return nil if root?
 
       parentage_array = []
       prev_parent = self.parent
@@ -161,7 +161,7 @@ module Fizzy::Tree
     #
     # @return [Boolean] `true` if child nodes exist.
     #
-    # @see #is_leaf?
+    # @see #leaf?
     def has_children?
       @children.length != 0
     end
@@ -237,7 +237,7 @@ module Fizzy::Tree
     # a hash.
     def create_dump_rep           # :nodoc:
       { :name => @name,
-        :parent => (is_root? ? nil : @parent.name),
+        :parent => (root? ? nil : @parent.name),
         :content => Marshal.dump(@content)
       }
     end
@@ -281,7 +281,7 @@ module Fizzy::Tree
     def to_s
       "Node Name: #{@name}" +
         " Content: " + (@content.to_s || "<Empty>") +
-        " Parent: " + (is_root?()  ? "<None>" : @parent.name.to_s) +
+        " Parent: " + (root?()  ? "<None>" : @parent.name.to_s) +
         " Children: #{@children.length}" +
         " Total Nodes: #{size()}"
     end
@@ -397,7 +397,7 @@ module Fizzy::Tree
     def rename(new_name)
       old_name = @name
 
-      if is_root?
+      if root?
         self.name=(new_name)
       else
         @parent.rename_child old_name, new_name
@@ -501,7 +501,7 @@ module Fizzy::Tree
     #
     # @see #remove_all!
     def remove_from_parent!
-      @parent.remove!(self) unless is_root?
+      @parent.remove!(self) unless root?
     end
 
     # Removes all children from this node. If an independent reference exists to
@@ -731,10 +731,10 @@ module Fizzy::Tree
     # @return [Array<Fizzy::Tree::Node>] An array of the leaf nodes
     def each_leaf &block
       if block_given?
-        self.each { |node| yield(node) if node.is_leaf? }
+        self.each { |node| yield(node) if node.leaf? }
         return self
       else
-        self.select { |node| node.is_leaf?}
+        self.select { |node| node.leaf?}
       end
     end
 
@@ -770,19 +770,19 @@ module Fizzy::Tree
     #
     # @return [Fizzy::Tree::Node] The first sibling node.
     #
-    # @see #is_first_sibling?
+    # @see #first_sibling?
     # @see #last_sibling
     def first_sibling
-      is_root? ? self : parent.children.first
+      root? ? self : parent.children.first
     end
 
     # Returns `true` if this node is the first sibling at its level.
     #
     # @return [Boolean] `true` if this is the first sibling.
     #
-    # @see #is_last_sibling?
+    # @see #last_sibling?
     # @see #first_sibling
-    def is_first_sibling?
+    def first_sibling?
       first_sibling == self
     end
 
@@ -796,19 +796,19 @@ module Fizzy::Tree
     #
     # @return [Fizzy::Tree::Node] The last sibling node.
     #
-    # @see #is_last_sibling?
+    # @see #last_sibling?
     # @see #first_sibling
     def last_sibling
-      is_root? ? self : parent.children.last
+      root? ? self : parent.children.last
     end
 
     # Returns `true` if this node is the last sibling at its level.
     #
     # @return [Boolean] `true` if this is the last sibling.
     #
-    # @see #is_first_sibling?
+    # @see #first_sibling?
     # @see #last_sibling
-    def is_last_sibling?
+    def last_sibling?
       last_sibling == self
     end
 
@@ -831,7 +831,7 @@ module Fizzy::Tree
         parent.children.each { |sibling| yield sibling if sibling != self }
         return self
       else
-        return [] if is_root?
+        return [] if root?
         siblings = []
         parent.children {|my_sibling|
                          siblings << my_sibling if my_sibling != self}
@@ -846,8 +846,8 @@ module Fizzy::Tree
     # @return [Boolean] `true` if this is the only child of its parent.
     #
     # @see #siblings
-    def is_only_child?
-      is_root? ? true : parent.children.size == 1
+    def only_child?
+      root? ? true : parent.children.size == 1
     end
 
     # Next sibling for this node.
@@ -861,7 +861,7 @@ module Fizzy::Tree
     # @see #previous_sibling
     # @see #siblings
     def next_sibling
-      return nil if is_root?
+      return nil if root?
 
       myidx = parent.children.index(self)
       parent.children.at(myidx + 1) if myidx
@@ -878,7 +878,7 @@ module Fizzy::Tree
     # @see #next_sibling
     # @see #siblings
     def previous_sibling
-      return nil if is_root?
+      return nil if root?
 
       myidx = parent.children.index(self)
       parent.children.at(myidx - 1) if myidx && myidx > 0
@@ -911,12 +911,12 @@ module Fizzy::Tree
                      puts "#{prefix} #{node.name}" })
       prefix = ''
 
-      if is_root?
+      if root?
         prefix << '*'
       else
-        prefix << '|' unless parent.is_last_sibling?
+        prefix << '|' unless parent.last_sibling?
         prefix << (' ' * (level - 1) * 4)
-        prefix << (is_last_sibling? ? '+' : '|')
+        prefix << (last_sibling? ? '+' : '|')
         prefix << '---'
         prefix << (has_children? ? '+' : '>')
       end

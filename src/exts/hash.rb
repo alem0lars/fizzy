@@ -8,7 +8,7 @@ class Hash
   # Perform recursive merge of the current `Hash` (`self`) with the provided one
   # (the `second` argument).
   #
-  # The merge have knows how to recurse in both `Hash`es and `Array`s.
+  # The merge knows how to recurse in both `Hash`es and `Array`s.
   #
   def deep_merge(second)
     merger = proc do |key, v1, v2|

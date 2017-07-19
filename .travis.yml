@@ -9,4 +9,4 @@ services:
   - docker
 
 script:
-  - bundle exec rake docker:test
+  - bundle exec rake docker:spec

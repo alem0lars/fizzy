@@ -1,47 +1,80 @@
 module Fizzy::ArgParse
 
-  class RootParser
-    attr_reader :root_parser, :subcommand_parsers
+  class Parser
+    attr_reader :parser, :options
+
+    include Fizzy::IO
 
     def initialize
-      @root_parser = OptionParser.new do |opts|
-        opts.banner = "Usage: opt.rb [options] [subcommand [options]]"
-        opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
-          options[:verbose] = v
-        end
-        opts.separator ""
-        opts.separator subtext
-      end
-
-      @subcommand_parsers = []
+      @options = {}
     end
 
-    def add_command_parser(*args, **kwargs)
-      SubCommandParser.new(*args, **kwargs)
+    def inspect
+      "#{self.class.name}"
     end
 
-    def parse(args)
-      args = args.dup
-      options = [root_parser.parse!(args)] + subcommand_parsers.collect do |parser|
-        parser.parse!(args)
-      end
-      puts options
-    end
+    alias_method :to_s, :inspect
   end
 
-  class SubCommandParser
-    attr_reader :parser
+  class RootParser < Parser
+    attr_reader :subcommand_parsers
 
-    def initialize(name, desc, options)
-      @parser = OptionParser.new do
+    def initialize
+      super
+      @parser = OptionParser.new do |opts|
         opts.on("-v", "--[no-]verbose", "Run verbosely") do |verbose|
           options[:verbose] = verbose
         end
 
         opts.on("-h", "--help", "Prints this help") do
+          options[:help] = true
           puts opts
         end
       end
+
+      @subcommand_parsers = []
+    end
+
+    def add_subcommand_parser(parser)
+      subcommand_parsers << parser
+    end
+
+    def parse(args)
+      args = args.dup
+      parser.parse!(args)
+
+      unless options[:help]
+        name = args.shift
+        matching_parsers = subcommand_parsers.select { |p| p.name == name }
+
+        command_parser = case matching_parsers.length
+                         when 0 then error "No command with name `#{name}`"
+                         when 1 then matching_parsers.first
+                         else        error "Multiple commands matching `#{name}`"
+                         end
+        command_parser.parse!(args)
+        @options = options.deep_merge(command_parser.options)
+      end
+
+      options
+    end
+  end
+
+  class CommandParser < Parser
+    attr_reader :name, :desc
+
+    def initialize(name, desc)
+      @name = name
+      @desc = desc
+      @parser = OptionParser.new do |opts|
+        opts.on("-h", "--help", "Prints help for command `#{name}`") do
+          puts opts
+        end
+      end
+    end
+
+    def inspect
+      "#{self.class.name}(name=#{name})"
     end
   end
 

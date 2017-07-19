@@ -16,8 +16,20 @@ module Fizzy::ArgParse
     end
 
     def parse(args)
+      parse!(args)
+      true
+    rescue OptionParser::InvalidOption, OptionParser::MissingArgument
+      tell($!.to_s)
+      tell_help
+      false
+    end
+
+    def parse!(args)
       parser.parse!(args)
-      options
+    end
+
+    def tell_help
+      tell(parser.to_s)
     end
 
     def inspect
@@ -27,8 +39,8 @@ module Fizzy::ArgParse
     alias_method :to_s, :inspect
   end
 
-  class RootParser < Parser
-    attr_reader :subcommand_parsers
+  class Command < Parser
+    attr_reader :subcommands
 
     def initialize
       super
@@ -37,47 +49,68 @@ module Fizzy::ArgParse
           options[:verbose] = verbose
         end
 
-        opts.on("-h", "--help", "Prints this help") do
-          options[:help] = true
+        opts.on("-h", "--help", "Prints this help") do |help|
+          options[:help] = help
         end
       end
 
-      @subcommand_parsers = []
+      @subcommands = []
     end
 
-    def add_subcommand_parser(parser)
-      subcommand_parsers << parser
-    end
-
-    def parse(args)
+    def parse!(args)
       super
 
       if args.length > 0
         name = args.shift
-        matching_parsers = subcommand_parsers.select { |p| p.name == name }
 
-        command_parser = case matching_parsers.length
-                         when 0 then error "No command named `#{name}`"
-                         when 1 then matching_parsers.first
-                         else        error "Multiple commands named `#{name}`"
-                         end
-        command_parser.parse(args)
-        @options = options.deep_merge(command_parser.options)
+        subcommand = find_subcommand(name)
+        if subcommand.nil?
+          error "No command named `#{name}`"
+        else
+          subcommand.parse!(args)
+          @options = options.deep_merge(subcommand.options)
+        end
       end
-
-      options
     end
+
+    def tell_help
+      if options[:command]
+        find_subcommand.tell_help
+      else
+        super
+      end
+    end
+
+    def add_subcommand(subcommand)
+      subcommands << subcommand
+    end
+
+    def find_subcommand(name=nil)
+      name = options[:command] if name.nil?
+      matching_subcommands = subcommands.select { |p| p.name == name }
+      if matching_subcommands.length > 0
+        matching_subcommands.first
+      end
+    end
+    private :find_subcommand
   end
 
-  class CommandParser < Parser
-    attr_reader :name, :desc
+  class SubCommand < Parser
+    attr_reader :name, :desc, :spec
 
     def initialize(name, desc, spec={})
       super()
+
+      # 1: Initialize `@name`, `@desc`, `@spec`
       @name = name
       @desc = desc
+      @spec = spec
+
+      options[:command] = name
+
+      # 2: Initialize `@parser`
       @parser = OptionParser.new do |opts|
-        spec.each do |opt_name, opt_info|
+        @spec.each do |opt_name, opt_info|
           opt_info = {
             required: false,
             abbrev: nil,
@@ -102,14 +135,23 @@ module Fizzy::ArgParse
           end
           opt_args << opt_info[:desc] if opt_info[:desc]
 
-          puts opt_args # TODO remove
-
           opts.on(*opt_args) do |opt_value|
-            @optionsk
+            @options[opt_name] = opt_value
           end
         end
       end
-      options[:command] = name
+    end
+
+    def parse!(args)
+      super
+
+      missing = spec.select do |name, info|
+        info[:required] && options[name].nil?
+      end.map { |name, _| name }
+
+      unless missing.empty?
+        raise OptionParser::MissingArgument.new(missing.join(", "))
+      end
     end
 
     def inspect
@@ -124,15 +166,15 @@ module Fizzy::ArgParse
   end
 
   class Proxy
-    attr_reader :root_parser, :handlers
+    attr_reader :command, :handlers
 
     def initialize
-      @root_parser = RootParser.new
+      @command = Command.new
       @handlers = []
     end
 
     def define_command(*args, **kwargs)
-      root_parser.add_subcommand_parser(*args, **kwargs)
+      command.add_subcommand(*args, **kwargs)
       self
     end
 
@@ -141,7 +183,7 @@ module Fizzy::ArgParse
     end
 
     def parse(args)
-      root_parser.parse(args)
+      command.parse(args)
       handlers.each do |name, fn|
         fn.call(options) if name == options[:command]
       end

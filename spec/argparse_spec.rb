@@ -29,17 +29,6 @@ describe Fizzy::ArgParse::Command do
     ])
   end
 
-  context "#run" do
-    let(:handler) { spy("handler") }
-    before(:each) { command.on(/^foo$/) { handler.handle } }
-
-    it "calls the registered handler" do
-      command.parse(["foo"])
-      command.run
-      expect(handler).to have_received(:handle)
-    end
-  end
-
   context "#parse" do
     {
       ["-h"] => {status: true, options: {help: true}},
@@ -56,6 +45,28 @@ describe Fizzy::ArgParse::Command do
           expect(command.options).to eq(info[:options])
         end
       end
+    end
+  end
+
+  context "#on" do
+    let(:handler) { spy("handler") }
+    let(:foo_regexp) { /^foo$/ }
+
+    it "works" do
+      a = proc { handler.handle }
+      command.on(foo_regexp, a)
+      expect(command.handlers[foo_regexp]).to eq(a)
+    end
+  end
+
+  context "#run" do
+    let(:handler) { spy("handler") }
+    before(:each) { command.on(/^foo$/) { handler.handle } }
+
+    it "calls the registered handler" do
+      command.parse(["foo"])
+      command.run
+      expect(handler).to have_received(:handle)
     end
   end
 

@@ -47,7 +47,8 @@ describe Fizzy::ArgParse::Command do
         before(:each) do
         end
 
-        it do
+        it "is expected to #{info[:status] ? "correctly" : "fail to"} parse " +
+           "arguments" do
           expect(command.parse(arguments)).to eq(info[:status])
           expect(command.options).to eq(info[:options])
         end

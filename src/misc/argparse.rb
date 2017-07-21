@@ -7,13 +7,15 @@
 module Fizzy::ArgParse
 
   class Command
-    attr_reader :name, :parser, :options, :handlers
+    attr_reader :name, :parser, :options, :handlers, :spec
+    protected :spec
 
     include Fizzy::IO
 
-    def initialize(name, spec = {})
+    def initialize(name, spec: {})
       @name = name.to_s
-      @parser = OptionParser.new { |opts| fill_opts opts, spec }
+      @spec = spec
+      @parser = OptionParser.new { |opts| fill_opts(opts, spec) }
       @options = {}
       @handlers = []
     end
@@ -24,25 +26,25 @@ module Fizzy::ArgParse
 
     def run
       handlers.each do |name, fn|
-        fn.call options if name =~ options[:command]
+        fn.call(options) if name =~ options[:command]
       end
     end
 
     def parse(args)
-      parse! args
+      parse!(args)
       true
     rescue OptionParser::InvalidOption, OptionParser::MissingArgument
-      tell $!
+      error($!.to_s.titleize, exc: nil)
       tell_help
       false
     end
 
     def parse!(args)
-      parser.parse! args
+      parser.parse!(args)
     end
 
     def tell_help
-      tell parser
+      tell(parser)
     end
 
     def inspect
@@ -88,19 +90,19 @@ module Fizzy::ArgParse
   class RootCommand < Command
     attr_reader :subcommands
 
-    def initialize(name, spec = {})
-      super(name, {
+    def initialize(name, spec: {}, subcommands: [])
+      super(name, spec: {
         verbose: { abbrev: "v", desc: "Run verbosely", type: :boolean },
-        help: { abbrev: "h", desc: "Prints this help" }
+        help: { abbrev: "h", desc: "Prints this help", type: :boolean }
       }.deep_merge(spec))
 
-      @subcommands = []
+      @subcommands = subcommands
     end
 
     def parse!(args)
       parser.banner = [
         "Usage: #{name} #{options[:command] || "[subcommand]"} [options]",
-        "Available sub-commands: #{subcommands.map { |c| c.name }}"
+        "Available sub-commands: #{subcommands.map { |c| c.name }.join(", ")}"
       ].join "\n"
 
       super
@@ -112,8 +114,11 @@ module Fizzy::ArgParse
         if subcommand.nil?
           error "No sub-command named `#{subcommand_name}`"
         else
-          subcommand.parse! args
-          options.deep_merge! subcommand.options
+          begin
+            subcommand.parse! args
+          ensure
+            @options = options.deep_merge!(subcommand.options)
+          end
         end
       end
     end
@@ -143,8 +148,8 @@ module Fizzy::ArgParse
   class SubCommand < Command
     attr_reader :desc
 
-    def initialize(name, desc, spec = {})
-      super(name, spec)
+    def initialize(name, desc, spec: {})
+      super(name, spec: spec)
 
       @desc = desc.to_s
 

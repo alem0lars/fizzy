@@ -32,15 +32,19 @@ sources:
   - misc/must
   - misc/abstract_method
   - misc/typesystem
+
+  - misc/tree
   - misc/tree/hash_converter
   - misc/tree/merge_handler
   - misc/tree/metrics_methods
   - misc/tree/path_methods
   - misc/tree/node
+
   - misc/argparse
   - misc/argparse/command
   - misc/argparse/root_command
   - misc/argparse/sub_command
+
   - grammars/base_lexer
   - <grammars>
   - core/environment

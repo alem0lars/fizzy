@@ -53,7 +53,7 @@ describe Fizzy::ArgParse::Command do
     let(:handle_proc) { proc { handler.handle } }
     let(:foo_regexp) { /^foo$/ }
 
-    it "works" do
+    it "registers handler" do
       command.on(foo_regexp, &handle_proc)
       expect(command.handlers[foo_regexp]).to eq(handle_proc)
     end

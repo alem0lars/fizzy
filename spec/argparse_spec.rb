@@ -29,8 +29,15 @@ describe Fizzy::ArgParse::Command do
     ])
   end
 
-  context "#on" do
-    # TODO
+  context "#run" do
+    let(:handler) { spy("handler") }
+    before(:each) { command.on(/^foo$/) { handler.handle } }
+
+    it "calls the registered handler" do
+      command.parse(["foo"])
+      command.run
+      expect(handler).to have_received(:handle)
+    end
   end
 
   context "#parse" do
@@ -44,11 +51,7 @@ describe Fizzy::ArgParse::Command do
       ["bar"] => {status: false, options: {command: "bar"}}
     }.each do |arguments, info|
       context("arguments `#{arguments}` are provided") do
-        before(:each) do
-        end
-
-        it "is expected to #{info[:status] ? "correctly" : "fail to"} parse " +
-           "arguments" do
+        it "#{info[:status] ? "correctly" : "fails to"} parse arguments" do
           expect(command.parse(arguments)).to eq(info[:status])
           expect(command.options).to eq(info[:options])
         end

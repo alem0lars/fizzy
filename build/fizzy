@@ -2531,16 +2531,16 @@ module Fizzy::ArgParse
       @spec = spec
       @parser = OptionParser.new { |opts| fill_opts(opts, spec) }
       @options = {}
-      @handlers = []
+      @handlers = {}
     end
 
-    def on(command_name, &block)
-      handlers << { command_name => block }
+    def on(regexp, &block)
+      handlers[regexp] = block
     end
 
     def run
-      handlers.each do |name, fn|
-        fn.call(options) if name =~ options[:command]
+      handlers.each do |regexp, handler|
+        handler.call(options) if regexp =~ options[:command]
       end
     end
 

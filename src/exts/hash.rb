@@ -5,22 +5,61 @@ class Hash
     Hash[self.to_a.sample(n)]
   end
 
-  # Perform recursive merge of the current `Hash` (`self`) with the provided one
-  # (the `second` argument).
+  # Define magic merge strategy:
   #
-  # The merge knows how to recurse in both `Hash`es and `Array`s.
+  # 1. Merge hashes
+  # 2. Concatenate arrays
   #
-  def deep_merge(second)
-    merger = proc do |key, v1, v2|
+  def magic_merge_strategy
+    proc do |key, v1, v2|
       if Hash === v1 && Hash === v2
-        v1.merge(v2, &merger)
+        v1.merge(v2, &magic_merge_strategy)
       elsif Array === v1 && Array === v2
-        (Set.new(v1) + Set.new(v2)).to_a
+        (SortedSet.new(v1) + SortedSet.new(v2)).to_a
       else
         v2
       end
     end
-    self.merge(second, &merger)
+  end
+  private :magic_merge_strategy
+
+  # Perform recursive merge with some magic, replacing current hash.
+  #
+  def magic_merge!(second)
+    self.merge!(second, &magic_merge_strategy)
+  end
+
+  # Perform recursive merge with some magic, creating a new hash.
+  #
+  def magic_merge(second)
+    self.merge(second, &magic_merge_strategy)
+  end
+
+  # Define merge strategy.
+  #
+  # 1. Merge hashes
+  #
+  def deep_merge_strategy
+    proc do |key, v1, v2|
+      if Hash === v1 && Hash === v2
+        v1.merge(v2, &deep_merge_strategy)
+      else
+        v2
+      end
+    end
+  end
+  private :deep_merge_strategy
+
+  # Perform recursive merge, replacing current hash.
+  #
+  def deep_merge!(second)
+    self.merge!(second, &deep_merge_strategy)
+  end
+
+  # Perform recursive merge, creating a new hash.
+  #
+  def deep_merge(second)
+    self.merge(second, &deep_merge_strategy)
   end
 
   def fqkeys(prefix="")
@@ -77,28 +116,28 @@ class Hash
 
   def deep_transform_keys_in_object(object, &block)
     case object
-      when Hash
-        object.each_with_object({}) do |(key, value), result|
-          result[yield(key)] = deep_transform_keys_in_object(value, &block)
-        end
-      when Array
-        object.map {|e| deep_transform_keys_in_object(e, &block)}
-      else object
+    when Hash
+      object.each_with_object({}) do |(key, value), result|
+        result[yield(key)] = deep_transform_keys_in_object(value, &block)
+      end
+    when Array
+      object.map {|e| deep_transform_keys_in_object(e, &block)}
+    else object
     end
   end
   private :deep_transform_keys_in_object
 
   def deep_transform_keys_in_object!(object, &block)
     case object
-      when Hash
-        object.keys.each do |key|
-          value = object.delete(key)
-          object[yield(key)] = deep_transform_keys_in_object!(value, &block)
-        end
-        object
-      when Array
-        object.map! {|e| deep_transform_keys_in_object!(e, &block)}
-      else object
+    when Hash
+      object.keys.each do |key|
+        value = object.delete(key)
+        object[yield(key)] = deep_transform_keys_in_object!(value, &block)
+      end
+      object
+    when Array
+      object.map! {|e| deep_transform_keys_in_object!(e, &block)}
+    else object
     end
   end
   private :deep_transform_keys_in_object!

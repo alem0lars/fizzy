@@ -16,6 +16,7 @@ module Fizzy::ANSIColors
     end
 
     def colorize(str, open_tag_regexp: nil, close_tag_regexp: nil)
+      str = str.to_s
       begin
         open_tag_regexp = default_open_tag_regexp if open_tag_regexp.nil?
         close_tag_regexp = default_close_tag_regexp if close_tag_regexp.nil?

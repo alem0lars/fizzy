@@ -81,7 +81,7 @@ module Fizzy::Vars
     protected :parse_parents_vars
 
     def merge_with_parents_vars(self_vars, parents_vars)
-      parents_vars.deep_merge(self_vars)
+      parents_vars.magic_merge(self_vars)
     end
     protected :merge_with_parents_vars
 
@@ -90,7 +90,7 @@ module Fizzy::Vars
         parent_vars = setup_vars(vars_dir_path, parent)
         acc << parent_vars
       end.inject({}) do |acc, parent_vars| # Merge them.
-        acc.deep_merge(parent_vars)
+        acc.magic_merge(parent_vars)
       end
     end
     protected :merge_parents_vars

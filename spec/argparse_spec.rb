@@ -5,7 +5,11 @@ describe Fizzy::ArgParse::Command do
 
   include_context :output
 
-  let(:command) { described_class.new }
+  let(:command) { Fizzy::ArgParse::RootCommand.new("fizzy") }
+
+  context "#on" do
+    # TODO
+  end
 
   context "#parse" do
     {

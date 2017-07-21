@@ -6,30 +6,43 @@
 #
 module Fizzy::ArgParse
 
-  class Parser
-    attr_reader :parser, :options
+  class Command
+    attr_reader :name, :parser, :options, :handlers
 
     include Fizzy::IO
 
-    def initialize
+    def initialize(name, spec = {})
+      @name = name.to_s
+      @parser = OptionParser.new { |opts| fill_opts opts, spec }
       @options = {}
+      @handlers = []
+    end
+
+    def on(command_name, &block)
+      handlers << { command_name => block }
+    end
+
+    def run
+      handlers.each do |name, fn|
+        fn.call options if name =~ options[:command]
+      end
     end
 
     def parse(args)
-      parse!(args)
+      parse! args
       true
     rescue OptionParser::InvalidOption, OptionParser::MissingArgument
-      tell($!.to_s)
+      tell $!
       tell_help
       false
     end
 
     def parse!(args)
-      parser.parse!(args)
+      parser.parse! args
     end
 
     def tell_help
-      tell(parser.to_s)
+      tell parser
     end
 
     def inspect
@@ -37,38 +50,70 @@ module Fizzy::ArgParse
     end
 
     alias_method :to_s, :inspect
-  end
 
-  class Command < Parser
-    attr_reader :subcommands
+    def fill_opts(opts, opts_spec)
+      opts_spec.each do |opt_name, opt_info|
+        opt_info = {
+          required: false,
+          abbrev: nil,
+          desc: nil,
+          type: nil
+        }.merge opt_info
 
-    def initialize
-      super
-      @parser = OptionParser.new do |opts|
-        opts.on("-v", "--[no-]verbose", "Run verbosely") do |verbose|
-          options[:verbose] = verbose
+        opt_args = []
+        opt_args << "-#{opt_info[:abbrev]}" if opt_info[:abbrev]
+        if opt_info[:type] == Array
+          opt_args << "--#{opt_name} x,y,z"
+          opt_args << opt_info[:type]
+        elsif opt_info[:type] == :boolean
+          opt_args << "--[no-]#{opt_name}"
+        else
+          if opt_info[:required]
+            opt_args << "--#{opt_name} #{opt_name.upcase}"
+          else
+            opt_args << "--#{opt_name} [#{opt_name.upcase}]"
+          end
+          opt_args << opt_info[:type] if opt_info[:type]
         end
+        opt_args << opt_info[:desc] if opt_info[:desc]
 
-        opts.on("-h", "--help", "Prints this help") do |help|
-          options[:help] = help
+        opts.on(*opt_args) do |opt_value|
+          options[opt_name] = opt_value
         end
       end
+    end
+    private :fill_opts
+  end
+
+  class RootCommand < Command
+    attr_reader :subcommands
+
+    def initialize(name, spec = {})
+      super(name, {
+        verbose: { abbrev: "v", desc: "Run verbosely", type: :boolean },
+        help: { abbrev: "h", desc: "Prints this help" }
+      }.deep_merge(spec))
 
       @subcommands = []
     end
 
     def parse!(args)
+      parser.banner = [
+        "Usage: #{name} #{options[:command] || "[subcommand]"} [options]",
+        "Available sub-commands: #{subcommands.map { |c| c.name }}"
+      ].join "\n"
+
       super
 
       if args.length > 0
-        name = args.shift
+        subcommand_name = args.shift
 
-        subcommand = find_subcommand(name)
+        subcommand = find_subcommand(subcommand_name)
         if subcommand.nil?
-          error "No command named `#{name}`"
+          error "No sub-command named `#{subcommand_name}`"
         else
-          subcommand.parse!(args)
-          @options = options.deep_merge(subcommand.options)
+          subcommand.parse! args
+          options.deep_merge! subcommand.options
         end
       end
     end
@@ -85,9 +130,9 @@ module Fizzy::ArgParse
       subcommands << subcommand
     end
 
-    def find_subcommand(name=nil)
-      name = options[:command] if name.nil?
-      matching_subcommands = subcommands.select { |p| p.name == name }
+    def find_subcommand(subcommand_name = nil)
+      subcommand_name = options[:command] if subcommand_name.nil?
+      matching_subcommands = subcommands.select { |c| c.name == subcommand_name }
       if matching_subcommands.length > 0
         matching_subcommands.first
       end
@@ -95,51 +140,15 @@ module Fizzy::ArgParse
     private :find_subcommand
   end
 
-  class SubCommand < Parser
-    attr_reader :name, :desc, :spec
+  class SubCommand < Command
+    attr_reader :desc
 
-    def initialize(name, desc, spec={})
-      super()
+    def initialize(name, desc, spec = {})
+      super(name, spec)
 
-      # 1: Initialize `@name`, `@desc`, `@spec`
-      @name = name
-      @desc = desc
-      @spec = spec
+      @desc = desc.to_s
 
-      options[:command] = name
-
-      # 2: Initialize `@parser`
-      @parser = OptionParser.new do |opts|
-        @spec.each do |opt_name, opt_info|
-          opt_info = {
-            required: false,
-            abbrev: nil,
-            desc: nil,
-            type: nil
-          }.merge(opt_info)
-
-          opt_args = []
-          opt_args << "-#{opt_info[:abbrev]}" if opt_info[:abbrev]
-          if opt_info[:type] == Array
-            opt_args << "--#{opt_name} x,y,z"
-            opt_args << opt_info[:type]
-          elsif opt_info[:type] == :boolean
-            opt_args << "--[no-]#{opt_name}"
-          else
-            if opt_info[:required]
-              opt_args << "--#{opt_name} #{opt_name.upcase}"
-            else
-              opt_args << "--#{opt_name} [#{opt_name.upcase}]"
-            end
-            opt_args << opt_info[:type] if opt_info[:type]
-          end
-          opt_args << opt_info[:desc] if opt_info[:desc]
-
-          opts.on(*opt_args) do |opt_value|
-            @options[opt_name] = opt_value
-          end
-        end
-      end
+      options[:command] = @name
     end
 
     def parse!(args)
@@ -178,15 +187,8 @@ module Fizzy::ArgParse
       self
     end
 
-    def on(command_name, block)
-      handlers[command_name] = block
-    end
-
-    def parse(args)
-      command.parse(args)
-      handlers.each do |name, fn|
-        fn.call(options) if name == options[:command]
-      end
+    def run(args)
+      command.parse(args).run
     end
   end
 

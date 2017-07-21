@@ -14,6 +14,12 @@
   [@alem0lars][@alem0lars]
 * Restore docs generation through rake task
   [@alem0lars][@alem0lars]
+* Add more `Hash` utilities:
+  `deep_merge`, `deep_merge!`, `magic_merge`, `magic_merge!`
+  [@alem0lars][@alem0lars]
+* Rename old `deep_merge` to `magic_merge` (that's the merge strategy used for
+  vars and meta)
+  [@alem0lars][@alem0lars]
 
 ## Previous versions
 

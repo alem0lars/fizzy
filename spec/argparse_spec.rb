@@ -5,6 +5,9 @@ describe Fizzy::ArgParse::Command do
 
   include_context :output
 
+  before(:each) { silence_output }
+  after(:each) { enable_output }
+
   let(:command) do
     Fizzy::ArgParse::RootCommand.new("fizzy", subcommands: [
       Fizzy::ArgParse::SubCommand.new("foo", "this is sub-command foo"),

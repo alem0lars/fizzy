@@ -5,7 +5,29 @@ describe Fizzy::ArgParse::Command do
 
   include_context :output
 
-  let(:command) { Fizzy::ArgParse::RootCommand.new("fizzy") }
+  let(:command) do
+    Fizzy::ArgParse::RootCommand.new("fizzy", subcommands: [
+      Fizzy::ArgParse::SubCommand.new("foo", "this is sub-command foo"),
+      Fizzy::ArgParse::SubCommand.new("bar", "this is sub-command bar", spec: {
+        delay: {
+          required: true,
+          abbrev: "d",
+          desc: "specify delay",
+          type: Integer
+        },
+        mood: {
+          abbrev: "m",
+          desc: "specify your mood",
+          type: [:good, :bad]
+        },
+        happy: {
+          abbrev: "H",
+          desc: "specify if you are happy (or not)",
+          type: :boolean
+        }
+      })
+    ])
+  end
 
   context "#on" do
     # TODO
@@ -22,36 +44,13 @@ describe Fizzy::ArgParse::Command do
       ["bar"] => {status: false, options: {command: "bar"}}
     }.each do |arguments, info|
       context("arguments `#{arguments}` are provided") do
-        subject { command.parse(arguments) }
-
         before(:each) do
-          command.add_subcommand(
-            Fizzy::ArgParse::SubCommand.new("foo", "this is sub-command foo")
-          )
-          command.add_subcommand(
-            Fizzy::ArgParse::SubCommand.new("bar", "this is sub-command bar", {
-              delay: {
-                required: true,
-                abbrev: "d",
-                desc: "specify delay",
-                type: Integer
-              },
-              mood: {
-                abbrev: "m",
-                desc: "specify your mood",
-                type: [:good, :bad]
-              },
-              happy: {
-                abbrev: "H",
-                desc: "specify if you are happy (or not)",
-                type: :boolean
-              }
-            })
-          )
         end
 
-        it { is_expected.to eq(info[:status]) }
-        it { expect(command.options).to eq(info[:options]) }
+        it do
+          expect(command.parse(arguments)).to eq(info[:status])
+          expect(command.options).to eq(info[:options])
+        end
       end
     end
   end

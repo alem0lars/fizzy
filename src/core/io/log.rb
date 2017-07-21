@@ -36,15 +36,13 @@ module Fizzy::IO
   # Display an error message (`msg`) to the user. Before returning, the
   # program will exit (with exit status `-1`).
   #
-  def error(msg, exc: nil)
-    must("message", msg, be: String)
-
+  def error(msg, exc: -1)
     tell("{r{☠ #{msg}}}")
 
-    if exc
+    if exc.is_a? Integer
+      exit(exc)
+    elsif !exc.nil?
       raise exc.new(msg)
-    else
-      exit(-1)
     end
   end
 

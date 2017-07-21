@@ -50,12 +50,12 @@ describe Fizzy::ArgParse::Command do
 
   context "#on" do
     let(:handler) { spy("handler") }
+    let(:handle_proc) { proc { handler.handle } }
     let(:foo_regexp) { /^foo$/ }
 
     it "works" do
-      a = proc { handler.handle }
-      command.on(foo_regexp, a)
-      expect(command.handlers[foo_regexp]).to eq(a)
+      command.on(foo_regexp, &handle_proc)
+      expect(command.handlers[foo_regexp]).to eq(handle_proc)
     end
   end
 

@@ -63,19 +63,15 @@ sources:
   - core/sync/local
   - core/sync/git
   - lib/filters/lastpass
-  - command/base
-  - command/cfg
-  - command/inst
-  - command/main
-  # - cli
-  # - cli/cd
-  # - cli/cleanup
-  # - cli/info
-  # - cli/edit
-  # - cli/sync
-  # - cli/incarnate
-  # - cli/usage
-  # - cli/version
+  - cli
+  - cli/cd
+  - cli/cleanup
+  - cli/info
+  - cli/edit
+  - cli/sync
+  - cli/incarnate
+  - cli/usage
+  - cli/version
   - main
 
 hashbang: "#!/usr/bin/env ruby"

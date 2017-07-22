@@ -63,6 +63,10 @@ sources:
   - core/sync/local
   - core/sync/git
   - lib/filters/lastpass
+  - command/base
+  - command/cfg
+  - command/inst
+  - command/main
   - cli
   - cli/cd
   - cli/cleanup

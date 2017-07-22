@@ -9,6 +9,8 @@ rvm:
   - "2.3"
   - "2.4"
 
+bundler_args: --without website
+
 services:
   - docker
 

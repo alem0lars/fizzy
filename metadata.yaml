@@ -19,11 +19,11 @@ grammars:
 sources:
   - requires
   - misc/ansi_colors
-  - exts/string
-  - exts/symbol
-  - exts/hash
-  - exts/pathname
-  - exts/thor
+  - ext/string
+  - ext/symbol
+  - ext/hash
+  - ext/pathname
+  - ext/thor
   - configuration
   - core/io/log
   - misc/line_editor
@@ -45,7 +45,7 @@ sources:
   - misc/argparse/root_command
   - misc/argparse/sub_command
 
-  - grammars/base_lexer
+  - grammar/base_lexer
   - <grammars>
   - core/environment
   - core/execution
@@ -63,10 +63,19 @@ sources:
   - core/sync/local
   - core/sync/git
   - lib/filters/lastpass
-  - commands/base
-  - commands/cfg
-  - commands/inst
-  - commands/main
+  - command/base
+  - command/cfg
+  - command/inst
+  - command/main
+  # - cli
+  # - cli/cd
+  # - cli/cleanup
+  # - cli/info
+  # - cli/edit
+  # - cli/sync
+  # - cli/incarnate
+  # - cli/usage
+  # - cli/version
   - main
 
 hashbang: "#!/usr/bin/env ruby"

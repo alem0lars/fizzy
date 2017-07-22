@@ -8,7 +8,7 @@ describe Fizzy::Meta::Info do
   let(:verbose) { true }
 
   let(:meta) {
-    Fizzy::Mocks::Meta.new({
+    Fizzy::Mock::Meta.new({
       qwe: "rty",
       features: %i(foo bar)
     })

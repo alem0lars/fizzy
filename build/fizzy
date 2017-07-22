@@ -336,7 +336,7 @@ end
 #             Fizzy::ANSIColors::EndTagNode(start_idx=`41` end_idx=`41` size=`0`)
 #     ])
 
-# ───────────────────────────────────────────────────────────── String ← Exts ──
+# ────────────────────────────────────────────────────────────── String ← Ext ──
 
 class String
 
@@ -409,7 +409,7 @@ class String
 
 end
 
-# ───────────────────────────────────────────────────────────── Symbol ← Exts ──
+# ────────────────────────────────────────────────────────────── Symbol ← Ext ──
 
 class Symbol
 
@@ -446,7 +446,7 @@ class Symbol
 
 end
 
-# ─────────────────────────────────────────────────────────────── Hash ← Exts ──
+# ──────────────────────────────────────────────────────────────── Hash ← Ext ──
 
 class Hash
 
@@ -596,7 +596,7 @@ class Hash
 
 end
 
-# ─────────────────────────────────────────────────────────── Pathname ← Exts ──
+# ──────────────────────────────────────────────────────────── Pathname ← Ext ──
 
 class Pathname
 
@@ -613,7 +613,7 @@ class Pathname
 
 end
 
-# ─────────────────────────────────────────────────────────────── Thor ← Exts ──
+# ──────────────────────────────────────────────────────────────── Thor ← Ext ──
 
 class Thor
   module Actions
@@ -2719,7 +2719,7 @@ class Fizzy::ArgParse::SubCommand < Fizzy::ArgParse::Command
   end
 end
 
-# ───────────────────────────────────────────────────── Base lexer ← Grammars ──
+# ────────────────────────────────────────────────────── Base lexer ← Grammar ──
 
 class Fizzy::BaseLexer
 
@@ -4666,7 +4666,7 @@ As arguments you can pass:
   `lpass show --color=never #{what} #{name}`
 end
 
-# ─────────────────────────────────────────────────────────── Base ← Commands ──
+# ──────────────────────────────────────────────────────────── Base ← Command ──
 
 # Base class for all fizzy commands.
 #
@@ -4754,7 +4754,7 @@ class Fizzy::BaseCommand < Thor
 
 end
 
-# ──────────────────────────────────────────────────────────── Cfg ← Commands ──
+# ───────────────────────────────────────────────────────────── Cfg ← Command ──
 
 class Fizzy::CfgCommand < Fizzy::BaseCommand
 
@@ -4936,7 +4936,7 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
 end
 
-# ─────────────────────────────────────────────────────────── Inst ← Commands ──
+# ──────────────────────────────────────────────────────────── Inst ← Command ──
 
 class Fizzy::InstCommand < Fizzy::BaseCommand
 
@@ -5005,7 +5005,7 @@ class Fizzy::InstCommand < Fizzy::BaseCommand
 
 end
 
-# ─────────────────────────────────────────────────────────── Main ← Commands ──
+# ──────────────────────────────────────────────────────────── Main ← Command ──
 
 class Fizzy::MainCommand < Fizzy::BaseCommand
 

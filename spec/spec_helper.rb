@@ -4,6 +4,7 @@ Bundler.require(:default, :development)
 
 root_dir_path = Pathname.new(__FILE__).expand_path.dirname.dirname
 spec_dir_path = root_dir_path.join("spec")
+support_dir_path = spec_dir_path.join("support")
 build_dir_path = root_dir_path.join("build")
 src_dir_path = root_dir_path.join("src")
 website_dir_path = root_dir_path.join("website")
@@ -14,7 +15,7 @@ $LOAD_PATH.unshift build_dir_path.to_s
 # Measure code coverage.
 SimpleCov.profiles.define "fizzy" do
   root build_dir_path.to_s
-  coverage_dir website_dir_path.join("source", "docs", "coverage")
+  coverage_dir website_dir_path.join("source", "doc", "coverage")
 
   formatters = [SimpleCov::Formatter::HTMLFormatter]
 
@@ -27,7 +28,8 @@ SimpleCov.start "fizzy"
 require "fizzy"
 
 # Require specs support.
-Dir[spec_dir_path.join("support", "**", "*.rb").to_s].each { |f| require f }
+module Fizzy::Mock end
+Dir[support_dir_path.join("**", "*.rb").to_s].each { |f| require f }
 
 RSpec.configure do |config|
 

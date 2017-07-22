@@ -3071,13 +3071,12 @@ end
 # Utilities to retrieve informations about the host environment & system.
 #
 module Fizzy::Environment
-
   include Fizzy::IO
 
   # Find an executable called `name` in the `$PATH`.
   # Note: `name` can also be a path pointing to the executable.
   #
-  def which?(name)
+  def which?(_name)
     exts = ENV["PATHEXT"] ? ENV["PATHEXT"].split(";") : [""]
     ENV["PATH"].split(File::PATH_SEPARATOR).each do |path|
       exts.each do |ext|
@@ -3085,7 +3084,7 @@ module Fizzy::Environment
         return exe if File.executable?(exe) && !File.directory?(exe)
       end
     end
-    return nil
+    nil
   end
 
   # Return the environment variable matching the provided `name`.
@@ -3105,30 +3104,30 @@ module Fizzy::Environment
 
   # Check if the underlying operating system is MacOSX.
   #
-  def is_osx?
+  def osx?
     Fizzy::CFG.os == :osx
   end
 
   # Check if the underlying operating system is GNU/Linux.
   #
-  def is_linux?
+  def linux?
     Fizzy::CFG.os == :linux
   end
 
   # Check if the underlying operating system is Windows.
   #
-  def is_windows?
+  def windows?
     Fizzy::CFG.os == :windows
   end
 
   # Execute a function, based on the underlying operating system.
   #
   def case_os(osx: nil, linux: nil, windows: nil)
-    if is_osx?
+    if osx?
       osx.respond_to?(:call) ? osx.call : osx
-    elsif is_linux?
+    elsif linux?
       linux.respond_to?(:call) ? linux.call : linux
-    elsif is_windows?
+    elsif windows?
       windows.respond_to?(:call) ? windows.call : windows
     else
       error("Unrecognized operating system.")
@@ -3136,12 +3135,11 @@ module Fizzy::Environment
   end
 
   def xdg_config_home(name)
-    Pathname.new(get_env(:XDG_CONFIG_HOME) || "~/.config").
-      expand_variables.
-      expand_path.
-      join(name.to_s)
+    Pathname.new(get_env(:XDG_CONFIG_HOME) || "~/.config")
+            .expand_variables
+            .expand_path
+            .join(name.to_s)
   end
-
 end
 
 # ────────────────────────────────────────────────────────── Execution ← Core ──
@@ -3448,26 +3446,25 @@ module Fizzy::Vars
   end
 end
 
-# ───────────────────────────────────────────────────── Filters ← Vars ← Core ──
+# ────────────────────────────────────────────────────── Filter ← Vars ← Core ──
 
 module Fizzy::Vars
-
-  module Filters
+  module Filter
     def self.define(name, description: nil, &block)
       @filters ||= []
-      @filters << Filter.new(name, description.strip, &block)
+      @filters << SimpleFilter.new(name, description.strip, &block)
     end
 
     def self.apply(blob)
-      if filter = (@filters || []).find{|f| f.match?(blob)}
+      filter = (@filters || []).find { |f| f.match?(blob) }
+      if filter
         filter.apply(blob)
       else
         blob
       end
     end
 
-    class Filter
-
+    class SimpleFilter
       include Fizzy::IO
 
       attr_reader :name, :desc
@@ -3488,14 +3485,13 @@ module Fizzy::Vars
         md = @regexp.match(blob)
         return if md.nil?
         args = md[:args]
-        def args.split_by_separator(sep=",")
-          self.split(/(?:\s*[#{sep}]\s*)/)
+        def args.split_by_separator(sep = ",")
+          split(/(?:\s*[#{sep}]\s*)/)
         end
         @block.call(args)
       end
     end
   end
-
 end
 
 # ─────────────────────────────────────────────────── Retriever ← Vars ← Core ──
@@ -3599,7 +3595,7 @@ module Fizzy::Vars
                        end
 
         # Filter `next_objects`.
-        next_objects = next_objects.map{|e| Fizzy::Vars::Filters.apply(e)}
+        next_objects = next_objects.map{|e| Fizzy::Vars::Filter.apply(e)}
 
         # Adjust `next_objects`, according to `single_match` argument.
         next_objects = if single_match
@@ -4646,9 +4642,9 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
 end
 
-# ────────────────────────────────────────────────── Lastpass ← Filters ← Lib ──
+# ───────────────────────────────────────────────── Lastpass ← Filter ← Depot ──
 
-Fizzy::Vars::Filters.define(:lpass, description: """
+Fizzy::Vars::Filter.define(:lpass, description: """
 LastPass filter allows to retrieve informations stored in a lastpass account
 As arguments you can pass:
 - #0: A unique name or identifier of the element to be retrieved

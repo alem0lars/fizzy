@@ -32,6 +32,9 @@ The following changes will break backward compatibility:
 
 ### Dev changes
 
+* Refactor module `command` (and all pre-existing commands) into module `cli`
+  using the new module `argparse` instead of `thor` gem
+  [@alem0lars][@alem0lars]
 * Singularize module names
   [@alem0lars][@alem0lars]
 * Implement module `argparse` to perform command-based argument parsing

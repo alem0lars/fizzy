@@ -5061,7 +5061,5 @@ class Fizzy::MainCommand < Fizzy::BaseCommand
 
 end
 
-# ────────────────────────────────────────────────────────────────────── Main ──
+# ─────────────────────────────────────────────────────────────────────── Cli ──
 
-# Entry point.
-Fizzy::MainCommand.start(ARGV) if $0 == __FILE__

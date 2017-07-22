@@ -24,6 +24,7 @@ end
 namespace :docker do
   desc "Test fizzy inside the docker container"
   task spec: :prepare do
-    docker_run "fizzy", "rake spec"
+    ENV["DOCKER_SILENT_BUILD"] = "true"
+    docker_run("fizzy", "rake spec")
   end
 end

@@ -12,13 +12,6 @@
 
 The following changes will break backward compatibility:
 
-* Rename utility functions
-  [@alem0lars][@alem0lars]
-  :
-  * `is_osx?` → `osx?`
-  * `is_windows?` → `windows?`
-  * `is_linux?` → `linux?`
-
 * Simplified command names (no more nesting, removed useless commands)
   [@alem0lars][@alem0lars]
   :
@@ -33,6 +26,13 @@ The following changes will break backward compatibility:
   * `quick-install` → `incarnate`
   * `usage` has been kept unchanged
   * `version` has been kept unchanged
+
+* Rename utility functions
+  [@alem0lars][@alem0lars]
+  :
+  * `is_osx?` → `osx?`
+  * `is_windows?` → `windows?`
+  * `is_linux?` → `linux?`
 
 ### Dev changes
 

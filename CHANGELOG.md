@@ -12,12 +12,16 @@
 
 The following changes will break backward compatibility:
 
-* Rename utility functions:
+* Rename utility functions
+  [@alem0lars][@alem0lars]
+  :
   * `is_osx?` → `osx?`
   * `is_windows?` → `windows?`
   * `is_linux?` → `linux?`
 
-* Simplified command names (no more nesting, removed useless commands):
+* Simplified command names (no more nesting, removed useless commands)
+  [@alem0lars][@alem0lars]
+  :
   * `cfg cd` → `cd`
   * `cfg cleanup` → `cleanup`
   * `cfg details` → `info`

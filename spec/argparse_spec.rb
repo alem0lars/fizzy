@@ -26,7 +26,8 @@ describe Fizzy::ArgParse::Command do
         happy: {
           abbrev: "H",
           desc: "specify if you are happy (or not)",
-          type: :boolean
+          type: :boolean,
+          default: true
         }
       })
     ])
@@ -40,7 +41,7 @@ describe Fizzy::ArgParse::Command do
       ["foo", "--no-verbose"] => {status: true, options: {command: "foo", verbose: false}},
       ["foo", "-h"] => {status: true, options: {command: "foo", help: true}},
       ["-h", "foo"] => {status: true, options: {command: "foo", help: true}},
-      ["bar"] => {status: false, options: {command: "bar"}}
+      ["bar"] => {status: false, options: {command: "bar", happy: true}}
     }.each do |arguments, info|
       context("arguments `#{arguments}` are provided") do
         it "#{info[:status] ? "correctly" : "fails to"} parse arguments" do

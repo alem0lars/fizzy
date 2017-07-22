@@ -24,6 +24,10 @@
 * Rename old `deep_merge` to `magic_merge` (that's the merge strategy used for
   vars and meta)
   [@alem0lars][@alem0lars]
+* Update rubocop configuration to recent upstream updates
+  [@alem0lars][@alem0lars]
+* Add some vim utilities in `.exrc` to uniform linting/formatting
+  [@alem0lars][@alem0lars]
 
 ## Previous versions
 

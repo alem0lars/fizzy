@@ -41,3 +41,8 @@ Metrics/CyclomaticComplexity:
 # Increase allowed perceived complexity.
 Metrics/PerceivedComplexity:
   Max: 9
+
+# Allow `$cfg` used JUST by rake tasks.
+Style/GlobalVars:
+  AllowedVariables:
+    - $cfg

@@ -1,28 +1,31 @@
 # Rubocop plugins to include.
 require: "rubocop-rspec"
 
+AllCops:
+  Exclude:
+    - "build/*"
+
 # Alignment of hash rockets, keys are right aligned.
-Style/AlignHash:
+Layout/AlignHash:
   EnforcedHashRocketStyle: "separator"
 
 # Use double quotes in string literals.
-StringLiterals:
+Style/StringLiterals:
   EnforcedStyle: "double_quotes"
-StringLiteralsInInterpolation:
+Style/StringLiteralsInInterpolation:
   EnforcedStyle: "double_quotes"
-
-# Don't consider comments when counting method length.
-Metrics/MethodLength:
-  CountComments: false
 
 # Single line method definitions don't need an empty line between them.
-Style/EmptyLineBetweenDefs:
+Layout/EmptyLineBetweenDefs:
   AllowAdjacentOneLineDefs: true
 
 # Use slashes on single-line regexes, and %r on multi-line regexes.
 Style/RegexpLiteral:
   EnforcedStyle: mixed
 
-# Allow unicode symbols in comments.
-AsciiComments:
-  Enabled: false
+# Define known annotations.
+Style/CommentAnnotation:
+  Keywords:
+    - TODO
+    - FIXME
+    - XXX

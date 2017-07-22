@@ -1,12 +1,21 @@
 # Changes
 
-## Version 2.4.0
+## Version 3.0.0
 
 ### User changes
 
 * Remove dependency `thor`: now fizzy is without any dependency!
   You just need the ruby interpreter :D
   [@alem0lars][@alem0lars]
+
+#### Breaking changes
+
+The following changes will break backward compatibility:
+
+* Rename utility functions:
+  * `is_osx?` → `osx?`
+  * `is_windows?` → `windows?`
+  * `is_linux?` → `linux?`
 
 ### Dev changes
 

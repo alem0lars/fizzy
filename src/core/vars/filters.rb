@@ -1,21 +1,20 @@
 module Fizzy::Vars
-
-  module Filters
+  module Filter
     def self.define(name, description: nil, &block)
       @filters ||= []
-      @filters << Filter.new(name, description.strip, &block)
+      @filters << SimpleFilter.new(name, description.strip, &block)
     end
 
     def self.apply(blob)
-      if filter = (@filters || []).find{|f| f.match?(blob)}
+      filter = (@filters || []).find { |f| f.match?(blob) }
+      if filter
         filter.apply(blob)
       else
         blob
       end
     end
 
-    class Filter
-
+    class SimpleFilter
       include Fizzy::IO
 
       attr_reader :name, :desc
@@ -36,12 +35,11 @@ module Fizzy::Vars
         md = @regexp.match(blob)
         return if md.nil?
         args = md[:args]
-        def args.split_by_separator(sep=",")
-          self.split(/(?:\s*[#{sep}]\s*)/)
+        def args.split_by_separator(sep = ",")
+          split(/(?:\s*[#{sep}]\s*)/)
         end
         @block.call(args)
       end
     end
   end
-
 end

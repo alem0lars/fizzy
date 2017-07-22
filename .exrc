@@ -5,4 +5,4 @@ let g:neomake_ruby_enabled_makers = ['rubocop']
 let g:formatters_ruby = ['rubocop']
 
 " Add `./bin` folder (that should contain bundler binstubs) to `$PATH`.
-let $PATH .= ':' . expand('%:p:h') . '/.binstub'
+let $PATH .= ':' . getcwd() . '/.binstub'

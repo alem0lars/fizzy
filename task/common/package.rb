@@ -33,7 +33,7 @@ def runtimes_info
 end
 
 def runtime_name(traveling_vers, ruby_vers, os, arch)
-  name  = "#{traveling_vers}-#{ruby_vers}-#{os}"
+  name = "#{traveling_vers}-#{ruby_vers}-#{os}"
   name << "-#{arch}" if arch
   name
 end
@@ -80,9 +80,9 @@ def create_package(runtime, runtime_path, dst_path)
   FileUtils.cp(gemfile_lock_path, $cfg[:paths][:tmp])
   Bundler.with_clean_env do
     FileUtils.cd($cfg[:paths][:tmp]) do
-      sh("BUNDLE_IGNORE_CONFIG=1 " +
-         "bundle install " +
-         "--path #{tmp_vendor_path} " +
+      sh("BUNDLE_IGNORE_CONFIG=1 " \
+         "bundle install " \
+         "--path #{tmp_vendor_path} " \
          "--without development")
     end
   end
@@ -120,7 +120,7 @@ def create_package(runtime, runtime_path, dst_path)
     "exec \"$SELFDIR/lib/ruby/bin/ruby\" -rbundler/setup \"$SELFDIR/lib/app/#{$cfg[:paths][:bin].basename}\""
   ].join("\n"))
 
-  if !ENV["DIR_ONLY"]
+  unless ENV["DIR_ONLY"]
     # Create an archive containing the created runtime.
     FileUtils.cd(package_path) do
       sh("tar -czf #{dst_path} *")

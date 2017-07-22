@@ -1,13 +1,12 @@
 # Utilities to retrieve informations about the host environment & system.
 #
 module Fizzy::Environment
-
   include Fizzy::IO
 
   # Find an executable called `name` in the `$PATH`.
   # Note: `name` can also be a path pointing to the executable.
   #
-  def which?(name)
+  def which?(_name)
     exts = ENV["PATHEXT"] ? ENV["PATHEXT"].split(";") : [""]
     ENV["PATH"].split(File::PATH_SEPARATOR).each do |path|
       exts.each do |ext|
@@ -15,7 +14,7 @@ module Fizzy::Environment
         return exe if File.executable?(exe) && !File.directory?(exe)
       end
     end
-    return nil
+    nil
   end
 
   # Return the environment variable matching the provided `name`.
@@ -35,30 +34,30 @@ module Fizzy::Environment
 
   # Check if the underlying operating system is MacOSX.
   #
-  def is_osx?
+  def osx?
     Fizzy::CFG.os == :osx
   end
 
   # Check if the underlying operating system is GNU/Linux.
   #
-  def is_linux?
+  def linux?
     Fizzy::CFG.os == :linux
   end
 
   # Check if the underlying operating system is Windows.
   #
-  def is_windows?
+  def windows?
     Fizzy::CFG.os == :windows
   end
 
   # Execute a function, based on the underlying operating system.
   #
   def case_os(osx: nil, linux: nil, windows: nil)
-    if is_osx?
+    if osx?
       osx.respond_to?(:call) ? osx.call : osx
-    elsif is_linux?
+    elsif linux?
       linux.respond_to?(:call) ? linux.call : linux
-    elsif is_windows?
+    elsif windows?
       windows.respond_to?(:call) ? windows.call : windows
     else
       error("Unrecognized operating system.")
@@ -66,10 +65,9 @@ module Fizzy::Environment
   end
 
   def xdg_config_home(name)
-    Pathname.new(get_env(:XDG_CONFIG_HOME) || "~/.config").
-      expand_variables.
-      expand_path.
-      join(name.to_s)
+    Pathname.new(get_env(:XDG_CONFIG_HOME) || "~/.config")
+            .expand_variables
+            .expand_path
+            .join(name.to_s)
   end
-
 end

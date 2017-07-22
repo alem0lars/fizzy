@@ -97,7 +97,7 @@ module Fizzy::Vars
                        end
 
         # Filter `next_objects`.
-        next_objects = next_objects.map{|e| Fizzy::Vars::Filters.apply(e)}
+        next_objects = next_objects.map{|e| Fizzy::Vars::Filter.apply(e)}
 
         # Adjust `next_objects`, according to `single_match` argument.
         next_objects = if single_match

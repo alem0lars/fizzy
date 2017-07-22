@@ -1,4 +1,4 @@
-Fizzy::Vars::Filters.define(:lpass, description: """
+Fizzy::Vars::Filter.define(:lpass, description: """
 LastPass filter allows to retrieve informations stored in a lastpass account
 As arguments you can pass:
 - #0: A unique name or identifier of the element to be retrieved

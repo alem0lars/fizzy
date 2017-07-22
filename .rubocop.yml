@@ -29,3 +29,6 @@ Style/CommentAnnotation:
     - TODO
     - FIXME
     - XXX
+
+Style/ClassAndModuleChildren:
+  EnforcedStyle: compact

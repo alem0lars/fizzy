@@ -1,10 +1,9 @@
 require "spec_helper"
 
-
 # TODO: Use shared examples (if it makes sense)
 # describe Fizzy::TypeParser do
 #
-#   include_context :grammars_type
+#   include_context :type_grammar
 #
 #   describe "#parse" do
 #
@@ -23,10 +22,10 @@ require "spec_helper"
 #      it { is_expected.to be_evaluated_as_true }
 #    end
 
-    # context "when list of lists" do
-    #   subject { "[[[int]]]" }
-    #   it { is_expected.to be_evaluated_as_true }
-    # end
+# context "when list of lists" do
+#   subject { "[[[int]]]" }
+#   it { is_expected.to be_evaluated_as_true }
+# end
 
 #   context "when list of lists" do
 #     subject               {  [ [ [ 10,  20  ] ] ] }

@@ -51,7 +51,7 @@ sources:
   - core/execution
   - core/filesystem
   - core/vars/setup
-  - core/vars/filters
+  - core/vars/filter
   - core/vars/retriever
   - core/vars/api
   - core/locals
@@ -62,7 +62,7 @@ sources:
   - core/sync/base
   - core/sync/local
   - core/sync/git
-  - lib/filters/lastpass
+  - depot/filter/lastpass
   - command/base
   - command/cfg
   - command/inst

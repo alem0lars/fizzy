@@ -9,8 +9,8 @@ task :build do
   build_grammars
 
   # ☞ Write preamble.
-  write_bin "HashBang", $cfg[:hashbang], newlines: 2
-  write_bin "Header",   $cfg[:header],   newlines: 1
+  write_bin("HashBang", $cfg[:hashbang], newlines: 2)
+  write_bin("Header",   $cfg[:header],   newlines: 1)
 
   # ☞ Write source files content.
   $cfg[:sources].each do |src_file_name|
@@ -26,16 +26,16 @@ task :build do
     sep_left    = "# "
     sep_right   = " #{section_title} ──"
     sep_padding = "─" * (80 - sep_left.length - sep_right.length)
-    write_bin "Separator for section `#{src_file_name}`",
+    write_bin("Separator for section `#{src_file_name}`",
               "#{sep_left}#{sep_padding}#{sep_right}",
-              newlines: [1, 2]
-    write_bin "Content of file `#{src_file_name}`",
-              ErbFromOStruct.new({ build_cfg: $cfg }).render(src_file_path.read)
+              newlines: [1, 2])
+    write_bin("Content of file `#{src_file_name}`",
+              ErbFromOStruct.new({ build_cfg: $cfg }).render(src_file_path.read))
   end
 
   # ☞ Cleanup temporary files.
-  $cfg[:sources].select { |name| name.to_s =~ /^#{$cfg[:paths][:tmp].to_s}/ }.
-                 each   { |tmp_file| tmp_file.delete                        }
+  $cfg[:sources].select { |name| name.to_s =~ /^#{$cfg[:paths][:tmp].to_s}/ }
+    .each { |tmp_file| tmp_file.delete }
 
   # ☞ Set executable permissions.
   $cfg[:paths][:bin].chmod 0775

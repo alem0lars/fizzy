@@ -30,5 +30,14 @@ Style/CommentAnnotation:
     - FIXME
     - XXX
 
+# Compact class/module declaration.
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact
+
+# Increase allowed cyclomatic complexity.
+Metrics/CyclomaticComplexity:
+  Max: 8
+
+# Increase allowed perceived complexity.
+Metrics/PerceivedComplexity:
+  Max: 9

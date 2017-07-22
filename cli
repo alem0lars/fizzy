@@ -1,0 +1,9 @@
+
+Summary of actions:
+- A new branch 'feature/command-' was created, based on 'develop'
+- You are now on branch 'feature/command-'
+
+Now, start committing on your feature. When done, use:
+
+     git flow feature finish command-
+

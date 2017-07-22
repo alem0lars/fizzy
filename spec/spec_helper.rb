@@ -6,7 +6,6 @@ root_dir_path = Pathname.new(__FILE__).expand_path.dirname.dirname
 spec_dir_path = root_dir_path.join("spec")
 support_dir_path = spec_dir_path.join("support")
 build_dir_path = root_dir_path.join("build")
-src_dir_path = root_dir_path.join("src")
 website_dir_path = root_dir_path.join("website")
 
 $LOAD_PATH.unshift spec_dir_path.to_s
@@ -16,23 +15,20 @@ $LOAD_PATH.unshift build_dir_path.to_s
 SimpleCov.profiles.define "fizzy" do
   root build_dir_path.to_s
   coverage_dir website_dir_path.join("source", "doc", "coverage")
-
-  formatters = [SimpleCov::Formatter::HTMLFormatter]
-
-  # TODO: Uncomment when code is starting to be documented
-  # minimum_coverage 100
 end
 SimpleCov.start "fizzy"
 
 # Require fizzy.
 require "fizzy"
 
+# Module containing all fizzy mocks.
+module Fizzy::Mock
+end
+
 # Require specs support.
-module Fizzy::Mock end
 Dir[support_dir_path.join("**", "*.rb").to_s].each { |f| require f }
 
 RSpec.configure do |config|
-
   # Run specs in random order to surface order dependencies. If you find an
   # order dependency and want to debug it, you can fix the order by providing
   # the seed, which is printed after each run.
@@ -108,5 +104,4 @@ RSpec.configure do |config|
     #     # => "be bigger than 2"
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
   end
-
 end

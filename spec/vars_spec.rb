@@ -1,11 +1,10 @@
 require "spec_helper"
 
-
 describe Fizzy::Vars do
 
   include_context :output
 
-  let(:vars_mock) {
+  let(:vars_mock) do
     Fizzy::Mock::Vars.new({
       "foo"    => "bar",
       "notfoo" => "notbar",
@@ -21,7 +20,7 @@ describe Fizzy::Vars do
         }
       }
     })
-  }
+  end
 
   describe "#get_var" do
 
@@ -47,11 +46,13 @@ describe Fizzy::Vars do
     end
 
     context "when a unavailable variable" do
-      [ "f00",
+      [
+        "f00",
         "(f00|b4r)"
       ].each do |key|
         context "`#{key} is retrieved" do
           subject { vars_mock.get_var(key) }
+
           it { is_expected.to be_nil }
         end
       end

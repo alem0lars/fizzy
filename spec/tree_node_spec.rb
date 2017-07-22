@@ -1,8 +1,6 @@
 require "spec_helper"
 
-
 describe Fizzy::Tree::Node do
-
   shared_examples_for "any detached node" do
     it { is_expected.not_to eq(Object.new) }
     it { is_expected.not_to eq(1) }
@@ -28,8 +26,9 @@ describe Fizzy::Tree::Node do
     end
 
     context "with node name `'A'` and some content" do
-      let(:sample) { "sample" }
       subject { described_class.new("A", sample) }
+
+      let(:sample) { "sample" }
 
       it { is_expected.to have_attributes(name: "A", content: sample) }
 

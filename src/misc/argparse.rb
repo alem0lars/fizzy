@@ -1,5 +1,4 @@
 module Fizzy::ArgParse
-
   # ───────────────────────────────────────────────────────────────────── API ──
 
   def self.define_command(*args, **kwargs)
@@ -20,12 +19,9 @@ module Fizzy::ArgParse
     end
 
     def run(args)
-      if command.parse(args)
-        command.run
-      end
+      command.run if command.parse(args)
     end
   end
 
   # ────────────────────────────────────────────────────────────────────────────
-
 end

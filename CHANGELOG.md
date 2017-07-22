@@ -35,13 +35,13 @@ The following changes will break backward compatibility:
 * Refactor module `command` (and all pre-existing commands) into module `cli`
   using the new module `argparse` instead of `thor` gem
   [@alem0lars][@alem0lars]
-* Singularize module names
-  [@alem0lars][@alem0lars]
 * Implement module `argparse` to perform command-based argument parsing
+  [@alem0lars][@alem0lars]
+* Singularize module names
   [@alem0lars][@alem0lars]
 * Update dependencies
   [@alem0lars][@alem0lars]
-* Restore docs generation through rake task
+* Restore API documentation generation through rake task
   [@alem0lars][@alem0lars]
 * Add more `Hash` utilities:
   `deep_merge`, `deep_merge!`, `magic_merge`, `magic_merge!`

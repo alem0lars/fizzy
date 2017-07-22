@@ -17,6 +17,19 @@ The following changes will break backward compatibility:
   * `is_windows?` → `windows?`
   * `is_linux?` → `linux?`
 
+* Simplified command names (no more nesting, removed useless commands):
+  * `cfg cd` → `cd`
+  * `cfg cleanup` → `cleanup`
+  * `cfg details` → `info`
+  * `cfg edit` → `edit`
+  * `cfg instantiate` has been removed
+  * `cfg sync` → `sync`
+  * `inst cd` has been removed
+  * `inst install` has been removed
+  * `quick-install` → `incarnate`
+  * `usage` has been kept unchanged
+  * `version` has been kept unchanged
+
 ### Dev changes
 
 * Singularize module names

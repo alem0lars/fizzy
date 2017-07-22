@@ -27,10 +27,15 @@ ENV HOME /root
 
 # ─────────────────────────────────────────────────────────── Setup ruby (1) ──┐
 
-ENV RUBY_MAJOR 2.4
-ENV RUBY_VERSION 2.4.1
-ENV RUBY_DOWNLOAD_SHA256 4fc8a9992de3e90191de369270ea4b6c1b171b7941743614cc50822ddc1fe654
-ENV RUBYGEMS_VERSION 2.6.12
+ARG RUBY_MAJOR=2
+ARG RUBY_MINOR=4
+ARG RUBY_PATCH=0
+ARG RUBY_OTHER=
+ARG RUBY_SHA256=152fd0bd15a90b4a18213448f485d4b53e9f7662e1508190aa5b702446b29e3d
+ARG RUBYGEMS_FULL_VERSION=2.6.12
+
+ENV RUBY_VERSION ${RUBY_MAJOR}.${RUBY_MINOR}
+ENV RUBY_FULL_VERSION ${RUBY_VERSION}.${RUBY_PATCH}${RUBY_OTHER}
 
 # skip installing gem documentation
 RUN mkdir -p /usr/local/etc \
@@ -70,11 +75,11 @@ RUN set -ex \
     yaml-dev \
     zlib-dev \
     xz \
-  && wget -O ruby.tar.xz "https://cache.ruby-lang.org/pub/ruby/${RUBY_MAJOR%-rc}/ruby-$RUBY_VERSION.tar.xz" \
-  && echo "$RUBY_DOWNLOAD_SHA256 *ruby.tar.xz" | sha256sum -c - \
+  && wget -O ruby.tar.gz "https://cache.ruby-lang.org/pub/ruby/${RUBY_VERSION}/ruby-$RUBY_FULL_VERSION.tar.gz" \
+  && echo "$RUBY_SHA256 *ruby.tar.gz" | sha256sum -c - \
   && mkdir -p /usr/src/ruby \
-  && tar -xJf ruby.tar.xz -C /usr/src/ruby --strip-components=1 \
-  && rm ruby.tar.xz \
+  && tar -xf ruby.tar.gz -C /usr/src/ruby --strip-components=1 \
+  && rm ruby.tar.gz \
   && cd /usr/src/ruby \
   # XXX hack in "ENABLE_PATH_CHECK" disabling to suppress:
   #   warning: Insecure world writable dir
@@ -112,7 +117,7 @@ RUN set -ex \
   && apk del .ruby-builddeps \
   && cd / \
   && rm -r /usr/src/ruby \
-  && gem update --system "$RUBYGEMS_VERSION"
+  && gem update --system "$RUBYGEMS_FULL_VERSION"
 
 # ─────────────────────────────────────────────────────────────────────────────┘
 

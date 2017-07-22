@@ -4,7 +4,6 @@ gem "thor"
 
 # External tools used **only** during development.
 group :development do
-
   # Define tasks.
   gem "rake", require: false
 
@@ -17,9 +16,9 @@ group :development do
   gem "rubocop-rspec",   require: false
 
   # Testing.
-  gem "rspec",    require: false
-  gem "fuubar",   require: false
   gem "cucumber", require: false
+  gem "fuubar",   require: false
+  gem "rspec",    require: false
 
   # Improve IRB, adding some features.
   gem "irbtools", require: "irbtools/binding"
@@ -28,23 +27,22 @@ group :development do
   gem "awesome_print"
 
   # Generate API documentation.
-  gem "yard"
   gem "kramdown"
+  gem "yard"
 
   # Debugger.
   gem "byebug"
 
   # Code coverage.
   gem "simplecov"
-
 end
 
 group :website do
   # For faster file watcher updates on Windows.
-  gem "wdm", "~> 0.1.0", platforms: [:mswin, :mingw]
+  gem "wdm", "~> 0.1.0", platforms: %i[mswin mingw]
 
   # Windows does not come with time zone data.
-  gem "tzinfo-data", platforms: [:mswin, :mingw, :jruby]
+  gem "tzinfo-data", platforms: %i[mswin mingw jruby]
 
   # Middleman gems.
   gem "middleman", ">= 4.0.0"
@@ -53,7 +51,7 @@ group :website do
   gem "sprockets-es6"
 
   # Twitter Bootstrap.
-  gem "bootstrap", "~> 4.0.0.alpha3"
+  gem "bootstrap", "~> 4.0.0.alpha6"
   source "https://rails-assets.org" do
     gem "rails-assets-tether", ">= 1.1.0"
   end

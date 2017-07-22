@@ -10,7 +10,7 @@ GEM
     addressable (2.5.1)
       public_suffix (~> 2.0, >= 2.0.2)
     ast (2.3.0)
-    autoprefixer-rails (7.1.2.2)
+    autoprefixer-rails (7.1.2.3)
       execjs
     awesome_print (1.8.0)
     babel-source (5.8.35)
@@ -154,7 +154,7 @@ GEM
     middleman-sprockets (4.1.0)
       middleman-core (~> 4.0)
       sprockets (>= 3.0)
-    minitest (5.10.2)
+    minitest (5.10.3)
     multi_json (1.12.1)
     multi_test (0.1.2)
     ori (0.1.0)
@@ -241,7 +241,7 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
-  bootstrap (~> 4.0.0.alpha3)
+  bootstrap (~> 4.0.0.alpha6)
   byebug
   cucumber
   fuubar

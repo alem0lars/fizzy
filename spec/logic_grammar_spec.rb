@@ -23,7 +23,7 @@ describe Fizzy::LogicParser do
   end
 
   let(:vars_mock) {
-    Fizzy::Mocks::Vars.new({
+    Fizzy::Mock::Vars.new({
       "arte"        => "agility",
       "arti"        => "agility",
       "balpha"      => "strength",

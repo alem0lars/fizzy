@@ -6,7 +6,7 @@ describe Fizzy::Vars do
   include_context :output
 
   let(:vars_mock) {
-    Fizzy::Mocks::Vars.new({
+    Fizzy::Mock::Vars.new({
       "foo"    => "bar",
       "notfoo" => "notbar",
       "qwe"    => "rty",

@@ -20,7 +20,9 @@ module Fizzy::ArgParse
     end
 
     def run(args)
-      command.parse(args).run
+      if command.parse(args)
+        command.run
+      end
     end
   end
 

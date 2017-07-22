@@ -2531,7 +2531,9 @@ module Fizzy::ArgParse
     end
 
     def run(args)
-      command.parse(args).run
+      if command.parse(args)
+        command.run
+      end
     end
   end
 
@@ -2550,9 +2552,9 @@ class Fizzy::ArgParse::Command
   def initialize(name, spec: {})
     @name = name.to_s
     @spec = spec
-    @parser = OptionParser.new { |opts| fill_opts(opts, spec) }
     @options = {}
     @handlers = {}
+    @parser = OptionParser.new { |opts| fill_opts(opts, spec) }
   end
 
   def on(regexp, &block)
@@ -2613,6 +2615,10 @@ class Fizzy::ArgParse::Command
         opt_args << opt_info[:type] if opt_info[:type]
       end
       opt_args << opt_info[:desc] if opt_info[:desc]
+
+      if opt_info.has_key?(:default)
+        options[opt_name] = opt_info[:default]
+      end
 
       opts.on(*opt_args) do |opt_value|
         options[opt_name] = opt_value

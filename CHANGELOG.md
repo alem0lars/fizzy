@@ -10,6 +10,10 @@
 
 ### Dev changes
 
+* Singularize module names
+  [@alem0lars][@alem0lars]
+* Implement module `argparse` to perform command-based argument parsing
+  [@alem0lars][@alem0lars]
 * Update dependencies
   [@alem0lars][@alem0lars]
 * Restore docs generation through rake task

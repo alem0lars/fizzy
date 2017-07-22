@@ -1,7 +1,8 @@
 # Manage commands declared in the meta file.
 #
 module Fizzy::Meta::Commands
-
+  # Base command.
+  #
   class Base
     include Fizzy::IO
 
@@ -9,7 +10,7 @@ module Fizzy::Meta::Commands
       self.class.type
     end
 
-    def invalid_spec(name, value=nil)
+    def invalid_spec(name, value = nil)
       msg  = "Invalid `#{name}` provided to command `#{type}`: "
       msg += value.nil? ? "no value given." : "`#{value}`."
 
@@ -28,8 +29,8 @@ module Fizzy::Meta::Commands
   class Sync < Base
     def validate!(spec)
       # 1: Validate.
-      invalid_spec :repo unless spec.has_key?(:repo)
-      invalid_spec :dst  unless spec.has_key?(:dst)
+      invalid_spec :repo unless spec.key?(:repo)
+      invalid_spec :dst  unless spec.key?(:dst)
 
       # 2: Normalize.
       @repo = spec[:repo]
@@ -55,8 +56,8 @@ module Fizzy::Meta::Commands
   class Download < Base
     def validate!(spec)
       # 1: Validate.
-      invalid_spec :url unless spec.has_key?(:url)
-      invalid_spec :dst unless spec.has_key?(:dst)
+      invalid_spec :url unless spec.key?(:url)
+      invalid_spec :dst unless spec.key?(:dst)
 
       # 2: Normalize.
       @url = URI(spec[:url])
@@ -66,7 +67,7 @@ module Fizzy::Meta::Commands
     def execute
       res = Net::HTTP.get_response(@url)
       if res.is_a?(Net::HTTPSuccess)
-        # TODO atm it requires the current user has write access.
+        # TODO: atm it requires the current user has write access.
         #      refactor when a more robust permission mgmt is implemented.
         FileUtils.mkdir_p(@dst.dirname)
         @dst.write(res.body)
@@ -81,11 +82,13 @@ module Fizzy::Meta::Commands
   end
 
   def self.available
-    [Sync, Download] 
+    [Sync, Download]
   end
 
   def self.find_by_type(type)
-    found = Fizzy::Meta::Commands.available.select {|command| command.type == type}
+    found = Fizzy::Meta::Commands.available.select do |command|
+      command.type == type
+    end
 
     if found.empty?
       error "Failed to find a command with type `#{type}`."
@@ -95,5 +98,4 @@ module Fizzy::Meta::Commands
       found[0]
     end
   end
-
 end

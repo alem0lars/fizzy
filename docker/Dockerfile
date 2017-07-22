@@ -47,8 +47,7 @@ RUN mkdir -p /usr/local/etc \
 # some of ruby's build scripts are written in ruby
 #   we purge system ruby later to make sure our final image uses what we just built
 # readline-dev vs libedit-dev: https://bugs.ruby-lang.org/issues/11869 and https://github.com/docker-library/ruby/issues/75
-RUN set -ex \
-  && apk add --no-cache --virtual .ruby-builddeps \
+RUN apk add --no-cache --virtual .ruby-builddeps \
     autoconf \
     bison \
     bzip2 \
@@ -74,7 +73,8 @@ RUN set -ex \
     tar \
     yaml-dev \
     zlib-dev \
-    xz \
+    xz
+RUN set -ex \
   && wget -O ruby.tar.gz "https://cache.ruby-lang.org/pub/ruby/${RUBY_VERSION}/ruby-$RUBY_FULL_VERSION.tar.gz" \
   && echo "$RUBY_SHA256 *ruby.tar.gz" | sha256sum -c - \
   && mkdir -p /usr/src/ruby \
@@ -207,14 +207,15 @@ RUN chown -R "${GIT_USER}:${GIT_GROUP}" "${GIT_REPOS_DIR}/.ssh"
 
 # ────────────────────────────────────────────────────────────── Setup fizzy ──┐
 
-# Install fizzy dependencies
+# Install fizzy dependencies.
 RUN gem install thor
 RUN apk add --update --no-cache                                                \
     sudo
 
-# Install fizzy
+# Install fizzy.
+# TODO: change back to branch `master`.
 RUN curl -sL                                                                   \
-    https://raw.githubusercontent.com/alem0lars/fizzy/master/build/fizzy       \
+    https://raw.githubusercontent.com/alem0lars/fizzy/develop/build/fizzy      \
   | tee /usr/local/bin/fizzy > /dev/null                                       \
  && chmod +x /usr/local/bin/fizzy
 
@@ -252,7 +253,7 @@ ENV APP_DIR="${HOME}/fizzy"
 WORKDIR /tmp
 ADD ./Gemfile      Gemfile
 ADD ./Gemfile.lock Gemfile.lock
-RUN bundle install
+RUN bundle install --without website
 RUN rm ./Gemfile                                                               \
  && rm ./Gemfile.lock
 
@@ -260,7 +261,7 @@ RUN rm ./Gemfile                                                               \
 
 ADD . "${APP_DIR}"
 WORKDIR "${APP_DIR}"
-RUN bundle install
+RUN bundle install --without website
 RUN bundle exec rake build
 
 # ─────────────────────────────────────────────────────────────────────────────┘

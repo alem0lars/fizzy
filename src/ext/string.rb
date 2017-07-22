@@ -1,5 +1,6 @@
+# Extensions for class `String`.
+#
 class String
-
   include Fizzy::ANSIColors
 
   # ───────────────────────────────────────────────────────────────── Escapes ──
@@ -16,26 +17,26 @@ class String
   # Turn the underlying string to a title.
   #
   def titleize!
-    self.replace(self.split(/[_-]/).each { |s| s.capitalize! }.join(""))
+    replace(split(/[_-]/).each(&:capitalize!).join(""))
   end
 
   # Turn the underlying string to camel-case.
   #
   def camelize!
-    self.titleize!
-    self.replace(self[0, 1].downcase + self[1..-1])
+    titleize!
+    replace(self[0, 1].downcase + self[1..-1])
   end
 
   # Turn a camelized string into lowercase, separated with underscores.
   #
   def underscorize!
-    self.replace(self.scan(/[A-Z][a-z]*/).join("_").downcase)
+    replace(scan(/[A-Z][a-z]*/).join("_").downcase)
   end
 
   # Turn a camelized string into lowercase, separated with dashes.
   #
   def dasherize!
-    self.replace(self.scan(/[A-Z][a-z]*/).join("-").downcase)
+    replace(scan(/[A-Z][a-z]*/).join("-").downcase)
   end
 
   # Create a new string as a titleized version of the underlying string.
@@ -62,9 +63,10 @@ class String
     dup.tap(&:dasherize!)
   end
 
+  # Example environment variables contained inside the path.
+  #
   def expand_variables
     vars_regexp = /\$([a-zA-Z_]+[a-zA-Z0-9_]*)|\$\{(.+)\}/
-    self.gsub(vars_regexp) { ENV[$1||$2] }
+    gsub(vars_regexp) { ENV[Regexp.last_match(1) || Regexp.last_match(2)] }
   end
-
 end

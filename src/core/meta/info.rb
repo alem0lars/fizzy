@@ -1,7 +1,6 @@
 # Access informations declared in the meta file.
 #
 module Fizzy::Meta::Info
-
   include Fizzy::IO
   include Fizzy::Vars
 
@@ -13,9 +12,9 @@ module Fizzy::Meta::Info
     tell("{b{Getting meta informations.}}")
 
     begin
-      meta = YAML.load(File.read(meta_path)).deep_symbolize_keys
+      meta = YAML.safe_load(File.read(meta_path)).deep_symbolize_keys
     rescue Psych::SyntaxError => exc
-      error("Failed to parse meta file: `#{meta_path}`. " +
+      error("Failed to parse meta file: `#{meta_path}`. " \
             "Reason: `#{exc.message}`.")
     end
 
@@ -24,17 +23,19 @@ module Fizzy::Meta::Info
     # ──────────────────────────────────────────────────────────────────────────
     # ☞ Step 1: Normalize elements
 
-    elem_erb_excluded_fields = %i(only)
+    elem_erb_excluded_fields = %i[only]
 
-    meta[:elems] = [] unless meta.has_key?(:elems)
+    meta[:elems] = [] unless meta.key?(:elems)
 
     meta[:elems] = meta[:elems].each_with_index.collect do |elem, idx|
       elem_identifier = elem[:name] || "src = #{elem[:src]}"
       info("\nElement: ", elem_identifier) if verbose
 
       # Step 1.1: Validate `only` and determine if the element is selected.
-      if elem.has_key?(:only) && !(elem[:only].is_a?(Hash) || elem[:only].is_a?(String))
-        error("The configuration element `#{elem_identifier}` has invalid " +
+      if elem.key?(:only) &&
+         !(elem[:only].is_a?(Hash) ||
+         elem[:only].is_a?(String))
+        error("The configuration element `#{elem_identifier}` has invalid " \
               "`only`: it's not a `Hash`.")
       end
       selected = selected_by_only?(elem[:only], verbose)
@@ -48,18 +49,17 @@ module Fizzy::Meta::Info
         end
       end
 
-      # Step 1.3: Validate and normalize `name`, `src`, `dst`, `fs_maps`, `perms`.
+      # Step 1.3: Validate and normalize:
+      #           `name`, `src`, `dst`, `fs_maps`, `perms`.
       if selected
-        unless elem.has_key?(:src)
+        unless elem.key?(:src)
           error("Element `#{elem_identifier}` doesn't contain `src`.")
         end
-        elem[:name] = elem[:src] unless elem.has_key?(:name)
-        unless elem.has_key?(:dst)
+        elem[:name] = elem[:src] unless elem.key?(:name)
+        unless elem.key?(:dst)
           error("Element `#{elem_identifier}` doesn't contain `dst`.")
         end
-        if elem.has_key?(:perms)
-          elem[:perms] = elem[:perms].to_s
-        end
+        elem[:perms] = elem[:perms].to_s if elem.key?(:perms)
         elem[:fs_maps] = []
       end
 
@@ -77,27 +77,28 @@ module Fizzy::Meta::Info
           .each do |subfile_path|
 
         subfile_rel_path = subfile_path.relative_path_from(
-                           Pathname.new(elems_base_path)).to_s
-        if md = Regexp.new(elem[:src]).match(subfile_rel_path.gsub(/\.tt$/, ''))
-          found = true
-          dst_path = elem[:dst].gsub(/<([0-9]+)>/) do
-            idx = Integer($1)
-            unless (1..md.length) === idx
-              error("Invalid `dst` for element `#{elem[:name]}`: nothing " +
-                    "captured at index `#{idx}`.")
-            else
-              md[idx]
-            end
+          Pathname.new(elems_base_path)
+        ).to_s
+        md = Regexp.new(elem[:src]).match(subfile_rel_path.gsub(/\.tt$/, ""))
+        next unless md
+        found = true
+        dst_path = elem[:dst].gsub(/<([0-9]+)>/) do
+          idx = Integer(Regexp.last_match(1))
+          if (1..md.length) === idx
+            md[idx]
+          else
+            error("Invalid `dst` for element `#{elem[:name]}`: nothing " \
+                  "captured at index `#{idx}`.")
           end
-          elem[:fs_maps] << {
-            src_path: Pathname.new(subfile_path).expand_variables.expand_path,
-            dst_path: Pathname.new(dst_path).expand_variables.expand_path
-          }
         end
+        elem[:fs_maps] << {
+          src_path: Pathname.new(subfile_path).expand_variables.expand_path,
+          dst_path: Pathname.new(dst_path).expand_variables.expand_path
+        }
       end
 
       unless found
-        warning("Inconsistency found for elem `#{elem[:name]}`: no file " +
+        warning("Inconsistency found for elem `#{elem[:name]}`: no file " \
                 "matches src: `#{elem[:src]}`.")
       end
     end
@@ -107,7 +108,7 @@ module Fizzy::Meta::Info
 
     command_excluded_erb_fields = [:only]
 
-    meta[:commands] = [] unless meta.has_key?(:commands)
+    meta[:commands] = [] unless meta.key?(:commands)
 
     meta[:commands] = meta[:commands].each_with_index.collect do |spec, idx|
       spec[:type] = spec[:type].to_sym
@@ -120,15 +121,13 @@ module Fizzy::Meta::Info
         # Step 2.1: Pre-process strings with ERB.
         spec.each do |key, value|
           unless command_excluded_erb_fields.include?(key)
-            if value.is_a?(String)
-              spec[key] = ERB.new(value).result(binding)
-            end
+            spec[key] = ERB.new(value).result(binding) if value.is_a?(String)
           end
         end
 
         # Step 2.2: Validate command.
         command = Fizzy::Meta::Commands.find_by_type(spec[:type]).new
-        command.validate!(spec) 
+        command.validate!(spec)
       end
 
       selected ? command : nil
@@ -137,15 +136,18 @@ module Fizzy::Meta::Info
     # ──────────────────────────────────────────────────────────────────────────
 
     # Build the list of excluded files (needed by thor's `directory(..)`).
-    all_files = Set.new(Find.find(elems_base_path)
-                            .map    { |f| Pathname.new(f).expand_variables.expand_path }
-                            .select { |f| f.file? })
-    src_paths = Set.new(
+    all_files = SortedSet.new(
+      Find.find(elems_base_path)
+          .map { |f| Pathname.new(f).expand_variables.expand_path }
+          .select(&:file?)
+    )
+    src_paths = SortedSet.new(
       meta[:elems].collect_concat do |elem|
-        elem[:fs_maps].map{|m| m[:src_path]}
-      end)
+        elem[:fs_maps].map { |m| m[:src_path] }
+      end
+    )
     vars_files = Pathname.glob(vars_path.join("*"), File::FNM_DOTMATCH)
-    meta[:system_files]    = Set.new(vars_files << meta_path)
+    meta[:system_files]    = SortedSet.new(vars_files << meta_path)
     meta[:excluded_files]  = all_files - src_paths - meta[:system_files]
     meta[:all_files_count] = all_files.count
 
@@ -157,30 +159,34 @@ module Fizzy::Meta::Info
   #
   def selected_by_only?(only, verbose)
     selected = if only.is_a?(Hash) # Evaluate `only` has a Hash.
-      wants_features = only.has_key?(:features)
-      wants_vars     = only.has_key?(:vars)
-      if wants_features
-        feat_ok = only[:features].any? do |feature|
-          case feature
-            when Array then feature.all?{|f| has_feature?(f)}
-            else            has_feature?(feature)
-          end
-        end
-      else
-        feat_ok = true
-      end
-      vars_ok = wants_vars ?
-          only[:vars].any?{|var| !get_var(var, single_match: false).nil?} :
-          true
+                 wants_features = only.key?(:features)
+                 wants_vars = only.key?(:vars)
+                 if wants_features
+                   feat_ok = only[:features].any? do |feature|
+                     case feature
+                     when Array then feature.all? { |f| has_feature?(f) }
+                     else has_feature?(feature)
+                     end
+                   end
+                 else
+                   feat_ok = true
+                 end
+                 vars_ok = if wants_vars
+                             only[:vars].any? do |var|
+                               !get_var(var, single_match: false).nil?
+                             end
+                           else
+                             true
+                           end
 
-      (!wants_features && !wants_vars) || (feat_ok && vars_ok)
-    elsif only.is_a?(String) # Evaluate `only` has a logic expression.
-      Fizzy::LogicParser.new.parse(self, only)
-    elsif only.nil? # By default, it's selected.
-      selected = true
-    else
-      error("`#{spec[:name]}` has invalid `only`.")
-    end
+                 (!wants_features && !wants_vars) || (feat_ok && vars_ok)
+               elsif only.is_a?(String) # Evaluate `only` as a logic expression.
+                 Fizzy::LogicParser.new.parse(self, only)
+               elsif only.nil? # By default, it's selected.
+                 true
+               else
+                 error("`#{spec[:name]}` has invalid `only`.")
+               end
 
     if verbose
       if selected
@@ -196,5 +202,4 @@ module Fizzy::Meta::Info
 
     selected
   end
-
 end

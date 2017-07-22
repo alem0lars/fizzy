@@ -30,6 +30,14 @@ Style/CommentAnnotation:
     - FIXME
     - XXX
 
+# Allow UTF-8 comments.
+Style/AsciiComments:
+  Enabled: false
+
+# Allow UTF-8 identifiers.
+Style/AsciiIdentifiers:
+  Enabled: false
+
 # Compact class/module declaration.
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact

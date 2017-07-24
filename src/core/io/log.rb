@@ -1,17 +1,15 @@
 module Fizzy::IO
-
   include Fizzy::ANSIColors
 
   # Display a debug message (with caller info).
   #
   def debug(msg)
-    caller_info = caller.
-      map { |c| c[/`.*'/][1..-2].split(" ").first }.
-      uniq[0..2].
-      join(" → ")
-    if Fizzy::CFG.debug
-      tell("{m{⚫}}{b{<}}{c{#{caller_info}}}{b{>}}{w{: #{msg}}}")
-    end
+    return unless Fizzy::CFG.debug
+    caller_info = caller
+                  .map { |c| c[/`.*'/][1..-2].split(" ").first }
+                  .uniq[0..2]
+                  .join(" → ")
+    tell("{m{⚫}}{b{<}}{c{#{caller_info}}}{b{>}}{w{: #{msg}}}")
   end
 
   # Display an informative message (`msg`) to the user.
@@ -36,20 +34,22 @@ module Fizzy::IO
   # Display an error message (`msg`) to the user. Before returning, the
   # program will exit (with exit status `-1`).
   #
-  def error(msg, exc: -1)
-    tell("{r{☠ #{msg}}}")
+  def error(msg, exc: -1, silent: false)
+    tell("{r{☠ #{msg}}}") unless silent
 
     if exc.is_a? Integer
       exit(exc)
     elsif !exc.nil?
-      raise exc.new(msg)
+      raise exc, msg
     end
   end
 
   # Tell something to the user.
   #
   def tell(*args, newline: true, **kwargs)
-    unless args.empty?
+    if args.empty?
+      puts
+    else
       colorized_str = colorize(*args, **kwargs)
       if newline
         $stdout.puts(colorized_str)
@@ -57,8 +57,6 @@ module Fizzy::IO
         $stdout.print(colorized_str)
       end
       $stdout.flush
-    else
-      puts
     end
   end
 
@@ -78,5 +76,4 @@ module Fizzy::IO
   end
 
   # ────────────────────────────────────────────────────────────────────────────
-
 end

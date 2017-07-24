@@ -12,6 +12,7 @@ services:
 
 script:
   # KO (musl)
+  # TODO find a way to also run against ruby 2.0.x
   #  - bundle exec rake docker:spec RUBY_MAJOR=2 RUBY_MINOR=0 RUBY_PATCH=0 RUBY_SHA256=8690bd6b4949c333b3919755c4e48885dbfed6fd055fe9ef89930bde0d2376f8 RUBY_OTHER=-p648
     # OK
   - bundle exec rake docker:spec RUBY_MAJOR=2 RUBY_MINOR=1 RUBY_PATCH=0 RUBY_SHA256=3538ec1f6af96ed9deb04e0965274528162726cc9ba3625dcf23648df872d09d

@@ -1,38 +1,27 @@
+# Base class to declare argument parsing for commands.
+#
 class Fizzy::ArgParse::Command
-  attr_reader :name, :parser, :options, :handlers, :spec
-  protected :spec
+  attr_reader :name, :parser, :options, :handlers
 
   include Fizzy::IO
 
-  def initialize(name, spec: {})
+  def initialize(name)
     @name = name.to_s
-    @spec = spec
     @options = {}
     @handlers = {}
-    @parser = OptionParser.new { |opts| fill_opts(opts, spec) }
-  end
-
-  def on(regexp, &block)
-    handlers[regexp] = block
-  end
-
-  def run
-    handlers.each do |regexp, handler|
-      handler.call(options) if regexp =~ options[:command]
-    end
   end
 
   def parse(args)
     parse!(args)
     true
-  rescue OptionParser::InvalidOption, OptionParser::MissingArgument
-    error($!.to_s.titleize, exc: nil)
+  rescue StandardError => error
+    error(error.to_s.capitalize, exc: nil)
     tell_help
     false
   end
 
   def parse!(args)
-    parser.parse!(args)
+    error "Abstract method called with: #{args}."
   end
 
   def tell_help
@@ -40,45 +29,8 @@ class Fizzy::ArgParse::Command
   end
 
   def inspect
-    "#{self.class.name}"
+    "#{self.class.name}(name=#{name})"
   end
 
-  alias_method :to_s, :inspect
-
-  def fill_opts(opts, opts_spec)
-    opts_spec.each do |opt_name, opt_info|
-      opt_info = {
-        required: false,
-        abbrev: nil,
-        desc: nil,
-        type: nil
-      }.merge opt_info
-
-      opt_args = []
-      opt_args << "-#{opt_info[:abbrev]}" if opt_info[:abbrev]
-      if opt_info[:type] == Array
-        opt_args << "--#{opt_name} x,y,z"
-        opt_args << opt_info[:type]
-      elsif opt_info[:type] == :boolean
-        opt_args << "--[no-]#{opt_name}"
-      else
-        if opt_info[:required]
-          opt_args << "--#{opt_name} #{opt_name.upcase}"
-        else
-          opt_args << "--#{opt_name} [#{opt_name.upcase}]"
-        end
-        opt_args << opt_info[:type] if opt_info[:type]
-      end
-      opt_args << opt_info[:desc] if opt_info[:desc]
-
-      if opt_info.has_key?(:default)
-        options[opt_name] = opt_info[:default]
-      end
-
-      opts.on(*opt_args) do |opt_value|
-        options[opt_name] = opt_value
-      end
-    end
-  end
-  private :fill_opts
+  alias to_s inspect
 end

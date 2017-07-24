@@ -1,37 +1,52 @@
+# Error representing an invalid subcommand name has been specified.
+#
+class Fizzy::ArgParse::InvalidSubcommandName < StandardError
+  attr_reader :name
+
+  def initialize(name)
+    super("Invalid sub-command named #{name}")
+    @name = name
+  end
+end
+
+# Root command, as a composite of sub-commands and some basic global parameters.
+#
 class Fizzy::ArgParse::RootCommand < Fizzy::ArgParse::Command
   attr_reader :subcommands
 
-  def initialize(name, spec: {}, subcommands: [])
-    super(name, spec: {
-      verbose: { abbrev: "v", desc: "Run verbosely", type: :boolean },
-      help: { abbrev: "h", desc: "Prints this help", type: :boolean }
-    }.deep_merge(spec))
+  def initialize(name, subcommands: [])
+    super(name)
 
     @subcommands = subcommands
+    @parser = OptionParser.new
+  end
+
+  # Register a sub-command handler.
+  #
+  def on(regexp, &block)
+    handlers[regexp] = block
+  end
+
+  # Run matching handlers if they match sub-command.
+  #
+  def run
+    handlers.each do |regexp, handler|
+      handler.call(options) if regexp =~ options[:command]
+    end
   end
 
   def parse!(args)
-    parser.banner = [
-      "Usage: #{name} #{options[:command] || "[subcommand]"} [options]",
-      "Available sub-commands: #{subcommands.map { |c| c.name }.join(", ")}"
-    ].join "\n"
+    parser.banner = banner
 
-    super
-
-    if args.length > 0
-      subcommand_name = args.shift
-
-      subcommand = find_subcommand(subcommand_name)
-      if subcommand.nil?
-        error "No sub-command named `#{subcommand_name}`"
-      else
-        begin
-          subcommand.parse! args
-        ensure
-          @options = options.deep_merge!(subcommand.options)
-        end
-      end
+    subcommand_name = args.shift
+    subcommand = find_subcommand(subcommand_name)
+    if subcommand.nil?
+      error(subcommand_name,
+            silent: true,
+            exc: Fizzy::ArgParse::InvalidSubcommandName)
     end
+
+    parse_subcommand_arguments(subcommand, args)
   end
 
   def tell_help
@@ -49,10 +64,22 @@ class Fizzy::ArgParse::RootCommand < Fizzy::ArgParse::Command
   def find_subcommand(subcommand_name = nil)
     subcommand_name = options[:command] if subcommand_name.nil?
     matching_subcommands = subcommands.select { |c| c.name == subcommand_name }
-    if matching_subcommands.length > 0
-      matching_subcommands.first
-    end
+    matching_subcommands.first unless matching_subcommands.empty?
   end
   private :find_subcommand
-end
 
+  def banner
+    [
+      "Usage: #{name} #{options[:command] || "[subcommand]"} [options]",
+      "Available sub-commands: #{subcommands.map(&:name).join(", ")}"
+    ].join "\n"
+  end
+  private :banner
+
+  def parse_subcommand_arguments(subcommand, args)
+    subcommand.parse!(args)
+  ensure
+    options.deep_merge!(subcommand.options)
+  end
+  private :parse_subcommand_arguments
+end

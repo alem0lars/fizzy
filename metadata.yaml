@@ -47,6 +47,7 @@ sources:
   - misc/tree/node
 
   - misc/argparse
+  - misc/argparse/types
   - misc/argparse/command
   - misc/argparse/root_command
   - misc/argparse/sub_command
@@ -84,14 +85,17 @@ sources:
   - command/main
 
   - cli
-  - cli/cd
-  - cli/cleanup
-  - cli/info
-  - cli/edit
-  - cli/sync
-  - cli/incarnate
-  - cli/usage
-  - cli/version
+  - cli/known_args
+  - cli/main
+  - cli/command
+  - cli/depot/cd
+  - cli/depot/cleanup
+  - cli/depot/info
+  - cli/depot/edit
+  - cli/depot/sync
+  - cli/depot/incarnate
+  - cli/depot/usage
+  - cli/depot/version
 
   - main
 

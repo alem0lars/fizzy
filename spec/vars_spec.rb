@@ -1,45 +1,41 @@
 require "spec_helper"
 
 describe Fizzy::Vars do
-
   include_context :output
 
   let(:vars_mock) do
-    Fizzy::Mock::Vars.new({
-      "foo"    => "bar",
-      "notfoo" => "notbar",
-      "qwe"    => "rty",
-      "vip"    => {
-        "pluto"    => "male",
-        "paperino" => "male",
-        "minnie"   => "female",
-        "frozen"   => %w(anna elsa),
-        "others"   => {
-          "dragon" => "ball",
-          "naruto" => "shit"
-        }
-      }
-    })
+    Fizzy::Mock::Vars.new("foo" => "bar",
+                          "notfoo" => "notbar",
+                          "qwe"    => "rty",
+                          "vip"    => {
+                            "pluto" => "male",
+                            "paperino" => "male",
+                            "minnie"   => "female",
+                            "frozen"   => %w[anna elsa],
+                            "others"   => {
+                              "dragon" => "ball",
+                              "naruto" => "shit"
+                            }
+                          })
   end
 
   describe "#get_var" do
-
-    before(:each) { silence_output }
-    after(:each) { enable_output }
+    before { silence_output }
+    after { enable_output }
 
     context "when an available variable" do
       { "foo"                        => "bar",
-        "(foo|qwe)"                  => %w(bar rty),
+        "(foo|qwe)"                  => %w[bar rty],
         "(foo|ewq)"                  => "bar",
         "(not)foo"                   => "notbar",
-        "vip.frozen"                 => %w(anna elsa),
-        "vip.(pluto|minnie)"         => %w(male female),
-        "vip.(pluto|paperino)"       => %w(male male),
+        "vip.frozen"                 => %w[anna elsa],
+        "vip.(pluto|minnie)"         => %w[male female],
+        "vip.(pluto|paperino)"       => %w[male male],
         "vip.(pluto|cingli)"         => "male",
-        "vip.(others|cingli).dragon" => "ball"
-      }.each do |key, expected|
+        "vip.(others|cingli).dragon" => "ball" }.each do |key, expected|
         context "`#{key}` is retrieved" do
           subject { vars_mock.get_var(key) }
+
           it { is_expected.to eq(expected) }
         end
       end
@@ -57,6 +53,5 @@ describe Fizzy::Vars do
         end
       end
     end
-
   end
 end

@@ -339,6 +339,7 @@ end
 
 # ────────────────────────────────────────────────────────────── String ← Ext ──
 
+#
 # Extensions for class `String`.
 #
 class String
@@ -346,6 +347,7 @@ class String
 
   # ───────────────────────────────────────────────────────────────── Escapes ──
 
+  #
   # Escapes the underlying object so that it can be safely used in a Bourne
   # shell commandline.
   #
@@ -355,12 +357,14 @@ class String
 
   # ────────────────────────────────────────────────────────────── Formatting ──
 
+  #
   # Turn the underlying string to a title.
   #
   def titleize!
     replace(split(/[_-]/).each(&:capitalize!).join(""))
   end
 
+  #
   # Turn the underlying string to camel-case.
   #
   def camelize!
@@ -368,42 +372,49 @@ class String
     replace(self[0, 1].downcase + self[1..-1])
   end
 
+  #
   # Turn a camelized string into lowercase, separated with underscores.
   #
   def underscorize!
-    replace(scan(/[A-Z][a-z]*/).join("_").downcase)
+    replace(tr("-", "_"))
   end
 
+  #
   # Turn a camelized string into lowercase, separated with dashes.
   #
   def dasherize!
-    replace(scan(/[A-Z][a-z]*/).join("-").downcase)
+    replace(tr("_", "-"))
   end
 
+  #
   # Create a new string as a titleized version of the underlying string.
   #
   def titleize
     dup.tap(&:titleize!)
   end
 
+  #
   # Create a new string as a camelized version of the underlying string.
   #
   def camelize
     dup.tap(&:camelize!)
   end
 
+  #
   # Create a new string as a underscorized version of the underlying string.
   #
   def underscorize
     dup.tap(&:underscorize!)
   end
 
+  #
   # Create a new string as a dasherized version of the underlying string.
   #
   def dasherize
     dup.tap(&:dasherize!)
   end
 
+  #
   # Example environment variables contained inside the path.
   #
   def expand_variables
@@ -2579,6 +2590,7 @@ class Fizzy::ArgParse::CommandParser
   end
 
   def tell_help
+    parser.banner = banner
     tell(parser)
   end
 
@@ -2587,6 +2599,11 @@ class Fizzy::ArgParse::CommandParser
   end
 
   alias to_s inspect
+
+  def banner
+    error "Abstract method called"
+  end
+  protected :banner
 end
 
 # ────────────────────────────────────── Rootcommand parser ← argparse ← Misc ──
@@ -2656,8 +2673,6 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
   end
 
   def parse!(args)
-    parser.banner = banner
-
     subcommand_name = args.shift
     if subcommand_name.nil?
       error(nil, silent: true, exc: Fizzy::ArgParse::NoSubCommandName)
@@ -2672,11 +2687,12 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
     parse_subcommand_arguments(subcommand_parser, args)
   end
 
-  def tell_help
-    if options[:command]
-      find_subcommand_parser.tell_help
+  def tell_help(subcommand_name = nil)
+    subcommand_name ||= options[:command]
+    if subcommand_name
+      find_subcommand_parser(subcommand_name).tell_help
     else
-      super
+      super()
     end
   end
 
@@ -2684,8 +2700,16 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
     subcommand_parsers << subcommand_parser
   end
 
+  def banner
+    [
+      "Usage: #{name} #{options[:command] || "[subcommand]"} [options]",
+      "Available sub-commands: #{subcommand_parsers.map(&:name).join(", ")}"
+    ].join("\n")
+  end
+  protected :banner
+
   def find_subcommand_parser(subcommand_name = nil)
-    subcommand_name = options[:command] if subcommand_name.nil?
+    subcommand_name ||= options[:command]
     matching_subcommand_parsers =
       subcommand_parsers.select do |c|
         c.name == subcommand_name
@@ -2693,14 +2717,6 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
     matching_subcommand_parsers.first unless matching_subcommand_parsers.empty?
   end
   private :find_subcommand_parser
-
-  def banner
-    [
-      "Usage: #{name} #{options[:command] || "[subcommand]"} [options]",
-      "Available sub-commands: #{subcommand_parsers.map(&:name).join(", ")}"
-    ].join "\n"
-  end
-  private :banner
 
   def parse_subcommand_arguments(subcommand, args)
     subcommand.parse!(args)
@@ -2734,6 +2750,7 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
   end
 
   def parse!(args)
+    parser.banner = banner
     parser.parse!(args)
 
     missing =
@@ -2743,6 +2760,16 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     return if missing.empty?
     raise OptionParser::MissingArgument, missing.join(", ")
   end
+
+  def banner
+    # TODO, replace "fizzy" with rootcommand name (find a way to find
+    #       rootcommand from subcommand)
+    [
+      "Usage: PIPPO fizzy #{name} [options]",
+      desc
+    ].join("\n")
+  end
+  protected :banner
 
   def fill_opts(opts)
     spec.each do |opt_name, opt_info|
@@ -2761,7 +2788,7 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     args = []
     args += compute_abbrev_args(info[:abbrev])
     args += compute_type_args(name, info[:type], info[:required])
-    args += compute_desc_args(info[:desc], info[:default])
+    args += compute_desc_args(info[:desc], info[:default], info[:type])
     args
   end
   private :compute_opt_args
@@ -2774,27 +2801,29 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
   private :compute_abbrev_args
 
   def compute_type_args(name, type, req)
+    arg_name = name.to_s.dasherize
     args = []
     if type == Array
-      args += ["--#{name} x,y,z", type]
+      args += ["--#{arg_name} x,y,z", type]
     elsif type == :boolean
-      args << "--[no-]#{name}"
+      args << "--[no-]#{arg_name}"
     else
-      args << (req ? "--#{name} #{name.upcase}" : "--#{name} [#{name.upcase}]")
+      args << if req
+                "--#{arg_name} #{name.upcase}"
+              else
+                "--#{arg_name} [#{name.upcase}]"
+              end
       args << type if type
     end
     args
   end
   private :compute_type_args
 
-  def compute_desc_args(desc, default)
-    args = []
-    if desc
-      args << (default ? "#{desc} (default: #{default})" : desc)
-    elsif default
-      args << "Default: #{default}"
-    end
-    args
+  def compute_desc_args(desc, default, type)
+    full_desc = desc
+    full_desc << " (default: #{default})" if default
+    full_desc << " (allowed: #{type.join(", ")})" if type.is_a? Array
+    [full_desc]
   end
   private :compute_desc_args
 
@@ -5223,14 +5252,10 @@ class Fizzy::CLI::Main
 
   attr_reader :parser
 
-  def_delegators :parser, :parse, :run
+  def_delegators :parser, :parse, :run, :tell_help
 
   def initialize
     @parser = Fizzy::ArgParse::RootCommandParser.new("fizzy")
-    parser.on_option(/^help$/) do
-      parser.tell_help
-      false
-    end
   end
 
   def add_subcommand(subcommand)
@@ -5279,10 +5304,16 @@ class Fizzy::CLI::Command
     def available
       @available ||= Set.new
     end
+
+    def command_name
+      name.gsub(/^.*::/, "").gsub(/Command$/, "").downcase
+    end
   end
 
-  def initialize(name, desc, spec)
-    @parser = Fizzy::ArgParse::SubCommandParser.new(name, desc, spec)
+  def initialize(desc, spec)
+    @parser = Fizzy::ArgParse::SubCommandParser.new(self.class.command_name,
+                                                    desc,
+                                                    spec)
   end
 
   def run
@@ -5296,6 +5327,29 @@ end
 # ───────────────────────────────────────────────────── Cleanup ← Depot ← Cli ──
 
 
+# ──────────────────────────────────────────────────────── Help ← Depot ← Cli ──
+
+#
+# Fizzy command to show configuration details.
+#
+class Fizzy::CLI::Help < Fizzy::CLI::Command
+  def initialize
+    super("Show command help.",
+          spec: {
+            command_name: {
+              desc: "The command name to show help for",
+              abbrev: "C",
+              type: Fizzy::CLI::Command.available.map(&:command_name),
+              required: true
+            }
+          })
+  end
+
+  def run
+    Fizzy::CLI::Main.instance.tell_help(options[:command_name])
+  end
+end
+
 # ──────────────────────────────────────────────────────── Info ← Depot ← Cli ──
 
 #
@@ -5303,7 +5357,7 @@ end
 #
 class Fizzy::CLI::Info < Fizzy::CLI::Command
   def initialize
-    super("info", "Show configuration details.",
+    super("Show configuration information",
           spec: Fizzy::CLI.known_args(:fizzy_dir, :cfg_name))
   end
 
@@ -5316,7 +5370,7 @@ class Fizzy::CLI::Info < Fizzy::CLI::Command
                             cur_cfg_name: options[:cfg_name])
 
     # Print details.
-    tell("{c{Available variable files:}}")
+    tell("{c{Available vars:}}")
     avail_vars(paths.cur_cfg_vars).each do |path|
       name = path.basename(path.extname)
       tell("\t→ {m{#{name}}}")

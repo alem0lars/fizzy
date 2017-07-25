@@ -3,7 +3,7 @@
 #
 class Fizzy::CLI::Info < Fizzy::CLI::Command
   def initialize
-    super("info", "Show configuration details.",
+    super("Show configuration information",
           spec: Fizzy::CLI.known_args(:fizzy_dir, :cfg_name))
   end
 
@@ -16,7 +16,7 @@ class Fizzy::CLI::Info < Fizzy::CLI::Command
                             cur_cfg_name: options[:cfg_name])
 
     # Print details.
-    tell("{c{Available variable files:}}")
+    tell("{c{Available vars:}}")
     avail_vars(paths.cur_cfg_vars).each do |path|
       name = path.basename(path.extname)
       tell("\t→ {m{#{name}}}")

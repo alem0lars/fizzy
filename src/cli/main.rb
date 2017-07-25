@@ -7,14 +7,10 @@ class Fizzy::CLI::Main
 
   attr_reader :parser
 
-  def_delegators :parser, :parse, :run
+  def_delegators :parser, :parse, :run, :tell_help
 
   def initialize
     @parser = Fizzy::ArgParse::RootCommandParser.new("fizzy")
-    parser.on_option(/^help$/) do
-      parser.tell_help
-      false
-    end
   end
 
   def add_subcommand(subcommand)

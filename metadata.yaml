@@ -90,6 +90,7 @@ sources:
   - cli/command
   - cli/depot/cd
   - cli/depot/cleanup
+  - cli/depot/help
   - cli/depot/info
   - cli/depot/edit
   - cli/depot/sync

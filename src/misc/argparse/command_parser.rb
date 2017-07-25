@@ -25,6 +25,7 @@ class Fizzy::ArgParse::CommandParser
   end
 
   def tell_help
+    parser.banner = banner
     tell(parser)
   end
 
@@ -33,4 +34,9 @@ class Fizzy::ArgParse::CommandParser
   end
 
   alias to_s inspect
+
+  def banner
+    error "Abstract method called"
+  end
+  protected :banner
 end

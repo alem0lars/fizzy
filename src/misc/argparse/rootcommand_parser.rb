@@ -63,8 +63,6 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
   end
 
   def parse!(args)
-    parser.banner = banner
-
     subcommand_name = args.shift
     if subcommand_name.nil?
       error(nil, silent: true, exc: Fizzy::ArgParse::NoSubCommandName)
@@ -79,11 +77,12 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
     parse_subcommand_arguments(subcommand_parser, args)
   end
 
-  def tell_help
-    if options[:command]
-      find_subcommand_parser.tell_help
+  def tell_help(subcommand_name = nil)
+    subcommand_name ||= options[:command]
+    if subcommand_name
+      find_subcommand_parser(subcommand_name).tell_help
     else
-      super
+      super()
     end
   end
 
@@ -91,8 +90,16 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
     subcommand_parsers << subcommand_parser
   end
 
+  def banner
+    [
+      "Usage: #{name} #{options[:command] || "[subcommand]"} [options]",
+      "Available sub-commands: #{subcommand_parsers.map(&:name).join(", ")}"
+    ].join("\n")
+  end
+  protected :banner
+
   def find_subcommand_parser(subcommand_name = nil)
-    subcommand_name = options[:command] if subcommand_name.nil?
+    subcommand_name ||= options[:command]
     matching_subcommand_parsers =
       subcommand_parsers.select do |c|
         c.name == subcommand_name
@@ -100,14 +107,6 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
     matching_subcommand_parsers.first unless matching_subcommand_parsers.empty?
   end
   private :find_subcommand_parser
-
-  def banner
-    [
-      "Usage: #{name} #{options[:command] || "[subcommand]"} [options]",
-      "Available sub-commands: #{subcommand_parsers.map(&:name).join(", ")}"
-    ].join "\n"
-  end
-  private :banner
 
   def parse_subcommand_arguments(subcommand, args)
     subcommand.parse!(args)

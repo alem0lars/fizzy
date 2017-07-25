@@ -20,6 +20,7 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
   end
 
   def parse!(args)
+    parser.banner = banner
     parser.parse!(args)
 
     missing =
@@ -29,6 +30,16 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     return if missing.empty?
     raise OptionParser::MissingArgument, missing.join(", ")
   end
+
+  def banner
+    # TODO, replace "fizzy" with rootcommand name (find a way to find
+    #       rootcommand from subcommand)
+    [
+      "Usage: fizzy #{name} [options]",
+      desc
+    ].join("\n")
+  end
+  protected :banner
 
   def fill_opts(opts)
     spec.each do |opt_name, opt_info|
@@ -47,7 +58,7 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     args = []
     args += compute_abbrev_args(info[:abbrev])
     args += compute_type_args(name, info[:type], info[:required])
-    args += compute_desc_args(info[:desc], info[:default])
+    args += compute_desc_args(info[:desc], info[:default], info[:type])
     args
   end
   private :compute_opt_args
@@ -60,27 +71,29 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
   private :compute_abbrev_args
 
   def compute_type_args(name, type, req)
+    arg_name = name.to_s.dasherize
     args = []
     if type == Array
-      args += ["--#{name} x,y,z", type]
+      args += ["--#{arg_name} x,y,z", type]
     elsif type == :boolean
-      args << "--[no-]#{name}"
+      args << "--[no-]#{arg_name}"
     else
-      args << (req ? "--#{name} #{name.upcase}" : "--#{name} [#{name.upcase}]")
+      args << if req
+                "--#{arg_name} #{name.upcase}"
+              else
+                "--#{arg_name} [#{name.upcase}]"
+              end
       args << type if type
     end
     args
   end
   private :compute_type_args
 
-  def compute_desc_args(desc, default)
-    args = []
-    if desc
-      args << (default ? "#{desc} (default: #{default})" : desc)
-    elsif default
-      args << "Default: #{default}"
-    end
-    args
+  def compute_desc_args(desc, default, type)
+    full_desc = desc
+    full_desc << " (default: #{default})" if default
+    full_desc << " (allowed: #{type.join(", ")})" if type.is_a? Array
+    [full_desc]
   end
   private :compute_desc_args
 

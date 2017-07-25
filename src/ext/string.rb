@@ -1,3 +1,4 @@
+#
 # Extensions for class `String`.
 #
 class String
@@ -5,6 +6,7 @@ class String
 
   # ───────────────────────────────────────────────────────────────── Escapes ──
 
+  #
   # Escapes the underlying object so that it can be safely used in a Bourne
   # shell commandline.
   #
@@ -14,12 +16,14 @@ class String
 
   # ────────────────────────────────────────────────────────────── Formatting ──
 
+  #
   # Turn the underlying string to a title.
   #
   def titleize!
     replace(split(/[_-]/).each(&:capitalize!).join(""))
   end
 
+  #
   # Turn the underlying string to camel-case.
   #
   def camelize!
@@ -27,42 +31,49 @@ class String
     replace(self[0, 1].downcase + self[1..-1])
   end
 
+  #
   # Turn a camelized string into lowercase, separated with underscores.
   #
   def underscorize!
-    replace(scan(/[A-Z][a-z]*/).join("_").downcase)
+    replace(tr("-", "_"))
   end
 
+  #
   # Turn a camelized string into lowercase, separated with dashes.
   #
   def dasherize!
-    replace(scan(/[A-Z][a-z]*/).join("-").downcase)
+    replace(tr("_", "-"))
   end
 
+  #
   # Create a new string as a titleized version of the underlying string.
   #
   def titleize
     dup.tap(&:titleize!)
   end
 
+  #
   # Create a new string as a camelized version of the underlying string.
   #
   def camelize
     dup.tap(&:camelize!)
   end
 
+  #
   # Create a new string as a underscorized version of the underlying string.
   #
   def underscorize
     dup.tap(&:underscorize!)
   end
 
+  #
   # Create a new string as a dasherized version of the underlying string.
   #
   def dasherize
     dup.tap(&:dasherize!)
   end
 
+  #
   # Example environment variables contained inside the path.
   #
   def expand_variables

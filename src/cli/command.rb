@@ -33,10 +33,16 @@ class Fizzy::CLI::Command
     def available
       @available ||= Set.new
     end
+
+    def command_name
+      name.gsub(/^.*::/, "").gsub(/Command$/, "").downcase
+    end
   end
 
-  def initialize(name, desc, spec)
-    @parser = Fizzy::ArgParse::SubCommandParser.new(name, desc, spec)
+  def initialize(desc, spec)
+    @parser = Fizzy::ArgParse::SubCommandParser.new(self.class.command_name,
+                                                    desc,
+                                                    spec)
   end
 
   def run

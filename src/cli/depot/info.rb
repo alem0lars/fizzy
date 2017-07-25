@@ -1,3 +1,4 @@
+#
 # Fizzy command to show configuration details.
 #
 class Fizzy::CLI::Info < Fizzy::CLI::Command
@@ -8,11 +9,11 @@ class Fizzy::CLI::Info < Fizzy::CLI::Command
 
   def run
     # Prepare paths before considering details.
-    paths = prepare_storage(options.fizzy_dir,
+    paths = prepare_storage(options[:fizzy_dir],
                             valid_meta:   false,
                             valid_cfg:    :readonly,
                             valid_inst:   false,
-                            cur_cfg_name: options.cfg_name)
+                            cur_cfg_name: options[:cfg_name])
 
     # Print details.
     tell("{c{Available variable files:}}")

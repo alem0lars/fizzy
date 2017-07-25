@@ -1,8 +1,8 @@
 RSpec.configure do |config|
   # Prevent that `SystemExit` won't be cached.
-  config.around(:example) do |ex|
+  config.around(:example) do |example|
     begin
-      ex.run
+      example.run
     rescue SystemExit
       raise "Got SystemExit!"
     end

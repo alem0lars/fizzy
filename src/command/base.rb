@@ -1,12 +1,19 @@
 # Base class for all fizzy commands.
 #
 class Fizzy::BaseCommand < Thor
-
   include Thor::Actions
 
   include Fizzy::Environment
   include Fizzy::Execution
   include Fizzy::Filesystem
+  include Fizzy::Environment
+  include Fizzy::Execution
+  include Fizzy::Filesystem
+  include Fizzy::IO
+  include Fizzy::Vars
+  include Fizzy::Locals
+  include Fizzy::Meta::Info
+  include Fizzy::Meta::Elements
   include Fizzy::IO
   include Fizzy::Vars
   include Fizzy::Locals
@@ -25,7 +32,7 @@ class Fizzy::BaseCommand < Thor
     run_mode: {
       default: "normal",
       aliases: :R,
-      enum:    %w(normal paranoid dry),
+      enum:    %w[normal paranoid dry],
       desc:    "Ask confirmation for each filesystem operation."
     },
     fizzy_dir: {
@@ -58,10 +65,9 @@ class Fizzy::BaseCommand < Thor
       aliases: :M,
       desc:    "The name of the meta file."
     }
-  }
+  }.freeze
 
   class << self
-
     include Fizzy::IO
 
     # @return a shared option.
@@ -73,13 +79,11 @@ class Fizzy::BaseCommand < Thor
       if required
         args.delete(:default)
         args[:required] = true
-      elsif !args.has_key?(:default)
+      elsif !args.key?(:default)
         error("Invalid shared option `#{name}`: doesn't have a default value.")
       end
 
       [name, args]
     end
-
   end
-
 end

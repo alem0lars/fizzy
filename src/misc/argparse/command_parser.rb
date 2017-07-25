@@ -1,6 +1,6 @@
 # Base class to declare argument parsing for commands.
 #
-class Fizzy::ArgParse::Command
+class Fizzy::ArgParse::CommandParser
   attr_reader :name, :parser, :options, :handlers
 
   include Fizzy::IO

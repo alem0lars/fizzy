@@ -1,7 +1,7 @@
 # Sub-command, thus it cannot be parsed standalone but only as part of a
 # root-command.
 #
-class Fizzy::ArgParse::SubCommand < Fizzy::ArgParse::Command
+class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
   attr_reader :desc, :spec
   private :spec
 
@@ -10,8 +10,7 @@ class Fizzy::ArgParse::SubCommand < Fizzy::ArgParse::Command
 
     @desc = desc.to_s
     @spec = {
-      verbose: { abbrev: "v", desc: "Run verbosely", type: :boolean },
-      help: { abbrev: "h", desc: "Prints this help", type: :boolean }
+      verbose: { abbrev: "v", desc: "Run verbosely", type: :boolean }
     }.deep_merge(spec)
 
     options[:command] = @name
@@ -23,8 +22,8 @@ class Fizzy::ArgParse::SubCommand < Fizzy::ArgParse::Command
     parser.parse!(args)
 
     missing =
-      spec.select { |name, info| info[:required] && options[name].nil? }
-          .map { |name, _| name }
+      spec.select { |name, info|  info[:required] && options[name].nil? }
+          .map    { |name, _info| name }
 
     return if missing.empty?
     raise OptionParser::MissingArgument, missing.join(", ")

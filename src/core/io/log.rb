@@ -40,6 +40,7 @@ module Fizzy::IO
     if exc.is_a? Integer
       exit(exc)
     elsif !exc.nil?
+      raise exc if msg.nil?
       raise exc, msg
     end
   end

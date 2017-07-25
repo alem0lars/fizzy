@@ -1,20 +1,45 @@
+#
 # Base class for CLI commands.
 #
 class Fizzy::CLI::Command
-  include Fizzy::IO
   extend Forwardable
 
-  attr_reader :command
+  include Fizzy::Environment
+  include Fizzy::Execution
+  include Fizzy::Filesystem
+  include Fizzy::Environment
+  include Fizzy::Execution
+  include Fizzy::Filesystem
+  include Fizzy::IO
+  include Fizzy::Vars
+  include Fizzy::Locals
+  include Fizzy::Meta::Info
+  include Fizzy::Meta::Elements
+  include Fizzy::IO
+  include Fizzy::Vars
+  include Fizzy::Locals
+  include Fizzy::Meta::Info
+  include Fizzy::Meta::Elements
 
-  def_delegators :command, :name
+  attr_reader :parser
+
+  def_delegators :parser, :name, :options
+
+  class << self
+    def inherited(klass)
+      available.add(klass)
+    end
+
+    def available
+      @available ||= Set.new
+    end
+  end
 
   def initialize(name, desc, spec)
-    @command = Fizzy::ArgParse::SubCommand.new(name, desc, spec)
-    Main.instance.add_subcommand(command)
-    Main.instance.on(/^#{name}$/, run)
+    @parser = Fizzy::ArgParse::SubCommandParser.new(name, desc, spec)
   end
 
   def run
-    error "Abstract method called"
+    error("Abstract method called")
   end
 end

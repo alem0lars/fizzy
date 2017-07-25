@@ -5,24 +5,6 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
   end
 
   method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:cfg_name,  required: true))
-  desc("details", "Show configuration details.")
-  def details
-    # Prepare paths before considering details.
-    paths = prepare_storage(options.fizzy_dir,
-                            valid_meta:   false,
-                            valid_cfg:    :readonly,
-                            valid_inst:   false,
-                            cur_cfg_name: options.cfg_name)
-    # Print details.
-    tell("{c{Available variable files:}}")
-    avail_vars(paths.cur_cfg_vars).each do |path|
-      name = path.basename(path.extname)
-      tell("\t→ {m{#{name}}}")
-    end
-  end
-
-  method_option(*shared_option(:fizzy_dir))
   desc("cleanup", "Cleanup the fizzy storage.")
   def cleanup
     # Prepare paths for cleanup.

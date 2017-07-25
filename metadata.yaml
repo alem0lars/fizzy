@@ -48,9 +48,9 @@ sources:
 
   - misc/argparse
   - misc/argparse/types
-  - misc/argparse/command
-  - misc/argparse/root_command
-  - misc/argparse/sub_command
+  - misc/argparse/command_parser
+  - misc/argparse/rootcommand_parser
+  - misc/argparse/subcommand_parser
 
   - grammar/base_lexer
   - <grammars>

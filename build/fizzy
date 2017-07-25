@@ -727,6 +727,7 @@ module Fizzy::IO
     if exc.is_a? Integer
       exit(exc)
     elsif !exc.nil?
+      raise exc if msg.nil?
       raise exc, msg
     end
   end
@@ -2549,11 +2550,11 @@ OptionParser.accept(Pathname) do |s,|
   end
 end
 
-# ───────────────────────────────────────────────── Command ← Argparse ← Misc ──
+# ────────────────────────────────────────── Command parser ← argparse ← Misc ──
 
 # Base class to declare argument parsing for commands.
 #
-class Fizzy::ArgParse::Command
+class Fizzy::ArgParse::CommandParser
   attr_reader :name, :parser, :options, :handlers
 
   include Fizzy::IO
@@ -2588,11 +2589,12 @@ class Fizzy::ArgParse::Command
   alias to_s inspect
 end
 
-# ──────────────────────────────────────────── Root command ← argparse ← Misc ──
+# ────────────────────────────────────── Rootcommand parser ← argparse ← Misc ──
 
+#
 # Error representing an invalid subcommand name has been specified.
 #
-class Fizzy::ArgParse::InvalidSubcommandName < StandardError
+class Fizzy::ArgParse::InvalidSubCommandName < StandardError
   attr_reader :name
 
   def initialize(name)
@@ -2601,29 +2603,55 @@ class Fizzy::ArgParse::InvalidSubcommandName < StandardError
   end
 end
 
+#
+# Error representing subcommand name hasn't been specified.
+#
+class Fizzy::ArgParse::NoSubCommandName < StandardError
+  def initialize
+    super("No sub-command name given")
+  end
+end
+
+#
 # Root command, as a composite of sub-commands and some basic global parameters.
 #
-class Fizzy::ArgParse::RootCommand < Fizzy::ArgParse::Command
-  attr_reader :subcommands
+class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
+  attr_reader :subcommand_parsers
 
-  def initialize(name, subcommands: [])
+  def initialize(name, subcommand_parsers: [])
     super(name)
 
-    @subcommands = subcommands
+    @subcommand_parsers = subcommand_parsers
     @parser = OptionParser.new
   end
 
-  # Register a sub-command handler.
   #
-  def on(regexp, &block)
-    handlers[regexp] = block
+  # Register a handler matching command name.
+  #
+  def on_command(command_name, &block)
+    handlers[{ regexp: command_name, type: :command_name }] = block
   end
 
+  #
+  # Register a handler matching options.
+  #
+  def on_option(opt_name, opt_value = nil, &block)
+    handlers[{ regexp: opt_name, type: :option_name }] = block
+    handlers[{ regexp: opt_value, type: :option_value }] = block if opt_value
+  end
+
+  #
   # Run matching handlers if they match sub-command.
   #
   def run
-    handlers.each do |regexp, handler|
-      handler.call(options) if regexp =~ options[:command]
+    handlers.each do |info, handler|
+      matches =
+        case info[:type]
+        when :option_name  then options.any? { |n, _| info[:regexp] =~ n }
+        when :option_value then options.any? { |_, v| info[:regexp] =~ v }
+        when :command_name then info[:regexp] =~ options[:command]
+        end
+      break if matches && handler.call(options)
     end
   end
 
@@ -2631,39 +2659,45 @@ class Fizzy::ArgParse::RootCommand < Fizzy::ArgParse::Command
     parser.banner = banner
 
     subcommand_name = args.shift
-    subcommand = find_subcommand(subcommand_name)
-    if subcommand.nil?
+    if subcommand_name.nil?
+      error(nil, silent: true, exc: Fizzy::ArgParse::NoSubCommandName)
+    end
+    subcommand_parser = find_subcommand_parser(subcommand_name)
+    if subcommand_parser.nil?
       error(subcommand_name,
             silent: true,
-            exc: Fizzy::ArgParse::InvalidSubcommandName)
+            exc: Fizzy::ArgParse::InvalidSubCommandName)
     end
 
-    parse_subcommand_arguments(subcommand, args)
+    parse_subcommand_arguments(subcommand_parser, args)
   end
 
   def tell_help
     if options[:command]
-      find_subcommand.tell_help
+      find_subcommand_parser.tell_help
     else
       super
     end
   end
 
-  def add_subcommand(subcommand)
-    subcommands << subcommand
+  def add_subcommand_parser(subcommand_parser)
+    subcommand_parsers << subcommand_parser
   end
 
-  def find_subcommand(subcommand_name = nil)
+  def find_subcommand_parser(subcommand_name = nil)
     subcommand_name = options[:command] if subcommand_name.nil?
-    matching_subcommands = subcommands.select { |c| c.name == subcommand_name }
-    matching_subcommands.first unless matching_subcommands.empty?
+    matching_subcommand_parsers =
+      subcommand_parsers.select do |c|
+        c.name == subcommand_name
+      end
+    matching_subcommand_parsers.first unless matching_subcommand_parsers.empty?
   end
-  private :find_subcommand
+  private :find_subcommand_parser
 
   def banner
     [
       "Usage: #{name} #{options[:command] || "[subcommand]"} [options]",
-      "Available sub-commands: #{subcommands.map(&:name).join(", ")}"
+      "Available sub-commands: #{subcommand_parsers.map(&:name).join(", ")}"
     ].join "\n"
   end
   private :banner
@@ -2676,12 +2710,12 @@ class Fizzy::ArgParse::RootCommand < Fizzy::ArgParse::Command
   private :parse_subcommand_arguments
 end
 
-# ───────────────────────────────────────────── Sub command ← argparse ← Misc ──
+# ─────────────────────────────────────── Subcommand parser ← argparse ← Misc ──
 
 # Sub-command, thus it cannot be parsed standalone but only as part of a
 # root-command.
 #
-class Fizzy::ArgParse::SubCommand < Fizzy::ArgParse::Command
+class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
   attr_reader :desc, :spec
   private :spec
 
@@ -2690,8 +2724,7 @@ class Fizzy::ArgParse::SubCommand < Fizzy::ArgParse::Command
 
     @desc = desc.to_s
     @spec = {
-      verbose: { abbrev: "v", desc: "Run verbosely", type: :boolean },
-      help: { abbrev: "h", desc: "Prints this help", type: :boolean }
+      verbose: { abbrev: "v", desc: "Run verbosely", type: :boolean }
     }.deep_merge(spec)
 
     options[:command] = @name
@@ -2703,8 +2736,8 @@ class Fizzy::ArgParse::SubCommand < Fizzy::ArgParse::Command
     parser.parse!(args)
 
     missing =
-      spec.select { |name, info| info[:required] && options[name].nil? }
-          .map { |name, _| name }
+      spec.select { |name, info|  info[:required] && options[name].nil? }
+          .map    { |name, _info| name }
 
     return if missing.empty?
     raise OptionParser::MissingArgument, missing.join(", ")
@@ -4730,12 +4763,19 @@ end
 # Base class for all fizzy commands.
 #
 class Fizzy::BaseCommand < Thor
-
   include Thor::Actions
 
   include Fizzy::Environment
   include Fizzy::Execution
   include Fizzy::Filesystem
+  include Fizzy::Environment
+  include Fizzy::Execution
+  include Fizzy::Filesystem
+  include Fizzy::IO
+  include Fizzy::Vars
+  include Fizzy::Locals
+  include Fizzy::Meta::Info
+  include Fizzy::Meta::Elements
   include Fizzy::IO
   include Fizzy::Vars
   include Fizzy::Locals
@@ -4754,7 +4794,7 @@ class Fizzy::BaseCommand < Thor
     run_mode: {
       default: "normal",
       aliases: :R,
-      enum:    %w(normal paranoid dry),
+      enum:    %w[normal paranoid dry],
       desc:    "Ask confirmation for each filesystem operation."
     },
     fizzy_dir: {
@@ -4787,10 +4827,9 @@ class Fizzy::BaseCommand < Thor
       aliases: :M,
       desc:    "The name of the meta file."
     }
-  }
+  }.freeze
 
   class << self
-
     include Fizzy::IO
 
     # @return a shared option.
@@ -4802,15 +4841,13 @@ class Fizzy::BaseCommand < Thor
       if required
         args.delete(:default)
         args[:required] = true
-      elsif !args.has_key?(:default)
+      elsif !args.key?(:default)
         error("Invalid shared option `#{name}`: doesn't have a default value.")
       end
 
       [name, args]
     end
-
   end
-
 end
 
 # ───────────────────────────────────────────────────────────── Cfg ← Command ──
@@ -4819,24 +4856,6 @@ class Fizzy::CfgCommand < Fizzy::BaseCommand
 
   def self.source_root
     "/"
-  end
-
-  method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:cfg_name,  required: true))
-  desc("details", "Show configuration details.")
-  def details
-    # Prepare paths before considering details.
-    paths = prepare_storage(options.fizzy_dir,
-                            valid_meta:   false,
-                            valid_cfg:    :readonly,
-                            valid_inst:   false,
-                            cur_cfg_name: options.cfg_name)
-    # Print details.
-    tell("{c{Available variable files:}}")
-    avail_vars(paths.cur_cfg_vars).each do |path|
-      name = path.basename(path.extname)
-      tell("\t→ {m{#{name}}}")
-    end
   end
 
   method_option(*shared_option(:fizzy_dir))
@@ -5125,106 +5144,208 @@ end
 # Namespace for fizzy commandline interface.
 #
 module Fizzy::CLI
-  # Main of fizzy CLI.
+end
+
+# ────────────────────────────────────────────────────────── Known args ← Cli ──
+
+#
+# Definition of specs for known arguments and relative utilities.
+#
+module Fizzy::CLI
   #
-  class Main
-    include Singleton
-    extend Forwardable
-
-    attr_reader :root_command
-
-    def_delegators :root_command, :parse, :run
-
-    def initialize
-      @root_command = Fizzy::ArgParse::RootCommand.new("fizzy")
-    end
-
-    def add_command(command)
-      root_command.add_subcommand(command)
-    end
-  end
-
-  # Base class for CLI commands.
+  # Specs for known arguments.
   #
-  class Command
-    include Fizzy::IO
-    extend Forwardable
+  KNOWN_ARGS = {
+    run_mode: {
+      desc: "How fizzy will perform its operations, e.g. simulating them " \
+        "or not",
+      abbrev: "R",
+      default: "normal",
+      type: %i[normal dry]
+    },
+    fizzy_dir: {
+      desc: "Specify fizzy directory",
+      abbrev: "D",
+      default: Fizzy::CFG.default_fizzy_dir,
+      type: Pathname
+    },
+    cfg_url: {
+      desc: "The URL to the repository holding configuration.",
+      abbrev: "U",
+      required: true
+    },
+    cfg_name: {
+      desc: "The name of the configuration that should be used.",
+      abbrev: "C",
+      required: true
+    },
+    inst_name: {
+      desc: "The name for the configuration instance to be used.",
+      aliases: "I",
+      required: true
+    },
+    vars_name: {
+      desc: "The name for the variables file to be used.",
+      aliases: "V",
+      required: true
+    },
+    meta_name: {
+      desc: "The name of the meta file.",
+      aliases: "M",
+      default: Fizzy::CFG.default_meta_name
+    }
+  }.freeze
 
-    attr_reader :command
-
-    def_delegators :command, :name
-
-    def initialize(name, desc, spec)
-      @command = Fizzy::ArgParse::SubCommand.new(name, desc, spec)
-      Main.instance.add_subcommand(command)
-      Main.instance.on(/^#{name}$/, run)
-    end
-
-    def run
-      error "Abstract method called"
-    end
-  end
-
+  #
   # Get specs for known fizzy command-line arguments.
   #
-  def self.known_args(*names)
-    {
-      run_mode: {
-        desc: "How fizzy will perform its operations, e.g. simulating them " +
-              "or not",
-        abbrev: "R",
-        default: "normal",
-        type: %i[normal dry]
-      },
-      fizzy_dir: {
-        desc: "Specify fizzy directory",
-        abbrev: "D",
-        default: Fizzy::CFG.default_fizzy_dir,
-        type: Pathname
-      },
-      cfg_url: {
-        desc: "The URL to the repository holding configuration.",
-        abbrev: "U",
-        type: URL
-      }
-    }.select { |spec| names.include? spec.name }
+  def self.known_args(*names, **kwnames)
+    KNOWN_ARGS.select do |name, info|
+      next true if names.include?(name)
+      kwnames.each do |kwname, kwinfo|
+        info.deep_merge!(kwinfo) if name == kwname
+        next true if name == kwname
+      end
+      next false
+    end
   end
 end
 
-# ────────────────────────────────────────────────────────────────── Cd ← Cli ──
+# ──────────────────────────────────────────────────────────────── Main ← Cli ──
+
+#
+# Main of fizzy CLI.
+#
+class Fizzy::CLI::Main
+  include Singleton
+  extend Forwardable
+
+  attr_reader :parser
+
+  def_delegators :parser, :parse, :run
+
+  def initialize
+    @parser = Fizzy::ArgParse::RootCommandParser.new("fizzy")
+    parser.on_option(/^help$/) do
+      parser.tell_help
+      false
+    end
+  end
+
+  def add_subcommand(subcommand)
+    parser.on_command(/^#{subcommand.name}$/) do
+      subcommand.run
+      false
+    end
+    parser.add_subcommand_parser(subcommand.parser)
+  end
+end
+
+# ───────────────────────────────────────────────────────────── Command ← Cli ──
+
+#
+# Base class for CLI commands.
+#
+class Fizzy::CLI::Command
+  extend Forwardable
+
+  include Fizzy::Environment
+  include Fizzy::Execution
+  include Fizzy::Filesystem
+  include Fizzy::Environment
+  include Fizzy::Execution
+  include Fizzy::Filesystem
+  include Fizzy::IO
+  include Fizzy::Vars
+  include Fizzy::Locals
+  include Fizzy::Meta::Info
+  include Fizzy::Meta::Elements
+  include Fizzy::IO
+  include Fizzy::Vars
+  include Fizzy::Locals
+  include Fizzy::Meta::Info
+  include Fizzy::Meta::Elements
+
+  attr_reader :parser
+
+  def_delegators :parser, :name, :options
+
+  class << self
+    def inherited(klass)
+      available.add(klass)
+    end
+
+    def available
+      @available ||= Set.new
+    end
+  end
+
+  def initialize(name, desc, spec)
+    @parser = Fizzy::ArgParse::SubCommandParser.new(name, desc, spec)
+  end
+
+  def run
+    error("Abstract method called")
+  end
+end
+
+# ────────────────────────────────────────────────────────── Cd ← Depot ← Cli ──
 
 
-# ───────────────────────────────────────────────────────────── Cleanup ← Cli ──
+# ───────────────────────────────────────────────────── Cleanup ← Depot ← Cli ──
 
 
-# ──────────────────────────────────────────────────────────────── Info ← Cli ──
+# ──────────────────────────────────────────────────────── Info ← Depot ← Cli ──
 
+#
 # Fizzy command to show configuration details.
 #
 class Fizzy::CLI::Info < Fizzy::CLI::Command
   def initialize
-    super("info", "Show configuration details.")
+    super("info", "Show configuration details.",
+          spec: Fizzy::CLI.known_args(:fizzy_dir, :cfg_name))
+  end
+
+  def run
+    # Prepare paths before considering details.
+    paths = prepare_storage(options[:fizzy_dir],
+                            valid_meta:   false,
+                            valid_cfg:    :readonly,
+                            valid_inst:   false,
+                            cur_cfg_name: options[:cfg_name])
+
+    # Print details.
+    tell("{c{Available variable files:}}")
+    avail_vars(paths.cur_cfg_vars).each do |path|
+      name = path.basename(path.extname)
+      tell("\t→ {m{#{name}}}")
+    end
   end
 end
 
-# ──────────────────────────────────────────────────────────────── Edit ← Cli ──
+# ──────────────────────────────────────────────────────── Edit ← Depot ← Cli ──
 
 
-# ──────────────────────────────────────────────────────────────── Sync ← Cli ──
+# ──────────────────────────────────────────────────────── Sync ← Depot ← Cli ──
 
 
-# ─────────────────────────────────────────────────────────── Incarnate ← Cli ──
+# ─────────────────────────────────────────────────── Incarnate ← Depot ← Cli ──
 
 
-# ─────────────────────────────────────────────────────────────── Usage ← Cli ──
+# ─────────────────────────────────────────────────────── Usage ← Depot ← Cli ──
 
 
-# ───────────────────────────────────────────────────────────── Version ← Cli ──
+# ───────────────────────────────────────────────────── Version ← Depot ← Cli ──
 
 
 # ────────────────────────────────────────────────────────────────────── Main ──
 
+#
 # Entry point.
+#
+
 if $PROGRAM_NAME == __FILE__
+  commands = Fizzy::CLI::Command.available.collect(&:new)
+  commands.each { |command| Fizzy::CLI::Main.instance.add_subcommand(command) }
   Fizzy::CLI::Main.instance.run if Fizzy::CLI::Main.instance.parse(ARGV)
 end

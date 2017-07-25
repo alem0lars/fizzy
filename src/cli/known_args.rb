@@ -1,6 +1,8 @@
+#
 # Definition of specs for known arguments and relative utilities.
 #
 module Fizzy::CLI
+  #
   # Specs for known arguments.
   #
   KNOWN_ARGS = {
@@ -44,18 +46,17 @@ module Fizzy::CLI
     }
   }.freeze
 
+  #
   # Get specs for known fizzy command-line arguments.
   #
   def self.known_args(*names, **kwnames)
-    KNOWN_ARGS.select do |spec|
-      spec.each { |name, _info| return true if names.include?(name) }
-      spec.each do |name, info|
-        kwnames.each do |kwname, kwinfo|
-          info.deep_merge!(kwinfo) if name == kwname
-          return true if name == kwname
-        end
+    KNOWN_ARGS.select do |name, info|
+      next true if names.include?(name)
+      kwnames.each do |kwname, kwinfo|
+        info.deep_merge!(kwinfo) if name == kwname
+        next true if name == kwname
       end
-      false
+      next false
     end
   end
 end

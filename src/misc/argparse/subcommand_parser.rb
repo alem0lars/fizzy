@@ -1,3 +1,4 @@
+#
 # Sub-command, thus it cannot be parsed standalone but only as part of a
 # root-command.
 #

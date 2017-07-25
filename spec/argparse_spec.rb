@@ -1,5 +1,50 @@
 require "spec_helper"
 
+PARSE_FIXTURES = {
+  # First argument should be the sub-command name.
+  ["-v"] => { status: false, options: {} },
+  ["-H", "bar"] => { status: false, options: {} },
+  ["foo"] => { status: true, options: { command: "foo" } },
+  ["foo", "--no-verbose"] => {
+    status: true,
+    options: { command: "foo", verbose: false }
+  },
+  ["foo", "-v"] => {
+    status: true,
+    options: { command: "foo", verbose: true }
+  },
+  ["bar"] => {
+    status: false,
+    options: { command: "bar", happy: true }
+  },
+  ["bar", "-d", "10", "--where", "/tmp"] => {
+    status: true,
+    options: {
+      command: "bar",
+      happy: true,
+      delay: 10,
+      where: Pathname.new("/tmp")
+    }
+  },
+  ["bar", "--no-happy", "-d", "10"] => {
+    status: true,
+    options: {
+      command: "bar",
+      happy: false,
+      delay: 10
+    }
+  },
+  ["bar", "-v", "-d", "10"] => {
+    status: true,
+    options: {
+      command: "bar",
+      happy: true,
+      delay: 10,
+      verbose: true
+    }
+  }
+}.freeze
+
 describe(Fizzy::ArgParse::CommandParser) do
   include_context(:output)
 
@@ -50,50 +95,7 @@ describe(Fizzy::ArgParse::CommandParser) do
   end
 
   context("#parse") do
-    {
-      # First argument should be the sub-command name.
-      ["-v"] => { status: false, options: {} },
-      ["-H", "bar"] => { status: false, options: {} },
-      ["foo"] => { status: true, options: { command: "foo" } },
-      ["foo", "--no-verbose"] => {
-        status: true,
-        options: { command: "foo", verbose: false }
-      },
-      ["foo", "-v"] => {
-        status: true,
-        options: { command: "foo", verbose: true }
-      },
-      ["bar"] => {
-        status: false,
-        options: { command: "bar", happy: true }
-      },
-      ["bar", "-d", "10", "--where", "/tmp"] => {
-        status: true,
-        options: {
-          command: "bar",
-          happy: true,
-          delay: 10,
-          where: Pathname.new("/tmp")
-        }
-      },
-      ["bar", "--no-happy", "-d", "10"] => {
-        status: true,
-        options: {
-          command: "bar",
-          happy: false,
-          delay: 10,
-        }
-      },
-      ["bar", "-v", "-d", "10"] => {
-        status: true,
-        options: {
-          command: "bar",
-          happy: true,
-          delay: 10,
-          verbose: true
-        }
-      }
-    }.each do |arguments, info|
+    PARSE_FIXTURES.each do |arguments, info|
       context("arguments `#{arguments}` are provided") do
         it("#{info[:status] ? "correctly" : "fails to"} parse #{arguments}") do
           expect(command_parser.parse(arguments)).to eq(info[:status])

@@ -1,5 +1,4 @@
 class Fizzy::Sync::Git < Fizzy::Sync::Base
-
   include Fizzy::IO
   include Fizzy::Execution
   include Fizzy::Filesystem
@@ -12,7 +11,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Check if the synchronizer is enabled.
   #
   def enabled?
-    ( super ||
+    (super ||
       (!@remote_url.nil? && @remote_url.to_s.start_with?("#{@name}:")) ||
       local_valid_repo?)
   end
@@ -63,11 +62,11 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def normalize_url(url, default_protocol: :ssh)
     return nil if url.nil?
     url = url.to_s
-    protocols = %i(https ssh)
+    protocols = %i[https ssh]
     url = url.gsub(/^#{@name}:/, "") # Remove VCS name prefix (optional).
     regexp = %r{
       ^
-      (?<protocol>#{protocols.map{|p| "#{p}:"}.join("|")})?
+      (?<protocol>#{protocols.map { |p| "#{p}:" }.join("|")})?
       (?<username>[a-z0-9\-_]+)
       \/
       (?<repository>[a-z0-9\-_]+)
@@ -75,11 +74,11 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     }xi
     md = url.match(regexp)
     return url unless md
-    protocol = (md[:protocol] || default_protocol).gsub(/:$/, "").to_sym
+    protocol = (md[:protocol] || default_protocol).to_s.gsub(/:$/, "").to_sym
     case protocol
-      when :ssh   then "git@github.com:#{md[:username]}/#{md[:repository]}"
-      when :https then "https://github.com/#{md[:username]}/#{md[:repository]}"
-      else        error("Invalid protocol for `{m{#{url}}}`: `{m{#{protocol}}}` not in `{m{[#{protocols.join(", ")}]}}`.")
+    when :ssh   then "git@github.com:#{md[:username]}/#{md[:repository]}"
+    when :https then "https://github.com/#{md[:username]}/#{md[:repository]}"
+    else        error("Invalid protocol for `{m{#{url}}}`: `{m{#{protocol}}}` not in `{m{[#{protocols.join(", ")}]}}`.")
     end
   end
   protected :normalize_url
@@ -114,11 +113,11 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
       local = `git rev-parse @ 2> /dev/null`.strip
-      local = nil unless $?.success?
+      local = nil unless $CHILD_STATUS.success?
       remote = `git rev-parse @{u} 2> /dev/null`.strip
-      remote = nil unless $?.success?
+      remote = nil unless $CHILD_STATUS.success?
       base = `git merge-base @ @{u} 2> /dev/null`.strip
-      base = nil unless $?.success?
+      base = nil unless $CHILD_STATUS.success?
       return { local: local, remote: remote, base: base }
     end
   end
@@ -163,7 +162,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def perform_add(files: nil, interactive: false)
     error "Invalid files `#{files}`." unless files.nil? || files.is_a?(Array)
 
-    cmd  = ["git", "add"]
+    cmd = %w[git add]
     cmd << "-i"  if     interactive
     cmd << "-A"  if     files.nil?
     cmd << files unless files.nil?
@@ -187,7 +186,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
           message ||= ask("Type the commit message", type: :string)
 
-          cmd  = ["git", "commit", "-a"]
+          cmd = ["git", "commit", "-a"]
           cmd << "--allow-empty-message" if     message.nil?
           cmd += ["-m", message]         unless message.nil?
 
@@ -209,7 +208,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
     tell("{b{Fetching information from remote.}}")
 
-    cmd  = ["git", "fetch"]
+    cmd = %w[git fetch]
     cmd << remote.shell_escape unless remote.nil?
     cmd << branch.shell_escape unless branch.nil?
 
@@ -225,7 +224,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     parent_dir = @local_dir_path.dirname
     name       = @local_dir_path.basename
 
-    cmd  = ["git", "clone"]
+    cmd = %w[git clone]
     cmd << "--recursive" if recursive
     cmd << @remote_normalized_url.shell_escape
     cmd << name.shell_escape
@@ -245,7 +244,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     if should_pull?
       tell("{b{Performing pull.}}")
 
-      cmd  = ["git", "pull"]
+      cmd = %w[git pull]
       cmd << remote.shell_escape unless remote.nil?
       cmd << branch.shell_escape unless branch.nil?
 
@@ -255,7 +254,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
                         chdir: @local_dir_path)
 
       if with_submodules
-        status &&= exec_cmd(%w(git submodule update --recursive),
+        status &&= exec_cmd(%w[git submodule update --recursive],
                             as_su: !existing_dir(@local_dir_path),
                             chdir: @local_dir_path)
       end
@@ -276,7 +275,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     if should_push?
       tell("{b{Pushing to remote.}}")
 
-      cmd  = ["git", "push"]
+      cmd = %w[git push]
       cmd << remote.shell_escape unless remote.nil?
       cmd << branch.shell_escape unless branch.nil?
 
@@ -289,5 +288,4 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     status
   end
   protected :perform_push
-
 end

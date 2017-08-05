@@ -34,7 +34,7 @@ class Fizzy::CLI::Cd < Fizzy::CLI::Command
   end
 
   #
-  # Inform user about the changing directory status.
+  # Inform user about the change of directory.
   #
   def inform_user(dir_path)
     tell("{g{CD done in: `#{dir_path}`.}}")

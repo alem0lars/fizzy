@@ -31,17 +31,17 @@ module Fizzy::CLI
     },
     inst_name: {
       desc: "The name for the configuration instance to be used.",
-      aliases: "I",
+      abbrev: "I",
       required: true
     },
     vars_name: {
       desc: "The name for the variables file to be used.",
-      aliases: "V",
+      abbrev: "V",
       required: true
     },
     meta_name: {
       desc: "The name of the meta file.",
-      aliases: "M",
+      abbrev: "M",
       default: Fizzy::CFG.default_meta_name
     }
   }.freeze

@@ -7,14 +7,9 @@
 # - Summary: The hassle free configuration manager                             │
 # - Authors:                                                                   │
 #   - Alessandro Molari <molari.alessandro@gmail.com> (alem0lars)              │
-# - Contributors:                                                              │
+# - Special thanks:                                                            │
 #   - Luca Molari <molari.luca@gmail.com> (lmolr)                              │
-#   Special thanks:                                                            │
-#   - Thor project (https://github.com/erikhuda/thor)                          │
-#   - Hash#deep_merge (http://www.ruby-forum.com/topic/142809)                 │
-#   - RubyTree (https://github.com/evolve75/RubyTree):                         │
-#     It has been taken as the initial tree implementation (then customized)   │
-#                                                                              │
+#   - Giacomo Mantani <giacomo.mantani@gmail.com> (jake)                       │
 #                                                                              │
 # Project informations:                                                        │
 #   - Homepage:        https://github.com/alem0lars/fizzy                      │
@@ -4786,387 +4781,6 @@ As arguments you can pass:
   `lpass show --color=never #{what} #{name}`
 end
 
-# ──────────────────────────────────────────────────────────── Base ← Command ──
-
-# Base class for all fizzy commands.
-#
-class Fizzy::BaseCommand < Thor
-  include Thor::Actions
-
-  include Fizzy::Environment
-  include Fizzy::Execution
-  include Fizzy::Filesystem
-  include Fizzy::Environment
-  include Fizzy::Execution
-  include Fizzy::Filesystem
-  include Fizzy::IO
-  include Fizzy::Vars
-  include Fizzy::Locals
-  include Fizzy::Meta::Info
-  include Fizzy::Meta::Elements
-  include Fizzy::IO
-  include Fizzy::Vars
-  include Fizzy::Locals
-  include Fizzy::Meta::Info
-  include Fizzy::Meta::Elements
-
-  # Common options, shared by many commands.
-  #
-  SHARED_OPTIONS = {
-    verbose: {
-      default: false,
-      type:    :boolean,
-      aliases: :v,
-      desc:    "Whether the output should be verbose."
-    },
-    run_mode: {
-      default: "normal",
-      aliases: :R,
-      enum:    %w[normal paranoid dry],
-      desc:    "Ask confirmation for each filesystem operation."
-    },
-    fizzy_dir: {
-      default: Fizzy::CFG.default_fizzy_dir.to_s,
-      aliases: :F,
-      desc:    "The root path for the directory internally used by fizzy."
-    },
-    cfg_url: {
-      default: nil,
-      aliases: :U,
-      desc: "The URL to the repository holding config."
-    },
-    cfg_name: {
-      default: nil,
-      aliases: :C,
-      desc:    "The name of the configuration that should be used."
-    },
-    inst_name: {
-      default: nil,
-      aliases: :I,
-      desc:    "The name for the configuration instance to be used."
-    },
-    vars_name: {
-      default: nil,
-      aliases: :V,
-      desc:    "The name for the variables file to be used."
-    },
-    meta_name: {
-      default: Fizzy::CFG.default_meta_name,
-      aliases: :M,
-      desc:    "The name of the meta file."
-    }
-  }.freeze
-
-  class << self
-    include Fizzy::IO
-
-    # @return a shared option.
-    #
-    def shared_option(name, required: false)
-      args = SHARED_OPTIONS[name].dup
-      error("Invalid option `#{name}`: it doesn't exist.") if args.nil?
-
-      if required
-        args.delete(:default)
-        args[:required] = true
-      elsif !args.key?(:default)
-        error("Invalid shared option `#{name}`: doesn't have a default value.")
-      end
-
-      [name, args]
-    end
-  end
-end
-
-# ───────────────────────────────────────────────────────────── Cfg ← Command ──
-
-class Fizzy::CfgCommand < Fizzy::BaseCommand
-
-  def self.source_root
-    "/"
-  end
-
-  method_option(*shared_option(:fizzy_dir))
-  desc("cleanup", "Cleanup the fizzy storage.")
-  def cleanup
-    # Prepare paths for cleanup.
-    paths = prepare_storage(options.fizzy_dir,
-                            valid_meta: false,
-                            valid_cfg:  false,
-                            valid_inst: false)
-
-    # Perform cleanup.
-    status = if ask("Remove the fizzy root directory (`#{paths.root}`)")
-      paths.root.rmtree
-    else
-      nil # Cleanup skipped.
-    end
-
-    # Inform user about the cleanup status.
-    case status
-      when true  then tell("{g{Successfully cleaned: `#{paths.root}`.}}")
-      when false then error("Failed to cleanup: `#{paths.root}`.", :red)
-      when nil   then warning("Cleanup skipped.", ask_continue: false)
-    end
-  end
-
-  method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:cfg_name))
-  desc("cd",
-       "Change directory to the configuration directory " +
-       "(useful for extensive filesystem manipulations).")
-  def cd
-    # Prepare stuff for changing directory.
-    paths = prepare_storage(options.fizzy_dir,
-                            valid_meta:   false,
-                            valid_inst:   false,
-                            valid_cfg:    !options.cfg_name.nil?,
-                            cur_cfg_name: options.cfg_name)
-
-    # Changing directory.
-    dir_path = paths.cur_cfg || paths.cfg
-    tell("{c{Changing directory to: `#{dir_path}`.}}")
-    FileUtils.cd(dir_path)
-    system(get_env!(:SHELL))
-
-    # Inform user about the changing directory status.
-    tell("{g{CD done in: `#{dir_path}`.}}")
-  end
-
-  method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:cfg_name))
-  desc("edit PATTERN", "Find the files relative to PATTERN and edit them.")
-  def edit(pattern)
-    # Prepare stuff for editing.
-    paths = prepare_storage(options.fizzy_dir,
-                            valid_meta:   false,
-                            valid_inst:   false,
-                            cur_cfg_name: options.cfg_name)
-    find_path = (paths.cur_cfg || paths.cfg).join(pattern)
-    cfg_files = if find_path.exist?
-      Array[find_path]
-    else
-      Pathname.glob("#{find_path}*", File::FNM_DOTMATCH).to_a
-              .select(&:file?)
-              .reject{|path| path.to_s =~ /\.git/}
-    end
-
-    cfg_files_arg = cfg_files.collect{|path| path.shell_escape}
-                             .join(" ")
-                             .strip
-
-    # Perform edit.
-    status = if cfg_files_arg.empty?
-      warning("No files matching `#{options.cfg_name}` have been found.",
-              ask_continue: false)
-      nil
-    else
-      tell("{c{Editing configuration file(s): `#{cfg_files_arg}`.}}")
-      system("#{Fizzy::CFG.editor} #{cfg_files_arg}")
-    end
-
-    # Inform user about the editing status.
-    case status
-      when true  then tell("{g{Successfully edited: `#{cfg_files_arg}`.}}")
-      when false then error("Failed to edit: `#{cfg_files_arg}`.", :red)
-      when nil   then warning("Editing skipped.", ask_continue: false)
-    end
-  end
-
-  method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:cfg_name, required: true))
-  method_option(*shared_option(:cfg_url))
-  desc("sync", "Synchronize the remote repository with the local one.")
-  def sync
-    # Prepare stuff for syncing.
-    paths = prepare_storage(options.fizzy_dir,
-                            valid_meta:   false,
-                            valid_cfg:    false,
-                            valid_inst:   false,
-                            cur_cfg_name: options.cfg_name)
-
-    # Perform sync.
-    sync_result = Fizzy::Sync.perform(paths.cur_cfg, options.cfg_url)
-
-    # Inform user about sync status.
-    if sync_result
-      tell("{g{Synced to: `#{paths.cur_cfg}`.}}")
-    else
-      error("Unable to sync.")
-    end
-  end
-
-  method_option(*shared_option(:verbose))
-  method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:cfg_name,  required: true))
-  method_option(*shared_option(:inst_name, required: true))
-  method_option(*shared_option(:vars_name, required: true))
-  method_option(*shared_option(:meta_name))
-  desc("instantiate", "Create a configuration instance in the current machine.")
-  def instantiate
-    # Before instantiation.
-    paths = prepare_storage(options.fizzy_dir,
-                            meta_name:     options.meta_name,
-                            valid_cfg:     :readonly,
-                            valid_inst:    false,
-                            cur_cfg_name:  options.cfg_name,
-                            cur_inst_name: options.inst_name)
-    setup_vars(paths.cur_cfg_vars, options.vars_name)
-
-    meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg_elems,
-                    options.verbose)
-
-    info("meta: ", "{g{#{meta[:elems].count}}}/" +
-                   "#{meta[:all_elems_count]} elem(s) selected.")
-    info("meta: ", "{r{#{meta[:excluded_files].count}}}/" +
-                   "#{meta[:all_files_count]} file(s) excluded.")
-    tell
-
-    # Create a configuration instance.
-    tell("{b{Creating a configuration instance named `#{options.inst_name}`}} from: `{m{#{paths.cur_cfg}}}`.")
-
-    exclude_pattern = Fizzy::CFG.instantiate_exclude_pattern
-    meta[:excluded_files].each do |excluded_file|
-      exclude_pattern = /#{exclude_pattern}|#{excluded_file}/
-    end
-
-    begin
-      directory(paths.cur_cfg, paths.cur_inst, exclude_pattern: exclude_pattern)
-    rescue SyntaxError
-      error("Error while processing the template: `#{$fizzy_cur_template}`.")
-    end
-
-    # After instantiation.
-    tell("{g{Created the configuration instance in: `#{paths.cur_inst}`.}}")
-  end
-
-end
-
-# ──────────────────────────────────────────────────────────── Inst ← Command ──
-
-class Fizzy::InstCommand < Fizzy::BaseCommand
-
-  method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:inst_name))
-  desc("cd", "Change directory to the instance directory " +
-       "(useful for extensive filesystem manipulations).")
-  def cd
-    # Prepare stuff for changing directory.
-    paths = prepare_storage(options.fizzy_dir,
-                            valid_meta:    false,
-                            valid_cfg:     false,
-                            valid_inst:    !options.inst_name.nil?,
-                            cur_inst_name: options.inst_name)
-
-    # Changing directory.
-    dir_path = paths.cur_inst || paths.inst
-    tell("{c{Changing directory to: `{m{#{dir_path}}}`}}.")
-    FileUtils.cd(dir_path)
-    system get_env!(:SHELL)
-
-    # Inform user about the changing directory status.
-    tell("{g{CD done in: `#{dir_path}`.}}")
-  end
-
-  method_option(*shared_option(:verbose))
-  method_option(*shared_option(:run_mode))
-  method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:inst_name, required: true))
-  method_option(*shared_option(:vars_name, required: true))
-  method_option(*shared_option(:meta_name))
-  desc("install", "Install the current configuration instance in the system.")
-  def install
-    # Prepare stuff for performing install.
-    @run_mode = options.run_mode.to_sym
-    @verbose  = options.verbose
-    paths = prepare_storage(options.fizzy_dir,
-                            valid_cfg:     false,
-                            meta_name:     options.meta_name,
-                            cur_inst_name: options.inst_name)
-    setup_vars(paths.cur_inst_vars, options.vars_name)
-
-    meta = get_meta(paths.cur_inst_meta, paths.cur_inst_vars, paths.cur_inst_elems,
-                    options.verbose)
-
-    # 1: Install the instance into the system.
-    tell("{b{Installing the configuration instance `#{options.inst_name}` into the system.}}")
-    # 1.1: Install the elements.
-    meta[:elems].each do |elem|
-      tell("{c{Installing element: `#{elem[:name]}`.}}")
-      elements_appliers.each { |applier| applier.call(elem) }
-      if elem[:notes]
-        tell("{y{Notes for `#{elem[:name]}`:}}\n" +
-             elem[:notes].split("\n").collect { |s| "  #{s}" }.join("\n"))
-      end
-    end
-    # 1.2: Install the commands.
-    meta[:commands].each do |command|
-      tell("{c{Executing command: `#{command.type}`.}}")
-      command.execute
-    end
-
-    # Inform the user about installation status.
-    tell("{g{The configuration instance `#{options.inst_name}` has been installed into the system.}}")
-  end
-
-end
-
-# ──────────────────────────────────────────────────────────── Main ← Command ──
-
-class Fizzy::MainCommand < Fizzy::BaseCommand
-
-  desc("cfg SUBCOMMAND ...ARGS", "Manage the fizzy configuration " +
-                                 "(without modifying the host system).")
-  subcommand("cfg", Fizzy::CfgCommand)
-
-  desc("inst SUBCOMMAND ...ARGS", "Manage a configuration instance")
-  subcommand("inst", Fizzy::InstCommand)
-
-  desc("usage", "Show how to use fizzy.")
-  def usage
-    url = URI.join(Fizzy::CFG.static_files_base_url, "README.md")
-    res = Net::HTTP.get_response(url)
-    if res.is_a?(Net::HTTPSuccess)
-      tell("\n#{res.body}\n")
-    else
-      error("Network error: cannot retrieve `#{url}`.")
-    end
-  end
-
-  desc("version", "Show fizzy version.")
-  def version
-    info("fizzy version", "{m{#{Fizzy::CFG.version}}}")
-    info("ruby version", "{m{ruby #{RUBY_VERSION}p#{RUBY_PATCHLEVEL}}}")
-  end
-
-  method_option(*shared_option(:verbose))
-  method_option(*shared_option(:run_mode))
-  method_option(*shared_option(:fizzy_dir))
-  method_option(*shared_option(:cfg_name,  required: true))
-  method_option(*shared_option(:inst_name, required: true))
-  method_option(*shared_option(:vars_name, required: true))
-  method_option(*shared_option(:meta_name))
-  desc("quick-install", "Quickly install a configuration.")
-  def quick_install
-    invoke(Fizzy::CfgCommand, "instantiate", [],
-           cfg_name:  options.cfg_name,
-           vars_name: options.vars_name,
-           inst_name: options.inst_name,
-           fizzy_dir: options.fizzy_dir,
-           meta_name: options.meta_name,
-           verbose:   options.verbose)
-    invoke(Fizzy::InstCommand, "install", [],
-           vars_name: options.vars_name,
-           inst_name: options.inst_name,
-           fizzy_dir: options.fizzy_dir,
-           meta_name: options.meta_name,
-           run_mode:  options.run_mode,
-           verbose:   options.verbose)
-  end
-  map qi: :quick_install
-
-end
-
 # ─────────────────────────────────────────────────────────────────────── Cli ──
 
 # Namespace for fizzy commandline interface.
@@ -5209,17 +4823,17 @@ module Fizzy::CLI
     },
     inst_name: {
       desc: "The name for the configuration instance to be used.",
-      aliases: "I",
+      abbrev: "I",
       required: true
     },
     vars_name: {
       desc: "The name for the variables file to be used.",
-      aliases: "V",
+      abbrev: "V",
       required: true
     },
     meta_name: {
       desc: "The name of the meta file.",
-      aliases: "M",
+      abbrev: "M",
       default: Fizzy::CFG.default_meta_name
     }
   }.freeze
@@ -5544,9 +5158,140 @@ end
 
 # ──────────────────────────────────────────────────────── Sync ← Depot ← Cli ──
 
+#
+# Fizzy command to sync configuration.
+#
+class Fizzy::CLI::Sync < Fizzy::CLI::Command
+  def initialize
+    super("Synchronize configuration.",
+          spec: Fizzy::CLI.known_args(:fizzy_dir, :cfg_name, :cfg_url))
+  end
+
+  def run
+    paths = compute_paths
+    sync_result = perform_sync(paths.cur_cfg)
+    inform_user(sync_result, paths.cur_cfg)
+  end
+
+  private
+
+  def compute_paths
+    prepare_storage(options[:fizzy_dir],
+                    valid_meta:   false,
+                    valid_cfg:    false,
+                    valid_inst:   false,
+                    cur_cfg_name: options[:cfg_name])
+  end
+
+  def perform_sync(cur_cfg_path)
+    Fizzy::Sync.perform(cur_cfg_path, options[:cfg_url])
+  end
+
+  #
+  # Inform user about sync status.
+  #
+  def inform_user(sync_result, cur_cfg_path)
+    if sync_result
+      tell("{g{Synced to: `#{cur_cfg_path}`.}}")
+    else
+      error("Unable to sync.")
+    end
+  end
+end
 
 # ─────────────────────────────────────────────────── Incarnate ← Depot ← Cli ──
 
+#
+# Fizzy command to incarnate configuration.
+#
+class Fizzy::CLI::Incarnate < Fizzy::CLI::Command
+  def initialize
+    super("Incarnate configuration (a.k.a. instantiate + install).",
+          spec: Fizzy::CLI.known_args(:run_mode, :fizzy_dir, :cfg_name,
+                                      :inst_name, :vars_name, :meta_name))
+  end
+
+  def run
+    instantiate
+    install
+  end
+
+  private
+
+  def instantiate
+    # Before instantiation.
+    paths = prepare_storage(options[:fizzy_dir],
+                            meta_name:     options[:meta_name],
+                            valid_cfg:     :readonly,
+                            valid_inst:    false,
+                            cur_cfg_name:  options[:cfg_name],
+                            cur_inst_name: options[:inst_name])
+    setup_vars(paths.cur_cfg_vars, options[:vars_name])
+
+    meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg_elems,
+                    options[:verbose])
+
+    info("meta: ", "{g{#{meta[:elems].count}}}/" \
+                   "#{meta[:all_elems_count]} elem(s) selected.")
+    info("meta: ", "{r{#{meta[:excluded_files].count}}}/" \
+                   "#{meta[:all_files_count]} file(s) excluded.")
+    tell
+
+    # Create a configuration instance.
+    tell("{b{Creating a configuration instance named " \
+         "`#{options[:inst_name]}`}} from: `{m{#{paths.cur_cfg}}}`.")
+
+    exclude_pattern = Fizzy::CFG.instantiate_exclude_pattern
+    meta[:excluded_files].each do |excluded_file|
+      exclude_pattern = /#{exclude_pattern}|#{excluded_file}/
+    end
+
+    begin
+      directory(paths.cur_cfg, paths.cur_inst, exclude_pattern: exclude_pattern)
+    rescue SyntaxError
+      error("Error while processing the template: `#{$fizzy_cur_template}`.")
+    end
+
+    # After instantiation.
+    tell("{g{Created the configuration instance in: `#{paths.cur_inst}`.}}")
+  end
+
+  def install
+    # Prepare stuff for performing install.
+    @run_mode = options[:run_mode].to_sym
+    @verbose  = options[:verbose]
+    paths = prepare_storage(options[:fizzy_dir],
+                            valid_cfg:     false,
+                            meta_name:     options[:meta_name],
+                            cur_inst_name: options[:inst_name])
+    setup_vars(paths.cur_inst_vars, options[:vars_name])
+
+    meta = get_meta(paths.cur_inst_meta, paths.cur_inst_vars,
+                    paths.cur_inst_elems, options[:verbose])
+
+    # 1: Install the instance into the system.
+    tell("{b{Installing the configuration instance " \
+         "`#{options[:inst_name]}` into the system.}}")
+    # 1.1: Install the elements.
+    meta[:elems].each do |elem|
+      tell("{c{Installing element: `#{elem[:name]}`.}}")
+      elements_appliers.each { |applier| applier.call(elem) }
+      if elem[:notes]
+        tell("{y{Notes for `#{elem[:name]}`:}}\n" +
+             elem[:notes].split("\n").collect { |s| "  #{s}" }.join("\n"))
+      end
+    end
+    # 1.2: Install the commands.
+    meta[:commands].each do |command|
+      tell("{c{Executing command: `#{command.type}`.}}")
+      command.execute
+    end
+
+    # Inform the user about installation status.
+    tell("{g{The configuration instance `#{options[:inst_name]}` has been " \
+         "installed into the system.}}")
+  end
+end
 
 # ─────────────────────────────────────────────────────── Usage ← Depot ← Cli ──
 

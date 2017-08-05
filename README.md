@@ -91,7 +91,7 @@ $ curl -sL https://raw.githubusercontent.com/alem0lars/fizzy/master/build/fizzy 
 You can provide integration with an existing package system.
 
 The dependencies are:
-* The [ruby][ruby_homepage] interpreter (`>= 2.0.0`)
+* The [ruby][ruby_homepage] interpreter (`>= 2.0.0`). Yeah, any ruby since 2013!
 
 Then you can drop [fizzy][fizzy_bin] everywhere (possibly in the system path)
 and make it executable.

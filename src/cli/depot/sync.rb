@@ -4,7 +4,8 @@
 class Fizzy::CLI::Sync < Fizzy::CLI::Command
   def initialize
     super("Synchronize configuration.",
-          spec: Fizzy::CLI.known_args(:fizzy_dir, :cfg_name, :cfg_url))
+          spec: Fizzy::CLI.known_args(:fizzy_dir, :cfg_name,
+                                      cfg_url: { required: false }))
   end
 
   def run

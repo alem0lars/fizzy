@@ -8,18 +8,21 @@ class Fizzy::CLI::Cd < Fizzy::CLI::Command
   end
 
   def run
-    # Prepare stuff for changing directory.
-    paths = prepare_storage(options[:fizzy_dir],
-                            valid_meta:   false,
-                            valid_inst:   false,
-                            valid_cfg:    !options[:cfg_name].nil? && :readonly,
-                            cur_cfg_name: options[:cfg_name])
+    paths = compute_paths
     dir_path = paths.cur_cfg || paths.cfg
     change_dir(dir_path)
     inform_user(dir_path)
   end
 
   private
+
+  def compute_paths
+    prepare_storage(options[:fizzy_dir],
+                    valid_meta:   false,
+                    valid_inst:   false,
+                    valid_cfg:    !options[:cfg_name].nil? && :readonly,
+                    cur_cfg_name: options[:cfg_name])
+  end
 
   #
   # Change directory to the provided path, spawning a new sub-shell.

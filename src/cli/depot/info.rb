@@ -14,9 +14,6 @@ class Fizzy::CLI::Info < Fizzy::CLI::Command
 
   private
 
-  #
-  # Prepare paths before considering details.
-  #
   def compute_paths
     prepare_storage(options[:fizzy_dir],
                     valid_meta:   false,

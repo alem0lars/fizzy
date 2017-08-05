@@ -1,4 +1,5 @@
 # Core modules.
+require "English"
 require "fileutils"
 require "find"
 require "forwardable"

@@ -39,7 +39,7 @@ class Fizzy::CLI::Command
     end
   end
 
-  def initialize(desc, spec)
+  def initialize(desc, spec = {})
     @parser = Fizzy::ArgParse::SubCommandParser.new(self.class.command_name,
                                                     desc,
                                                     spec)

@@ -2765,7 +2765,7 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     # TODO, replace "fizzy" with rootcommand name (find a way to find
     #       rootcommand from subcommand)
     [
-      "Usage: PIPPO fizzy #{name} [options]",
+      "Usage: fizzy #{name} [options]",
       desc
     ].join("\n")
   end
@@ -3317,7 +3317,6 @@ end
 # Utilities to interact with the filesystem.
 #
 module Fizzy::Filesystem
-
   include Fizzy::IO
   include Fizzy::Execution
 
@@ -3327,7 +3326,7 @@ module Fizzy::Filesystem
     if path.file?
       path
     else
-      %w(yml yaml).map do |ext|
+      %w[yml yaml].map do |ext|
         p = Pathname.new("#{path}.#{ext}")
         p if p.file?
       end.compact.first
@@ -3342,7 +3341,7 @@ module Fizzy::Filesystem
   def existing_dir(path, writable: true)
     dir_path = path
     dir_path = dir_path.dirname until dir_path.directory?
-    (writable && !dir_path.writable?) ? nil : dir_path
+    writable && !dir_path.writable? ? nil : dir_path
   end
 
   # Return an object (`OpenStruct`), which contains all of the well-known
@@ -3392,24 +3391,26 @@ module Fizzy::Filesystem
         exec_cmd("rm #{root_path.shell_escape}",
                  as_su: File.owned?(root_path))
       else
-        error("File `#{root_path}` already exists but is needed as fizzy " +
+        error("File `#{root_path}` already exists but is needed as fizzy " \
               "root directory. Aborting.")
       end
     end
 
-    # XXX This check is for preventing errors when we don't want to create the
-    #     directory structure. Should we add a dedicate argument?
+    # XXX: This check is for preventing errors when we don't want to create the
+    #      directory structure. Should we add a dedicate argument?
     if !valid_cfg && !valid_inst && root_path.directory? && !root_path.writable?
       error("No write permissions in Fizzy storage at path `#{root_path}`.")
     end
 
     if valid_cfg
       unless root_path.directory?
-        error("The Fizzy root directory `#{root_path}` doesn't exist " +
+        error("The Fizzy root directory `#{root_path}` doesn't exist " \
               "(maybe you need to run: `fizzy cfg sync`).")
       end
-      if cur_cfg_path.nil? || !cur_cfg_path.directory? || !(valid_cfg == :readonly || cur_cfg_path.writable?)
-        error("The current configuration `#{cur_cfg_name}` is invalid: " +
+      if cur_cfg_path.nil? ||
+         !cur_cfg_path.directory? ||
+         !(valid_cfg == :readonly || cur_cfg_path.writable?)
+        error("The current configuration `#{cur_cfg_name}` is invalid: " \
               "it's not a valid directory.")
       end
       if valid_meta && (cur_cfg_meta_path.nil? || !cur_cfg_meta_path.file?)
@@ -3422,11 +3423,11 @@ module Fizzy::Filesystem
 
     if valid_inst
       unless root_path.directory?
-        error("The Fizzy root directory `#{root_path}` doesn't exist " +
+        error("The Fizzy root directory `#{root_path}` doesn't exist " \
               "(maybe you need to run: `fizzy cfg sync`).")
       end
       if cur_inst_path.nil? || !cur_inst_path.directory? || !(valid_inst == :readonly || cur_inst_path.writable?)
-        error("The current instance `#{cur_inst_name}` is invalid: it's " +
+        error("The current instance `#{cur_inst_name}` is invalid: it's " \
               "not a valid directory.")
       end
       if valid_meta && (cur_inst_meta_path.nil? || !cur_inst_meta_path.file?)
@@ -3440,11 +3441,10 @@ module Fizzy::Filesystem
     # Create non-existing internal directories.
     FileUtils.mkdir_p(root_path) unless root_path.directory?
     [cfg_path, inst_path].each do |dir_path|
-      unless dir_path.directory?
-        FileUtils.mkdir_p(dir_path)
-        exec_cmd("chmod a+w #{dir_path.shell_escape}",
-                 as_su: File.owned?(dir_path))
-      end
+      next if dir_path.directory?
+      FileUtils.mkdir_p(dir_path)
+      exec_cmd("chmod a+w #{dir_path.shell_escape}",
+               as_su: File.owned?(dir_path))
     end
     if cur_inst_path && !cur_inst_path.directory?
       FileUtils.mkdir_p(cur_inst_path)
@@ -3462,9 +3462,9 @@ module Fizzy::Filesystem
       cur_inst:      cur_inst_path,
       cur_inst_vars: cur_inst_vars_path,
       cur_inst_elems: cur_inst_elems_path,
-      cur_inst_meta: cur_inst_meta_path)
+      cur_inst_meta: cur_inst_meta_path
+    )
   end
-
 end
 
 # ─────────────────────────────────────────────────────── Setup ← Vars ← Core ──
@@ -4479,7 +4479,6 @@ end
 # ───────────────────────────────────────────────────────── Git ← Sync ← Core ──
 
 class Fizzy::Sync::Git < Fizzy::Sync::Base
-
   include Fizzy::IO
   include Fizzy::Execution
   include Fizzy::Filesystem
@@ -4492,7 +4491,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   # Check if the synchronizer is enabled.
   #
   def enabled?
-    ( super ||
+    (super ||
       (!@remote_url.nil? && @remote_url.to_s.start_with?("#{@name}:")) ||
       local_valid_repo?)
   end
@@ -4543,11 +4542,11 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def normalize_url(url, default_protocol: :ssh)
     return nil if url.nil?
     url = url.to_s
-    protocols = %i(https ssh)
+    protocols = %i[https ssh]
     url = url.gsub(/^#{@name}:/, "") # Remove VCS name prefix (optional).
     regexp = %r{
       ^
-      (?<protocol>#{protocols.map{|p| "#{p}:"}.join("|")})?
+      (?<protocol>#{protocols.map { |p| "#{p}:" }.join("|")})?
       (?<username>[a-z0-9\-_]+)
       \/
       (?<repository>[a-z0-9\-_]+)
@@ -4555,11 +4554,11 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     }xi
     md = url.match(regexp)
     return url unless md
-    protocol = (md[:protocol] || default_protocol).gsub(/:$/, "").to_sym
+    protocol = (md[:protocol] || default_protocol).to_s.gsub(/:$/, "").to_sym
     case protocol
-      when :ssh   then "git@github.com:#{md[:username]}/#{md[:repository]}"
-      when :https then "https://github.com/#{md[:username]}/#{md[:repository]}"
-      else        error("Invalid protocol for `{m{#{url}}}`: `{m{#{protocol}}}` not in `{m{[#{protocols.join(", ")}]}}`.")
+    when :ssh   then "git@github.com:#{md[:username]}/#{md[:repository]}"
+    when :https then "https://github.com/#{md[:username]}/#{md[:repository]}"
+    else        error("Invalid protocol for `{m{#{url}}}`: `{m{#{protocol}}}` not in `{m{[#{protocols.join(", ")}]}}`.")
     end
   end
   protected :normalize_url
@@ -4594,11 +4593,11 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
       local = `git rev-parse @ 2> /dev/null`.strip
-      local = nil unless $?.success?
+      local = nil unless $CHILD_STATUS.success?
       remote = `git rev-parse @{u} 2> /dev/null`.strip
-      remote = nil unless $?.success?
+      remote = nil unless $CHILD_STATUS.success?
       base = `git merge-base @ @{u} 2> /dev/null`.strip
-      base = nil unless $?.success?
+      base = nil unless $CHILD_STATUS.success?
       return { local: local, remote: remote, base: base }
     end
   end
@@ -4643,7 +4642,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def perform_add(files: nil, interactive: false)
     error "Invalid files `#{files}`." unless files.nil? || files.is_a?(Array)
 
-    cmd  = ["git", "add"]
+    cmd = %w[git add]
     cmd << "-i"  if     interactive
     cmd << "-A"  if     files.nil?
     cmd << files unless files.nil?
@@ -4667,7 +4666,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
           message ||= ask("Type the commit message", type: :string)
 
-          cmd  = ["git", "commit", "-a"]
+          cmd = ["git", "commit", "-a"]
           cmd << "--allow-empty-message" if     message.nil?
           cmd += ["-m", message]         unless message.nil?
 
@@ -4689,7 +4688,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
     tell("{b{Fetching information from remote.}}")
 
-    cmd  = ["git", "fetch"]
+    cmd = %w[git fetch]
     cmd << remote.shell_escape unless remote.nil?
     cmd << branch.shell_escape unless branch.nil?
 
@@ -4705,7 +4704,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     parent_dir = @local_dir_path.dirname
     name       = @local_dir_path.basename
 
-    cmd  = ["git", "clone"]
+    cmd = %w[git clone]
     cmd << "--recursive" if recursive
     cmd << @remote_normalized_url.shell_escape
     cmd << name.shell_escape
@@ -4725,7 +4724,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     if should_pull?
       tell("{b{Performing pull.}}")
 
-      cmd  = ["git", "pull"]
+      cmd = %w[git pull]
       cmd << remote.shell_escape unless remote.nil?
       cmd << branch.shell_escape unless branch.nil?
 
@@ -4735,7 +4734,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
                         chdir: @local_dir_path)
 
       if with_submodules
-        status &&= exec_cmd(%w(git submodule update --recursive),
+        status &&= exec_cmd(%w[git submodule update --recursive],
                             as_su: !existing_dir(@local_dir_path),
                             chdir: @local_dir_path)
       end
@@ -4756,7 +4755,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     if should_push?
       tell("{b{Pushing to remote.}}")
 
-      cmd  = ["git", "push"]
+      cmd = %w[git push]
       cmd << remote.shell_escape unless remote.nil?
       cmd << branch.shell_escape unless branch.nil?
 
@@ -4769,7 +4768,6 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     status
   end
   protected :perform_push
-
 end
 
 # ───────────────────────────────────────────────── Lastpass ← Filter ← Depot ──
@@ -5310,7 +5308,7 @@ class Fizzy::CLI::Command
     end
   end
 
-  def initialize(desc, spec)
+  def initialize(desc, spec = {})
     @parser = Fizzy::ArgParse::SubCommandParser.new(self.class.command_name,
                                                     desc,
                                                     spec)
@@ -5323,9 +5321,86 @@ end
 
 # ────────────────────────────────────────────────────────── Cd ← Depot ← Cli ──
 
+#
+# Fizzy command to show configuration details.
+#
+class Fizzy::CLI::Cd < Fizzy::CLI::Command
+  def initialize
+    super("Change directory to the configuration directory.",
+          spec: Fizzy::CLI.known_args(:fizzy_dir, :cfg_name))
+  end
+
+  def run
+    # Prepare stuff for changing directory.
+    paths = prepare_storage(options[:fizzy_dir],
+                            valid_meta:   false,
+                            valid_inst:   false,
+                            valid_cfg:    !options[:cfg_name].nil? && :readonly,
+                            cur_cfg_name: options[:cfg_name])
+    dir_path = paths.cur_cfg || paths.cfg
+    change_dir(dir_path)
+    inform_user(dir_path)
+  end
+
+  private
+
+  #
+  # Change directory to the provided path, spawning a new sub-shell.
+  #
+  def change_dir(dir_path)
+    tell("{c{Changing directory to: `#{dir_path}`.}}")
+    FileUtils.cd(dir_path)
+    system(get_env!(:SHELL))
+  end
+
+  #
+  # Inform user about the changing directory status.
+  #
+  def inform_user(dir_path)
+    tell("{g{CD done in: `#{dir_path}`.}}")
+  end
+end
 
 # ───────────────────────────────────────────────────── Cleanup ← Depot ← Cli ──
 
+#
+# Fizzy command to show fizzy version.
+#
+class Fizzy::CLI::Cleanup < Fizzy::CLI::Command
+  def initialize
+    super("Cleanup the fizzy storage.",
+          spec: Fizzy::CLI.known_args(:fizzy_dir))
+  end
+
+  def run
+    # Prepare paths for cleanup.
+    paths = prepare_storage(options[:fizzy_dir],
+                            valid_meta: false,
+                            valid_cfg:  false,
+                            valid_inst: false)
+
+    # Perform cleanup.
+    status =
+      if ask("Remove the fizzy root directory (`#{paths.root}`)")
+        paths.root.rmtree
+      end
+
+    inform_user(status, paths.root)
+  end
+
+  private
+
+  #
+  # Inform user about the cleanup status.
+  #
+  def inform_user(status, root_dir)
+    case status
+    when true  then tell("{g{Successfully cleaned: `#{root_dir}`.}}")
+    when false then error("Failed to cleanup: `#{root_dir}`.", :red)
+    when nil   then warning("Cleanup skipped.", ask_continue: false)
+    end
+  end
+end
 
 # ──────────────────────────────────────────────────────── Help ← Depot ← Cli ──
 
@@ -5362,16 +5437,26 @@ class Fizzy::CLI::Info < Fizzy::CLI::Command
   end
 
   def run
-    # Prepare paths before considering details.
-    paths = prepare_storage(options[:fizzy_dir],
-                            valid_meta:   false,
-                            valid_cfg:    :readonly,
-                            valid_inst:   false,
-                            cur_cfg_name: options[:cfg_name])
+    paths = compute_paths
+    tell_available_vars(paths.cur_cfg_vars)
+  end
 
-    # Print details.
+  private
+
+  #
+  # Prepare paths before considering details.
+  #
+  def compute_paths
+    prepare_storage(options[:fizzy_dir],
+                    valid_meta:   false,
+                    valid_cfg:    :readonly,
+                    valid_inst:   false,
+                    cur_cfg_name: options[:cfg_name])
+  end
+
+  def tell_available_vars(cur_cfg_vars_path)
     tell("{c{Available vars:}}")
-    avail_vars(paths.cur_cfg_vars).each do |path|
+    avail_vars(cur_cfg_vars_path).each do |path|
       name = path.basename(path.extname)
       tell("\t→ {m{#{name}}}")
     end
@@ -5380,6 +5465,82 @@ end
 
 # ──────────────────────────────────────────────────────── Edit ← Depot ← Cli ──
 
+#
+# Fizzy command to edit configuration.
+#
+class Fizzy::CLI::Edit < Fizzy::CLI::Command
+  def initialize
+    super("Find the files relative to PATTERN and edit them.",
+          spec: Fizzy::CLI.known_args(:fizzy_dir, :cfg_name).merge(
+            pattern: {
+              desc: "Pattern to find files to be edited",
+              abbrev: "P",
+              required: true
+            }
+          ))
+  end
+
+  def run
+    # Prepare stuff for editing.
+    paths = compute_paths
+    find_path = (paths.cur_cfg || paths.cfg).join(options[:pattern])
+    cfg_files = find_cfg_files(find_path)
+    cfg_files_arg = build_cfg_files_arg(cfg_files)
+    status = perform_edit(cfg_files_arg)
+    inform_user(status, cfg_files_arg)
+  end
+
+  private
+
+  def compute_paths
+    prepare_storage(options[:fizzy_dir],
+                    valid_meta:   false,
+                    valid_inst:   false,
+                    cur_cfg_name: options[:cfg_name])
+  end
+
+  #
+  # Find configuration files to be edited.
+  #
+  def find_cfg_files(find_path)
+    if find_path.exist?
+      Array[find_path]
+    else
+      Pathname.glob("#{find_path}*", File::FNM_DOTMATCH).to_a
+              .select(&:file?)
+              .reject { |path| path.to_s =~ /\.git/ }
+    end
+  end
+
+  def build_cfg_files_arg(cfg_files)
+    cfg_files.collect(&:shell_escape) .join(" ") .strip
+  end
+
+  #
+  # Perform edit.
+  #
+  def perform_edit(cfg_files_arg)
+    if cfg_files_arg.empty?
+      warning("No files matching `#{options[:cfg_name]}` have been found.",
+              ask_continue: false)
+      nil
+    else
+      tell("{c{Editing configuration file(s): `#{cfg_files_arg}`.}}")
+      system("#{Fizzy::CFG.editor} #{cfg_files_arg}")
+    end
+  end
+
+  #
+  # Inform user about the editing status.
+  #
+  def inform_user(status, cfg_files_arg)
+    case status
+    when true  then tell("{g{Successfully edited: `#{cfg_files_arg}`.}}")
+    when false then error("Failed to edit: `#{cfg_files_arg}`.", :red)
+    when nil   then warning("Editing skipped.", ask_continue: false)
+    end
+  end
+end
 
 # ──────────────────────────────────────────────────────── Sync ← Depot ← Cli ──
 
@@ -5389,9 +5550,40 @@ end
 
 # ─────────────────────────────────────────────────────── Usage ← Depot ← Cli ──
 
+#
+# Fizzy command to show how to use fizzy.
+#
+class Fizzy::CLI::Usage < Fizzy::CLI::Command
+  def initialize
+    super("Show how to use fizzy.")
+  end
+
+  def run
+    url = URI.join(Fizzy::CFG.static_files_base_url, "BIGNAMI.md")
+    res = Net::HTTP.get_response(url)
+    if res.is_a?(Net::HTTPSuccess)
+      tell("\n#{res.body}\n")
+    else
+      error("Network error: cannot retrieve `#{url}`.")
+    end
+  end
+end
 
 # ───────────────────────────────────────────────────── Version ← Depot ← Cli ──
 
+#
+# Fizzy command to show fizzy version.
+#
+class Fizzy::CLI::Version < Fizzy::CLI::Command
+  def initialize
+    super("Show fizzy version.")
+  end
+
+  def run
+    info("fizzy version", "{m{#{Fizzy::CFG.version}}}")
+    info("ruby version", "{m{ruby #{RUBY_VERSION}p#{RUBY_PATCHLEVEL}}}")
+  end
+end
 
 # ────────────────────────────────────────────────────────────────────── Main ──
 

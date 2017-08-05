@@ -8,9 +8,12 @@
   <h1 align="center">the hassle free configuration manager</h1>
 </p>
 
-fizzy is an easy-to-use, learn-by-doing, lightweight, configuration management tool meant to be used by developers, hackers, experienced users
+fizzy is an easy-to-use, learn-by-doing, lightweight, configuration management
+tool meant to be mainly used by developers, hackers, experienced users
 
-It doesn't try to reimplement the wheel, instead it follows the unix philosophy do one thing and do it well making extremely easy to integrate with your existing ecosystem
+It doesn't try to reimplement the wheel, instead it follows the unix philosophy
+do one thing and do it well making extremely easy to integrate with your
+existing ecosystem
 
 ----
 
@@ -18,6 +21,10 @@ It doesn't try to reimplement the wheel, instead it follows the unix philosophy 
 [![Build Status][travis_status_image]][travis_status_link]
 [![Gitbook status][gitbook_status_image]][gitbook_status_link]
 [![Bountysource][bountysource_image]][bountysource_link]
+
+## Getting Started
+
+Take a look at fizzy's [bignami](./BIGNAMI.md)
 
 ## Usage
 
@@ -85,7 +92,6 @@ You can provide integration with an existing package system.
 
 The dependencies are:
 * The [ruby][ruby_homepage] interpreter (`>= 2.0.0`)
-* The [thor][thor_homepage] [gem][thor_gem]
 
 Then you can drop [fizzy][fizzy_bin] everywhere (possibly in the system path)
 and make it executable.
@@ -123,8 +129,6 @@ Made with ♥ by Alessandro Molari
 [contributing]: ./CONTRIBUTING.md
 
 [ruby_homepage]: https://www.ruby-lang.org
-[thor_gem]:      https://rubygems.org/gems/thor
-[thor_homepage]: http://whatisthor.com
 
 [license_image]: https://img.shields.io/github/license/alem0lars/fizzy.svg
 [license_link]:  ./LICENSE.md

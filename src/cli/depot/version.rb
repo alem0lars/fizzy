@@ -1,7 +1,7 @@
 #
 # Fizzy command to show fizzy version.
 #
-class Fizzy::CLI::Help < Fizzy::CLI::Command
+class Fizzy::CLI::Version < Fizzy::CLI::Command
   def initialize
     super("Show fizzy version.")
   end

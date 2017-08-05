@@ -79,11 +79,6 @@ sources:
 
   - depot/filter/lastpass
 
-  - command/base
-  - command/cfg
-  - command/inst
-  - command/main
-
   - cli
   - cli/known_args
   - cli/main
@@ -109,14 +104,9 @@ header: |
   # - Summary: The hassle free configuration manager                             │
   # - Authors:                                                                   │
   #   - Alessandro Molari <molari.alessandro@gmail.com> (alem0lars)              │
-  # - Contributors:                                                              │
+  # - Special thanks:                                                            │
   #   - Luca Molari <molari.luca@gmail.com> (lmolr)                              │
-  #   Special thanks:                                                            │
-  #   - Thor project (https://github.com/erikhuda/thor)                          │
-  #   - Hash#deep_merge (http://www.ruby-forum.com/topic/142809)                 │
-  #   - RubyTree (https://github.com/evolve75/RubyTree):                         │
-  #     It has been taken as the initial tree implementation (then customized)   │
-  #                                                                              │
+  #   - Giacomo Mantani <giacomo.mantani@gmail.com> (jake)                       │
   #                                                                              │
   # Project informations:                                                        │
   #   - Homepage:        https://github.com/alem0lars/fizzy                      │

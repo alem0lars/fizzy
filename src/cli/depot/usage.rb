@@ -1,7 +1,7 @@
 #
 # Fizzy command to show how to use fizzy.
 #
-class Fizzy::CLI::Help < Fizzy::CLI::Command
+class Fizzy::CLI::Usage < Fizzy::CLI::Command
   def initialize
     super("Show how to use fizzy.")
   end

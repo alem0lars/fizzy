@@ -1,7 +1,6 @@
 # Utilities to interact with the filesystem.
 #
 module Fizzy::Filesystem
-
   include Fizzy::IO
   include Fizzy::Execution
 
@@ -11,7 +10,7 @@ module Fizzy::Filesystem
     if path.file?
       path
     else
-      %w(yml yaml).map do |ext|
+      %w[yml yaml].map do |ext|
         p = Pathname.new("#{path}.#{ext}")
         p if p.file?
       end.compact.first
@@ -26,7 +25,7 @@ module Fizzy::Filesystem
   def existing_dir(path, writable: true)
     dir_path = path
     dir_path = dir_path.dirname until dir_path.directory?
-    (writable && !dir_path.writable?) ? nil : dir_path
+    writable && !dir_path.writable? ? nil : dir_path
   end
 
   # Return an object (`OpenStruct`), which contains all of the well-known
@@ -76,24 +75,26 @@ module Fizzy::Filesystem
         exec_cmd("rm #{root_path.shell_escape}",
                  as_su: File.owned?(root_path))
       else
-        error("File `#{root_path}` already exists but is needed as fizzy " +
+        error("File `#{root_path}` already exists but is needed as fizzy " \
               "root directory. Aborting.")
       end
     end
 
-    # XXX This check is for preventing errors when we don't want to create the
-    #     directory structure. Should we add a dedicate argument?
+    # XXX: This check is for preventing errors when we don't want to create the
+    #      directory structure. Should we add a dedicate argument?
     if !valid_cfg && !valid_inst && root_path.directory? && !root_path.writable?
       error("No write permissions in Fizzy storage at path `#{root_path}`.")
     end
 
     if valid_cfg
       unless root_path.directory?
-        error("The Fizzy root directory `#{root_path}` doesn't exist " +
+        error("The Fizzy root directory `#{root_path}` doesn't exist " \
               "(maybe you need to run: `fizzy cfg sync`).")
       end
-      if cur_cfg_path.nil? || !cur_cfg_path.directory? || !(valid_cfg == :readonly || cur_cfg_path.writable?)
-        error("The current configuration `#{cur_cfg_name}` is invalid: " +
+      if cur_cfg_path.nil? ||
+         !cur_cfg_path.directory? ||
+         !(valid_cfg == :readonly || cur_cfg_path.writable?)
+        error("The current configuration `#{cur_cfg_name}` is invalid: " \
               "it's not a valid directory.")
       end
       if valid_meta && (cur_cfg_meta_path.nil? || !cur_cfg_meta_path.file?)
@@ -106,11 +107,11 @@ module Fizzy::Filesystem
 
     if valid_inst
       unless root_path.directory?
-        error("The Fizzy root directory `#{root_path}` doesn't exist " +
+        error("The Fizzy root directory `#{root_path}` doesn't exist " \
               "(maybe you need to run: `fizzy cfg sync`).")
       end
       if cur_inst_path.nil? || !cur_inst_path.directory? || !(valid_inst == :readonly || cur_inst_path.writable?)
-        error("The current instance `#{cur_inst_name}` is invalid: it's " +
+        error("The current instance `#{cur_inst_name}` is invalid: it's " \
               "not a valid directory.")
       end
       if valid_meta && (cur_inst_meta_path.nil? || !cur_inst_meta_path.file?)
@@ -124,11 +125,10 @@ module Fizzy::Filesystem
     # Create non-existing internal directories.
     FileUtils.mkdir_p(root_path) unless root_path.directory?
     [cfg_path, inst_path].each do |dir_path|
-      unless dir_path.directory?
-        FileUtils.mkdir_p(dir_path)
-        exec_cmd("chmod a+w #{dir_path.shell_escape}",
-                 as_su: File.owned?(dir_path))
-      end
+      next if dir_path.directory?
+      FileUtils.mkdir_p(dir_path)
+      exec_cmd("chmod a+w #{dir_path.shell_escape}",
+               as_su: File.owned?(dir_path))
     end
     if cur_inst_path && !cur_inst_path.directory?
       FileUtils.mkdir_p(cur_inst_path)
@@ -146,7 +146,7 @@ module Fizzy::Filesystem
       cur_inst:      cur_inst_path,
       cur_inst_vars: cur_inst_vars_path,
       cur_inst_elems: cur_inst_elems_path,
-      cur_inst_meta: cur_inst_meta_path)
+      cur_inst_meta: cur_inst_meta_path
+    )
   end
-
 end

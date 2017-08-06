@@ -2573,6 +2573,7 @@ class Fizzy::ArgParse::CommandParser
   end
 
   def parse(args)
+    args = args.dup
     parse!(args)
     true
   rescue StandardError => error
@@ -2585,9 +2586,13 @@ class Fizzy::ArgParse::CommandParser
     error "Abstract method called with: #{args}."
   end
 
-  def tell_help
+  def help
     parser.banner = banner
-    tell(parser)
+    parser.to_s
+  end
+
+  def tell_help
+    tell(help)
   end
 
   def inspect
@@ -2596,10 +2601,11 @@ class Fizzy::ArgParse::CommandParser
 
   alias to_s inspect
 
+  protected
+
   def banner
     error "Abstract method called"
   end
-  protected :banner
 end
 
 # ────────────────────────────────────── Rootcommand parser ← argparse ← Misc ──
@@ -2658,21 +2664,14 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
   #
   def run
     handlers.each do |info, handler|
-      matches =
-        case info[:type]
-        when :option_name  then options.any? { |n, _| info[:regexp] =~ n }
-        when :option_value then options.any? { |_, v| info[:regexp] =~ v }
-        when :command_name then info[:regexp] =~ options[:command]
-        end
+      matches = matches_options?(info[:type], info[:regexp])
       break if matches && handler.call(options)
     end
   end
 
   def parse!(args)
-    subcommand_name = args.shift
-    if subcommand_name.nil?
-      error(nil, silent: true, exc: Fizzy::ArgParse::NoSubCommandName)
-    end
+    subcommand_name = pop_subcommand_name!(args)
+
     subcommand_parser = find_subcommand_parser(subcommand_name)
     if subcommand_parser.nil?
       error(subcommand_name,
@@ -2683,18 +2682,24 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
     parse_subcommand_arguments(subcommand_parser, args)
   end
 
-  def tell_help(subcommand_name = nil)
+  def help(subcommand_name = nil)
     subcommand_name ||= options[:command]
     if subcommand_name
-      find_subcommand_parser(subcommand_name).tell_help
+      find_subcommand_parser(subcommand_name).help
     else
       super()
     end
   end
 
+  def tell_help(subcommand_name = nil)
+    tell(help(subcommand_name))
+  end
+
   def add_subcommand_parser(subcommand_parser)
     subcommand_parsers << subcommand_parser
   end
+
+  protected
 
   def banner
     [
@@ -2702,7 +2707,33 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
       "Available sub-commands: #{subcommand_parsers.map(&:name).join(", ")}"
     ].join("\n")
   end
-  protected :banner
+
+  private
+
+  #
+  # Ensures that subcommand name is present in provided `args`.
+  #
+  # If present, it will be removed from `args` and returned.
+  #
+  def pop_subcommand_name!(args)
+    subcommand_name = args.shift
+    if subcommand_name.nil?
+      error(nil, silent: true, exc: Fizzy::ArgParse::NoSubCommandName)
+    else
+      subcommand_name
+    end
+  end
+
+  #
+  # Check if `regexp` (of provided `type`) matches with the current options.
+  #
+  def matches_options?(type, regexp)
+    case type
+    when :option_name  then options.any? { |n, _| regexp =~ n }
+    when :option_value then options.any? { |_, v| regexp =~ v }
+    when :command_name then regexp =~ options[:command]
+    end
+  end
 
   def find_subcommand_parser(subcommand_name = nil)
     subcommand_name ||= options[:command]
@@ -2712,14 +2743,12 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
       end
     matching_subcommand_parsers.first unless matching_subcommand_parsers.empty?
   end
-  private :find_subcommand_parser
 
   def parse_subcommand_arguments(subcommand, args)
     subcommand.parse!(args)
   ensure
     options.deep_merge!(subcommand.options)
   end
-  private :parse_subcommand_arguments
 end
 
 # ─────────────────────────────────────── Subcommand parser ← argparse ← Misc ──
@@ -2757,6 +2786,12 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     raise OptionParser::MissingArgument, missing.join(", ")
   end
 
+  def help_to_s
+    puts "help_to_s"
+  end
+
+  protected
+
   def banner
     # TODO, replace "fizzy" with rootcommand name (find a way to find
     #       rootcommand from subcommand)
@@ -2765,7 +2800,8 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
       desc
     ].join("\n")
   end
-  protected :banner
+
+  private
 
   def fill_opts(opts)
     spec.each do |opt_name, opt_info|
@@ -2778,7 +2814,6 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
       opts.on(*opt_args) { |opt_value| options[opt_name] = opt_value }
     end
   end
-  private :fill_opts
 
   def compute_opt_args(name, info)
     args = []
@@ -2787,14 +2822,12 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     args += compute_desc_args(info[:desc], info[:default], info[:type])
     args
   end
-  private :compute_opt_args
 
   def compute_abbrev_args(abbrev)
     args = []
     args << "-#{abbrev}" if abbrev
     args
   end
-  private :compute_abbrev_args
 
   def compute_type_args(name, type, req)
     arg_name = name.to_s.dasherize
@@ -2813,7 +2846,6 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     end
     args
   end
-  private :compute_type_args
 
   def compute_desc_args(desc, default, type)
     full_desc = desc
@@ -2821,7 +2853,6 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     full_desc << " (allowed: #{type.join(", ")})" if type.is_a? Array
     [full_desc]
   end
-  private :compute_desc_args
 
   def default_opt_info
     {
@@ -2831,7 +2862,6 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
       type: nil
     }
   end
-  private :default_opt_info
 end
 
 # ────────────────────────────────────────────────────── Base lexer ← Grammar ──
@@ -4865,7 +4895,7 @@ class Fizzy::CLI::Main
 
   attr_reader :parser
 
-  def_delegators :parser, :parse, :run, :tell_help
+  def_delegators :parser, :parse, :run, :tell_help, :help
 
   def initialize
     @parser = Fizzy::ArgParse::RootCommandParser.new("fizzy")
@@ -4907,7 +4937,7 @@ class Fizzy::CLI::Command
 
   attr_reader :parser
 
-  def_delegators :parser, :name, :options
+  def_delegators :parser, :name, :options, :tell_help, :help
 
   class << self
     def inherited(klass)
@@ -4972,7 +5002,7 @@ class Fizzy::CLI::Cd < Fizzy::CLI::Command
   end
 
   #
-  # Inform user about the changing directory status.
+  # Inform user about the change of directory.
   #
   def inform_user(dir_path)
     tell("{g{CD done in: `#{dir_path}`.}}")

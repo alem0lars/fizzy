@@ -23,7 +23,7 @@ class Fizzy::CLI::Command
 
   attr_reader :parser
 
-  def_delegators :parser, :name, :options
+  def_delegators :parser, :name, :options, :tell_help, :help
 
   class << self
     def inherited(klass)

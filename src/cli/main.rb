@@ -7,7 +7,7 @@ class Fizzy::CLI::Main
 
   attr_reader :parser
 
-  def_delegators :parser, :parse, :run, :tell_help
+  def_delegators :parser, :parse, :run, :tell_help, :help
 
   def initialize
     @parser = Fizzy::ArgParse::RootCommandParser.new("fizzy")

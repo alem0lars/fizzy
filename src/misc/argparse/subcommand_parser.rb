@@ -31,6 +31,12 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     raise OptionParser::MissingArgument, missing.join(", ")
   end
 
+  def help_to_s
+    puts "help_to_s"
+  end
+
+  protected
+
   def banner
     # TODO, replace "fizzy" with rootcommand name (find a way to find
     #       rootcommand from subcommand)
@@ -39,7 +45,8 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
       desc
     ].join("\n")
   end
-  protected :banner
+
+  private
 
   def fill_opts(opts)
     spec.each do |opt_name, opt_info|
@@ -52,7 +59,6 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
       opts.on(*opt_args) { |opt_value| options[opt_name] = opt_value }
     end
   end
-  private :fill_opts
 
   def compute_opt_args(name, info)
     args = []
@@ -61,14 +67,12 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     args += compute_desc_args(info[:desc], info[:default], info[:type])
     args
   end
-  private :compute_opt_args
 
   def compute_abbrev_args(abbrev)
     args = []
     args << "-#{abbrev}" if abbrev
     args
   end
-  private :compute_abbrev_args
 
   def compute_type_args(name, type, req)
     arg_name = name.to_s.dasherize
@@ -87,7 +91,6 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     end
     args
   end
-  private :compute_type_args
 
   def compute_desc_args(desc, default, type)
     full_desc = desc
@@ -95,7 +98,6 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     full_desc << " (allowed: #{type.join(", ")})" if type.is_a? Array
     [full_desc]
   end
-  private :compute_desc_args
 
   def default_opt_info
     {
@@ -105,5 +107,4 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
       type: nil
     }
   end
-  private :default_opt_info
 end

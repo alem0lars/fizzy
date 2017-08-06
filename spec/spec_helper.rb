@@ -2,19 +2,19 @@ require "bundler/setup" # For `Bundler.with_clean_env`.
 
 Bundler.require(:default, :development)
 
-root_dir_path = Pathname.new(__FILE__).expand_path.dirname.dirname
-spec_dir_path = root_dir_path.join("spec")
-support_dir_path = spec_dir_path.join("support")
-build_dir_path = root_dir_path.join("build")
-website_dir_path = root_dir_path.join("website")
+root_dir = Pathname.new(__FILE__).expand_path.dirname.dirname
+spec_dir = root_dir.join("spec")
+support_dir = spec_dir.join("support")
+build_dir = root_dir.join("build")
+website_dir = root_dir.join("website")
 
-$LOAD_PATH.unshift spec_dir_path.to_s
-$LOAD_PATH.unshift build_dir_path.to_s
+$LOAD_PATH.unshift(spec_dir.to_s) unless $LOAD_PATH.include?(spec_dir.to_s)
+$LOAD_PATH.unshift(build_dir.to_s) unless $LOAD_PATH.include?(build_dir.to_s)
 
 # Measure code coverage.
 SimpleCov.profiles.define "fizzy" do
-  root build_dir_path.to_s
-  coverage_dir website_dir_path.join("source", "doc", "coverage")
+  root build_dir.to_s
+  coverage_dir website_dir.join("source", "doc", "coverage")
 end
 SimpleCov.start "fizzy"
 
@@ -26,7 +26,7 @@ module Fizzy::Mock
 end
 
 # Require specs support.
-Dir[support_dir_path.join("**", "*.rb").to_s].each { |f| require f }
+Dir[support_dir.join("**", "*.rb").to_s].each { |f| require f }
 
 RSpec.configure do |config|
   # Run specs in random order to surface order dependencies. If you find an

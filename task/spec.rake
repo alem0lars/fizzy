@@ -5,6 +5,7 @@ begin
   Cucumber::Rake::Task.new do |t|
     t.cucumber_opts = "features --format pretty"
   end
+  task cucumber: :build
 rescue LoadError
   error("Cucumber is not loaded: please `bundle install`")
 end
@@ -14,7 +15,7 @@ begin
 
   RSpec::Core::RakeTask.new do |t|
     t.rspec_opts  = ["--require spec_helper"]
-    t.pattern     = "spec/#{ENV["S"] || "*"}_spec.rb"
+    t.pattern     = "spec/**/*_spec.rb"
   end
   task spec: :build
 rescue LoadError

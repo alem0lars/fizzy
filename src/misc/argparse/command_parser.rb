@@ -12,6 +12,7 @@ class Fizzy::ArgParse::CommandParser
   end
 
   def parse(args)
+    args = args.dup
     parse!(args)
     true
   rescue StandardError => error
@@ -24,9 +25,13 @@ class Fizzy::ArgParse::CommandParser
     error "Abstract method called with: #{args}."
   end
 
-  def tell_help
+  def help
     parser.banner = banner
-    tell(parser)
+    parser.to_s
+  end
+
+  def tell_help
+    tell(help)
   end
 
   def inspect
@@ -35,8 +40,9 @@ class Fizzy::ArgParse::CommandParser
 
   alias to_s inspect
 
+  protected
+
   def banner
     error "Abstract method called"
   end
-  protected :banner
 end

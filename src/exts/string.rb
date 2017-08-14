@@ -11,12 +11,6 @@ class String
     Shellwords.shellescape(self)
   end
 
-  # ──────────────────────────────────────────────────────────────── Encoding ──
-
-  def safe_encode
-    self.encode("utf-8", invalid: :replace, undef: :replace, replace: "_")
-  end
-
   # ────────────────────────────────────────────────────────────── Formatting ──
 
   # Turn the underlying string to a title.

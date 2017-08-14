@@ -1,21 +1,3 @@
-#
-# Safely encode templates before evaluating them.
-#
-# XXX Needed because of thor.
-#
-# TODO When thor dependency is removed, remove this shitty monkey patch!
-#
-class IO #:nodoc:
-  class << self
-    def binread(file, *args)
-      raise ArgumentError, "wrong number of arguments (#{1 + args.size} for 1..3)" unless args.size < 3
-      File.open(file, "rb") do |f|
-        f.read(*args).safe_encode
-      end
-    end
-  end
-end
-
 class String
 
   include Fizzy::ANSIColors

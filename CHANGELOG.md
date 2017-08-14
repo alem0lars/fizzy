@@ -12,20 +12,6 @@
 
 #### Breaking changes
 
-<<<<<<< HEAD
-### Dev changes
-
-## Version 2.3.3
-
-### User changes
-
-* Support UTF-8 templates
-  [@alem0lars][@alem0lars]
-
-## Version 2.3.2
-
-=======
->>>>>>> 67d3ef399ae81adc693fa05dc5ed17bec058f861
 The following changes will break backward compatibility:
 
 * Simplified command names (no more nesting, removed useless commands)
@@ -73,6 +59,14 @@ The following changes will break backward compatibility:
   [@alem0lars][@alem0lars]
 * Add some vim utilities in `.exrc` to uniform linting/formatting
   [@alem0lars][@alem0lars]
+
+## Version 2.3.3
+
+### User changes
+
+* Support UTF-8 templates
+  [@alem0lars][@alem0lars]
+
 
 ## Previous versions
 

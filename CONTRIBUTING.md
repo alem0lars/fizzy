@@ -8,7 +8,11 @@ to abide by the [Code of Conduct][code_of_conduct].
 ### 1: Prepare
 
 - Fork, then clone the repo: `git clone git@github.com:your-username/fizzy.git`.
+<<<<<<< HEAD
 - Set up Ruby dependencies via Bundler: `bundle install --binstubs --path=.binstub`.
+=======
+- Set up Ruby dependencies via Bundler: `bundle install`.
+>>>>>>> 67d3ef399ae81adc693fa05dc5ed17bec058f861
 - If you use vim, you may want to source `.exrc`.
 - Make sure the tests pass: `bundle exec rake docker:test`.
 

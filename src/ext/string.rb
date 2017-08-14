@@ -1,4 +1,5 @@
 #
+<<<<<<< HEAD
 <<<<<<< HEAD:src/ext/string.rb
 # Extensions for class `String`.
 #
@@ -21,6 +22,10 @@ class IO #:nodoc:
 end
 
 >>>>>>> v2.3.3:src/exts/string.rb
+=======
+# Extensions for class `String`.
+#
+>>>>>>> 67d3ef399ae81adc693fa05dc5ed17bec058f861
 class String
   include Fizzy::ANSIColors
 
@@ -34,12 +39,15 @@ class String
     Shellwords.shellescape(self)
   end
 
+<<<<<<< HEAD
   # ──────────────────────────────────────────────────────────────── Encoding ──
 
   def safe_encode
     self.encode("utf-8", invalid: :replace, undef: :replace, replace: "_")
   end
 
+=======
+>>>>>>> 67d3ef399ae81adc693fa05dc5ed17bec058f861
   # ────────────────────────────────────────────────────────────── Formatting ──
 
   #

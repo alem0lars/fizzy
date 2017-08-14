@@ -12,6 +12,7 @@
 
 #### Breaking changes
 
+<<<<<<< HEAD
 ### Dev changes
 
 ## Version 2.3.3
@@ -23,6 +24,8 @@
 
 ## Version 2.3.2
 
+=======
+>>>>>>> 67d3ef399ae81adc693fa05dc5ed17bec058f861
 The following changes will break backward compatibility:
 
 * Simplified command names (no more nesting, removed useless commands)

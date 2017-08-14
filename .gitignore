@@ -16,6 +16,7 @@
 
 # Ignore bundler stuff.
 /.bundle
+/.binstub
 
 # Ignore stuff specific for the website.
 /website/.sass-cache

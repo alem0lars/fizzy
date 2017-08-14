@@ -60,14 +60,6 @@ The following changes will break backward compatibility:
 * Add some vim utilities in `.exrc` to uniform linting/formatting
   [@alem0lars][@alem0lars]
 
-## Version 2.3.3
-
-### User changes
-
-* Support UTF-8 templates
-  [@alem0lars][@alem0lars]
-
-
 ## Previous versions
 
 See the release notes.

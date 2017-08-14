@@ -12,6 +12,17 @@
 
 #### Breaking changes
 
+### Dev changes
+
+## Version 2.3.3
+
+### User changes
+
+* Support UTF-8 templates
+  [@alem0lars][@alem0lars]
+
+## Version 2.3.2
+
 The following changes will break backward compatibility:
 
 * Simplified command names (no more nesting, removed useless commands)

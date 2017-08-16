@@ -10,7 +10,7 @@ GEM
     addressable (2.5.1)
       public_suffix (~> 2.0, >= 2.0.2)
     ast (2.3.0)
-    autoprefixer-rails (7.1.2.4)
+    autoprefixer-rails (7.1.2.6)
       execjs
     awesome_print (1.8.0)
     babel-source (5.8.35)
@@ -265,6 +265,7 @@ DEPENDENCIES
   tzinfo-data
   wdm (~> 0.1.0)
   yard
+
 
 BUNDLED WITH
    1.14.6

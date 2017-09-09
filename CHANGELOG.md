@@ -7,7 +7,27 @@
 * Remove dependency `thor`: now fizzy is without any dependency!
   You just need the ruby interpreter :D
   [@alem0lars][@alem0lars]
+<<<<<<< HEAD
 * Minor bug fixes
+=======
+
+### Dev changes
+
+
+
+## Version 2.3.4
+
+### User changes
+
+* Fix filters apply
+  [@alem0lars][@alem0lars]
+
+## Version 2.3.3
+
+### User changes
+
+* Minor fixes
+>>>>>>> v2.3.4
   [@alem0lars][@alem0lars]
 
 #### Breaking changes

@@ -9,5 +9,5 @@ As arguments you can pass:
   name = args[0].shell_escape
   what = args[1] || :password
   what = "--#{what}" unless what.to_s.start_with?("--")
-  `lpass show --color=never #{what} #{name}`
+  `lpass show --color=never #{what} #{name}`.strip
 end

@@ -1,26 +1,6 @@
 #
 # Extensions for class `String`.
 #
-# Safely encode templates before evaluating them.
-#
-# XXX Needed because of thor.
-#
-# TODO When thor dependency is removed, remove this shitty monkey patch!
-#
-class IO #:nodoc:
-  class << self
-    def binread(file, *args)
-      raise ArgumentError, "wrong number of arguments (#{1 + args.size} for 1..3)" unless args.size < 3
-      File.open(file, "rb") do |f|
-        f.read(*args).safe_encode
-      end
-    end
-  end
-end
-
-#
-# Extensions for class `String`.
-#
 class String
   include Fizzy::ANSIColors
 
@@ -32,12 +12,6 @@ class String
   #
   def shell_escape
     Shellwords.shellescape(self)
-  end
-
-  # ──────────────────────────────────────────────────────────────── Encoding ──
-
-  def safe_encode
-    self.encode("utf-8", invalid: :replace, undef: :replace, replace: "_")
   end
 
   # ────────────────────────────────────────────────────────────── Formatting ──

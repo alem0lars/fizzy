@@ -338,6 +338,7 @@ end
 #
 # Extensions for class `String`.
 #
+<<<<<<< HEAD
 # Safely encode templates before evaluating them.
 #
 # XXX Needed because of thor.
@@ -354,6 +355,9 @@ class IO #:nodoc:
     end
   end
 end
+=======
+class String
+>>>>>>> v2.3.4
 
 #
 # Extensions for class `String`.
@@ -3631,11 +3635,22 @@ module Fizzy::Vars
     end
 
     def self.apply(blob)
+<<<<<<< HEAD
       filter = (@filters || []).find { |f| f.match?(blob) }
       if filter
         filter.apply(blob)
+=======
+      if blob.is_a? Hash
+        Hash[blob.map{|k, v| [k, apply(v)]}]
+      elsif blob.is_a? Array
+        blob.map {|v| apply(v)}
+>>>>>>> v2.3.4
       else
-        blob
+        if filter = (@filters || []).find{|f| f.match?(blob)}
+          filter.apply(blob)
+        else
+          blob
+        end
       end
     end
 
@@ -3734,11 +3749,11 @@ module Fizzy::Vars
     def _get_var(vars, name, single_match: :force)
       dot_split_regexp = /([^.]+)(?:\.|$)/
 
-      name.to_s
-          .scan(dot_split_regexp)
-          .map{|match_group| match_group[0]}
-          .reject(&:empty?)
-          .inject(vars) do |current_objects, name_component|
+      var_value = name.to_s
+                      .scan(dot_split_regexp)
+                      .map{|match_group| match_group[0]}
+                      .reject(&:empty?)
+                      .inject(vars) do |current_objects, name_component|
 
         # Intermediate `current_objects` are lists because every step returns
         # a list.
@@ -3769,9 +3784,12 @@ module Fizzy::Vars
                          end.values
                        end
 
+<<<<<<< HEAD
         # Filter `next_objects`.
         next_objects = next_objects.map{|e| Fizzy::Vars::Filter.apply(e)}
 
+=======
+>>>>>>> v2.3.4
         # Adjust `next_objects`, according to `single_match` argument.
         next_objects = if single_match
                          if single_match == :force && next_objects.length != 1
@@ -3790,6 +3808,9 @@ module Fizzy::Vars
         end
         next_objects
       end
+
+      # Filter found variable value.
+      Fizzy::Vars::Filters.apply(var_value)
     end
     protected :_get_var
 
@@ -4835,7 +4856,7 @@ As arguments you can pass:
   name = args[0].shell_escape
   what = args[1] || :password
   what = "--#{what}" unless what.to_s.start_with?("--")
-  `lpass show --color=never #{what} #{name}`
+  `lpass show --color=never #{what} #{name}`.strip
 end
 
 # ─────────────────────────────────────────────────────────────────────── Cli ──

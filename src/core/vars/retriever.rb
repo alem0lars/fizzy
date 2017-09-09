@@ -61,11 +61,11 @@ module Fizzy::Vars
     def _get_var(vars, name, single_match: :force)
       dot_split_regexp = /([^.]+)(?:\.|$)/
 
-      name.to_s
-          .scan(dot_split_regexp)
-          .map{|match_group| match_group[0]}
-          .reject(&:empty?)
-          .inject(vars) do |current_objects, name_component|
+      var_value = name.to_s
+                      .scan(dot_split_regexp)
+                      .map{|match_group| match_group[0]}
+                      .reject(&:empty?)
+                      .inject(vars) do |current_objects, name_component|
 
         # Intermediate `current_objects` are lists because every step returns
         # a list.
@@ -96,9 +96,6 @@ module Fizzy::Vars
                          end.values
                        end
 
-        # Filter `next_objects`.
-        next_objects = next_objects.map{|e| Fizzy::Vars::Filter.apply(e)}
-
         # Adjust `next_objects`, according to `single_match` argument.
         next_objects = if single_match
                          if single_match == :force && next_objects.length != 1
@@ -117,6 +114,9 @@ module Fizzy::Vars
         end
         next_objects
       end
+
+      # Filter found variable value.
+      Fizzy::Vars::Filters.apply(var_value)
     end
     protected :_get_var
 

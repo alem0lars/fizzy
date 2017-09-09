@@ -1,3 +1,6 @@
+#
+# Extensions for class `String`.
+#
 class String
 
   include Fizzy::ANSIColors

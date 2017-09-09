@@ -12,6 +12,13 @@
 
 
 
+## Version 2.3.4
+
+### User changes
+
+* Fix filters apply
+  [@alem0lars][@alem0lars]
+
 ## Version 2.3.3
 
 ### User changes

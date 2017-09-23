@@ -11,9 +11,8 @@ group :development do
   gem "racc", require: false
 
   # Lint.
-  gem "rainbow", "=2.0", require: false # XXX workaround, see issue #44.
-  gem "rubocop",         require: false
-  gem "rubocop-rspec",   require: false
+  #gem "rainbow", "=2.0", require: false # XXX workaround, see issue #44.
+  gem "rufo", require: false
 
   # Testing.
   gem "cucumber", require: false

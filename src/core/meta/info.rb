@@ -1,10 +1,13 @@
+#
 # Access informations declared in the meta file.
 #
 module Fizzy::Meta::Info
+
   include Fizzy::IO
   include Fizzy::Vars
 
-  # Return the normalized and validated meta object.
+  #
+  # Get the normalized and validated meta object.
   #
   # Be sure to call `setup_vars` before calling this method.
   #
@@ -20,8 +23,7 @@ module Fizzy::Meta::Info
 
     meta[:all_elems_count] = meta[:elems].count
 
-    # ──────────────────────────────────────────────────────────────────────────
-    # ☞ Step 1: Normalize elements
+    # ──────────────────────────────────────────── Step 1: Normalize elements ──
 
     elem_erb_excluded_fields = %i[only]
 
@@ -34,7 +36,7 @@ module Fizzy::Meta::Info
       # Step 1.1: Validate `only` and determine if the element is selected.
       if elem.key?(:only) &&
          !(elem[:only].is_a?(Hash) ||
-         elem[:only].is_a?(String))
+           elem[:only].is_a?(String))
         error("The configuration element `#{elem_identifier}` has invalid " \
               "`only`: it's not a `Hash`.")
       end
@@ -59,7 +61,7 @@ module Fizzy::Meta::Info
         unless elem.key?(:dst)
           error("Element `#{elem_identifier}` doesn't contain `dst`.")
         end
-        elem[:perms] = elem[:perms].to_s if elem.key?(:perms)
+        elem[:perms]   = elem[:perms].to_s if elem.key?(:perms)
         elem[:fs_maps] = []
       end
 
@@ -75,13 +77,12 @@ module Fizzy::Meta::Info
           .map { |ebp| Pathname.new(ebp).expand_variables.expand_path }
           .select(&:file?)
           .each do |subfile_path|
-
         subfile_rel_path = subfile_path.relative_path_from(
           Pathname.new(elems_base_path)
         ).to_s
         md = Regexp.new(elem[:src]).match(subfile_rel_path.gsub(/\.tt$/, ""))
         next unless md
-        found = true
+        found    = true
         dst_path = elem[:dst].gsub(/<([0-9]+)>/) do
           idx = Integer(Regexp.last_match(1))
           if (1..md.length) === idx
@@ -93,7 +94,7 @@ module Fizzy::Meta::Info
         end
         elem[:fs_maps] << {
           src_path: Pathname.new(subfile_path).expand_variables.expand_path,
-          dst_path: Pathname.new(dst_path).expand_variables.expand_path
+          dst_path: Pathname.new(dst_path).expand_variables.expand_path,
         }
       end
 
@@ -103,15 +104,14 @@ module Fizzy::Meta::Info
       end
     end
 
-    # ──────────────────────────────────────────────────────────────────────────
-    # ☞ Step 2: Normalize commands
+    # ──────────────────────────────────────────── Step 2: Normalize commands ──
 
     command_excluded_erb_fields = [:only]
 
     meta[:commands] = [] unless meta.key?(:commands)
 
     meta[:commands] = meta[:commands].each_with_index.collect do |spec, idx|
-      spec[:type] = spec[:type].to_sym
+      spec[:type]   = spec[:type].to_sym
       spec[:name] ||= "type = #{spec[:type]}, index = #{idx}"
       info("\nCommand: ", spec[:name]) if verbose
 
@@ -146,7 +146,7 @@ module Fizzy::Meta::Info
         elem[:fs_maps].map { |m| m[:src_path] }
       end
     )
-    vars_files = Pathname.glob(vars_path.join("*"), File::FNM_DOTMATCH)
+    vars_files             = Pathname.glob(vars_path.join("*"), File::FNM_DOTMATCH)
     meta[:system_files]    = SortedSet.new(vars_files << meta_path)
     meta[:excluded_files]  = all_files - src_paths - meta[:system_files]
     meta[:all_files_count] = all_files.count
@@ -154,18 +154,19 @@ module Fizzy::Meta::Info
     meta
   end
 
-  # Return whether the provided `only` specification is evaluated as an allow
+  #
+  # Get whether the provided `only` specification is evaluated as an allow
   # (and not as a deny).
   #
   def selected_by_only?(only, verbose)
     selected = if only.is_a?(Hash) # Evaluate `only` has a Hash.
                  wants_features = only.key?(:features)
-                 wants_vars = only.key?(:vars)
+                 wants_vars     = only.key?(:vars)
                  if wants_features
                    feat_ok = only[:features].any? do |feature|
                      case feature
                      when Array then feature.all? { |f| has_feature?(f) }
-                     else has_feature?(feature)
+                     else            has_feature?(feature)
                      end
                    end
                  else
@@ -180,23 +181,23 @@ module Fizzy::Meta::Info
                            end
 
                  (!wants_features && !wants_vars) || (feat_ok && vars_ok)
-               elsif only.is_a?(String) # Evaluate `only` as a logic expression.
+               elsif only.is_a? String # Evaluate `only` as a logic expression.
                  Fizzy::LogicParser.new.parse(self, only)
                elsif only.nil? # By default, it's selected.
                  true
                else
-                 error("`#{spec[:name]}` has invalid `only`.")
+                 error "#{✏ spec[:name]} has invalid #{✏ only}."
                end
 
     if verbose
       if selected
         if only.nil?
-          info(" ↳ ", "#{✔} `only` is empty.")
+          info " ↳ ", "#{✔} #{✏ only} is empty."
         else
-          info(" ↳ ", "#{✔} `only` is present and satisfied.")
+          info " ↳ ", "#{✔} #{✏ only} is present and satisfied."
         end
       else
-        info(" ↳ ", "#{✘} `only` didn't match.")
+        info " ↳ ", "#{✘} #{✏ only} didn't match."
       end
     end
 

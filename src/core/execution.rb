@@ -16,11 +16,11 @@ module Fizzy::Execution
     run_mode = defined?(@run_mode) ? @run_mode : :normal
 
     really_run = case run_mode
-                   when :normal then true
-                   when :paranoid
-                     ask("Do you want to run command `#{full_cmd}`")
-                   when :dry then false
-                   else true
+                 when :normal then true
+                 when :paranoid
+                   ask("Do you want to run command `#{full_cmd}`")
+                 when :dry then false
+                 else           true
                  end
 
     if really_run || run_mode == :dry

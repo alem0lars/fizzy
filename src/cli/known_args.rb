@@ -8,42 +8,42 @@ module Fizzy::CLI
   KNOWN_ARGS = {
     run_mode: {
       desc: "How fizzy will perform its operations, e.g. simulating them " \
-        "or not",
-      abbrev: "R",
+      "or not",
+      abbrev:  "R",
       default: "normal",
-      type: %i[normal dry]
+      type:    %i[normal dry],
     },
     fizzy_dir: {
-      desc: "Specify fizzy directory",
-      abbrev: "D",
+      desc:    "Specify fizzy directory",
+      abbrev:  "D",
       default: Fizzy::CFG.default_fizzy_dir,
-      type: Pathname
+      type:    Pathname,
     },
     cfg_url: {
-      desc: "The URL to the repository holding configuration.",
-      abbrev: "U",
-      required: true
+      desc:     "The URL to the repository holding configuration.",
+      abbrev:   "U",
+      required: true,
     },
     cfg_name: {
-      desc: "The name of the configuration that should be used.",
-      abbrev: "C",
-      required: true
+      desc:     "The name of the configuration that should be used.",
+      abbrev:   "C",
+      required: true,
     },
     inst_name: {
-      desc: "The name for the configuration instance to be used.",
-      abbrev: "I",
-      required: true
+      desc:     "The name for the configuration instance to be used.",
+      abbrev:   "I",
+      required: true,
     },
     vars_name: {
-      desc: "The name for the variables file to be used.",
-      abbrev: "V",
-      required: true
+      desc:     "The name for the variables file to be used.",
+      abbrev:   "V",
+      required: true,
     },
     meta_name: {
-      desc: "The name of the meta file.",
-      abbrev: "M",
-      default: Fizzy::CFG.default_meta_name
-    }
+      desc:    "The name of the meta file.",
+      abbrev:  "M",
+      default: Fizzy::CFG.default_meta_name,
+    },
   }.freeze
 
   #

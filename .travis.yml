@@ -11,14 +11,9 @@ services:
   - docker
 
 script:
-  # KO (musl)
-  # TODO find a way to also run against ruby 2.0.x
-  #  - bundle exec rake docker:spec RUBY_MAJOR=2 RUBY_MINOR=0 RUBY_PATCH=0 RUBY_SHA256=8690bd6b4949c333b3919755c4e48885dbfed6fd055fe9ef89930bde0d2376f8 RUBY_OTHER=-p648
-    # OK
+  # TODO (musl problem) find a way to also run against ruby 2.0.x
+  # - bundle exec rake docker:spec RUBY_MAJOR=2 RUBY_MINOR=0 RUBY_PATCH=0 RUBY_SHA256=8690bd6b4949c333b3919755c4e48885dbfed6fd055fe9ef89930bde0d2376f8 RUBY_OTHER=-p648
   - bundle exec rake docker:spec RUBY_MAJOR=2 RUBY_MINOR=1 RUBY_PATCH=0 RUBY_SHA256=3538ec1f6af96ed9deb04e0965274528162726cc9ba3625dcf23648df872d09d
-  # OK
   - bundle exec rake docker:spec RUBY_MAJOR=2 RUBY_MINOR=2 RUBY_PATCH=0 RUBY_SHA256=7671e394abfb5d262fbcd3b27a71bf78737c7e9347fa21c39e58b0bb9c4840fc
-  # OK
   - bundle exec rake docker:spec RUBY_MAJOR=2 RUBY_MINOR=3 RUBY_PATCH=0 RUBY_SHA256=ba5ba60e5f1aa21b4ef8e9bf35b9ddb57286cb546aac4b5a28c71f459467e507
-  # OK
   - bundle exec rake docker:spec RUBY_MAJOR=2 RUBY_MINOR=4 RUBY_PATCH=0 RUBY_SHA256=152fd0bd15a90b4a18213448f485d4b53e9f7662e1508190aa5b702446b29e3d

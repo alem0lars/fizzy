@@ -24,9 +24,9 @@ module Fizzy::Locals
     attr_reader :locals
 
     def initialize(receiver)
-      @receiver = receiver
-      @locals   = {}
-      @prefix   = nil
+      @receiver       = receiver
+      @locals         = {}
+      @prefix         = nil
       @prefix_history = []
     end
 
@@ -75,7 +75,7 @@ module Fizzy::Locals
     # passing the locals' values.
     #
     def local?(*names, &block)
-      names.collect{|name| local(name)}.compact.length == names.length
+      names.collect { |name| local(name) }.compact.length == names.length
     end
 
     def prefixed(var, as: nil, optional: false)
@@ -84,7 +84,7 @@ module Fizzy::Locals
         return if optional
         error("Invalid variable prefix: `#{var}`.")
       end
-      @prefix = {var: var, local: as}
+      @prefix = { var: var, local: as }
       @prefix_history << @prefix
       yield
       @prefix = nil
@@ -94,7 +94,7 @@ module Fizzy::Locals
     # been defined; otherwise, `false`.
     #
     def prefix?(prefix)
-      @prefix_history.any?{|p| p[:local].to_s.start_with?(prefix.to_s)}
+      @prefix_history.any? { |p| p[:local].to_s.start_with?(prefix.to_s) }
     end
 
     # ──────────────────────────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ module Fizzy::Locals
     end
 
     def _set_local(name, value)
-      name = @prefix && @prefix[:local] ? "#{@prefix[:local]}#{name}" : name
+      name                      = @prefix && @prefix[:local] ? "#{@prefix[:local]}#{name}" : name
       @locals[name.to_s.to_sym] = value
     end
 

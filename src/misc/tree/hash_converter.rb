@@ -39,7 +39,7 @@ module Fizzy::Tree::HashConverter
 
       child_nodes = []
       children.each do |child, grandchildren|
-        child_node = self.class.from_hash({child => grandchildren})
+        child_node = self.class.from_hash({ child => grandchildren })
         child_nodes << child_node
         self << child_node
       end
@@ -121,7 +121,7 @@ module Fizzy::Tree::HashConverter
     # @raise [ArgumentError] This exception is raised if `hash` contains
     #                        values that are not `Hash`es or `nil`s.
     def from_hash(hash)
-      must "hash",      hash,      be: Hash
+      must "hash", hash, be: Hash
       must "hash size", hash.size, eq: 1
 
       root, children = hash.first

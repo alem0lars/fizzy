@@ -6,8 +6,8 @@ class Fizzy::ArgParse::CommandParser
   include Fizzy::IO
 
   def initialize(name)
-    @name = name.to_s
-    @options = {}
+    @name     = name.to_s
+    @options  = {}
     @handlers = {}
   end
 
@@ -42,7 +42,7 @@ class Fizzy::ArgParse::CommandParser
 
   protected
 
-  def banner
-    error "Abstract method called"
-  end
+    def banner
+      error "Abstract method called"
+    end
 end

@@ -29,7 +29,7 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
     super(name)
 
     @subcommand_parsers = subcommand_parsers
-    @parser = OptionParser.new
+    @parser             = OptionParser.new
   end
 
   #
@@ -43,7 +43,7 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
   # Register a handler matching options.
   #
   def on_option(opt_name, opt_value = nil, &block)
-    handlers[{ regexp: opt_name, type: :option_name }] = block
+    handlers[{ regexp: opt_name, type: :option_name }]   = block
     handlers[{ regexp: opt_value, type: :option_value }] = block if opt_value
   end
 
@@ -64,7 +64,7 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
     if subcommand_parser.nil?
       error(subcommand_name,
             silent: true,
-            exc: Fizzy::ArgParse::InvalidSubCommandName)
+            exc:    Fizzy::ArgParse::InvalidSubCommandName)
     end
 
     parse_subcommand_arguments(subcommand_parser, args)
@@ -89,52 +89,52 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
 
   protected
 
-  def banner
-    [
-      "Usage: #{name} #{options[:command] || "[subcommand]"} [options]",
-      "Available sub-commands: #{subcommand_parsers.map(&:name).join(", ")}"
-    ].join("\n")
-  end
+    def banner
+      [
+        "Usage: #{name} #{options[:command] || "[subcommand]"} [options]",
+        "Available sub-commands: #{subcommand_parsers.map(&:name).join(", ")}",
+      ].join("\n")
+    end
 
   private
 
-  #
-  # Ensures that subcommand name is present in provided `args`.
-  #
-  # If present, it will be removed from `args` and returned.
-  #
-  def pop_subcommand_name!(args)
-    subcommand_name = args.shift
-    if subcommand_name.nil?
-      error(nil, silent: true, exc: Fizzy::ArgParse::NoSubCommandName)
-    else
-      subcommand_name
-    end
-  end
-
-  #
-  # Check if `regexp` (of provided `type`) matches with the current options.
-  #
-  def matches_options?(type, regexp)
-    case type
-    when :option_name  then options.any? { |n, _| regexp =~ n }
-    when :option_value then options.any? { |_, v| regexp =~ v }
-    when :command_name then regexp =~ options[:command]
-    end
-  end
-
-  def find_subcommand_parser(subcommand_name = nil)
-    subcommand_name ||= options[:command]
-    matching_subcommand_parsers =
-      subcommand_parsers.select do |c|
-        c.name == subcommand_name
+    #
+    # Ensures that subcommand name is present in provided `args`.
+    #
+    # If present, it will be removed from `args` and returned.
+    #
+    def pop_subcommand_name!(args)
+      subcommand_name = args.shift
+      if subcommand_name.nil?
+        error(nil, silent: true, exc: Fizzy::ArgParse::NoSubCommandName)
+      else
+        subcommand_name
       end
-    matching_subcommand_parsers.first unless matching_subcommand_parsers.empty?
-  end
+    end
 
-  def parse_subcommand_arguments(subcommand, args)
-    subcommand.parse!(args)
-  ensure
-    options.deep_merge!(subcommand.options)
-  end
+    #
+    # Check if `regexp` (of provided `type`) matches with the current options.
+    #
+    def matches_options?(type, regexp)
+      case type
+      when :option_name  then options.any? { |n, _| regexp =~ n }
+      when :option_value then options.any? { |_, v| regexp =~ v }
+      when :command_name then regexp =~ options[:command]
+      end
+    end
+
+    def find_subcommand_parser(subcommand_name = nil)
+      subcommand_name           ||= options[:command]
+      matching_subcommand_parsers =
+        subcommand_parsers.select do |c|
+          c.name == subcommand_name
+        end
+      matching_subcommand_parsers.first unless matching_subcommand_parsers.empty?
+    end
+
+    def parse_subcommand_arguments(subcommand, args)
+      subcommand.parse!(args)
+    ensure
+      options.deep_merge!(subcommand.options)
+    end
 end

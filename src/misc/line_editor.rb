@@ -22,8 +22,8 @@ module Fizzy::LineEditor
       true
     end
 
-    def initialize(prompt, options={})
-      @prompt = prompt
+    def initialize(prompt, options = {})
+      @prompt  = prompt
       @options = options
     end
 
@@ -34,17 +34,17 @@ module Fizzy::LineEditor
 
     private
 
-    def get_input
-      if echo?
-        $stdin.gets
-      else
-        $stdin.noecho(&:gets)
-      end.chomp
-    end
+      def get_input
+        if echo?
+          $stdin.gets
+        else
+          $stdin.noecho(&:gets)
+        end.chomp
+      end
 
-    def echo?
-      options.fetch(:echo, true)
-    end
+      def echo?
+        options.fetch(:echo, true)
+      end
   end
 end
 
@@ -78,6 +78,7 @@ module Fizzy::LineEditor
     def add_to_history?
       options.fetch(:add_to_history, true)
     end
+
     private :add_to_history?
 
     def completion_proc
@@ -89,16 +90,19 @@ module Fizzy::LineEditor
         end
       end
     end
+
     private :completion_proc
 
     def completion_options
       options.fetch(:limited_to, [])
     end
+
     private :completion_options
 
     def use_path_completion?
       options.fetch(:path, false)
     end
+
     private :use_path_completion?
 
     class PathCompletion
@@ -116,6 +120,7 @@ module Fizzy::LineEditor
       def relative_matches
         absolute_matches.map { |path| path.sub(base_path, "") }
       end
+
       private :relative_matches
 
       def absolute_matches
@@ -127,16 +132,19 @@ module Fizzy::LineEditor
           end
         end
       end
+
       private :absolute_matches
 
       def glob_pattern
         "#{base_path}#{text}*"
       end
+
       private :glob_pattern
 
       def base_path
         "#{Dir.pwd}/"
       end
+
       private :base_path
     end
   end

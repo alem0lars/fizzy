@@ -5,8 +5,8 @@ class Fizzy::TypeEvaluator
 
   def initialize(untyped_value)
     @untyped_value = untyped_value
-    @typed_value = nil
-    @stack = []
+    @typed_value   = nil
+    @stack         = []
   end
 
   def add_list
@@ -27,7 +27,7 @@ class Fizzy::TypeEvaluator
     case @stack.pop
     when :list
       if value.is_a? Array
-        value.map { |e| parse(e ) }
+        value.map { |e| parse(e) }
       else
         error "Invalid untyped value `#{value}`: cannot parse into a list"
       end
@@ -35,10 +35,10 @@ class Fizzy::TypeEvaluator
     end
   end
 
-#  def resolve_type(type)
-#    @stack.each do |type|
-#      case type
-#    end
-#  end
-#  private :resolve_type
+  #  def resolve_type(type)
+  #    @stack.each do |type|
+  #      case type
+  #    end
+  #  end
+  #  private :resolve_type
 end

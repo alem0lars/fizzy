@@ -12,6 +12,12 @@
   **indented** style.
 * Run `bundle exec rake lint` to perform some automatic checks.
 
+* **Never re-implement the wheel**, always check if missing functionality
+  (even dumb print utility) has already been implemented.
+* Life is short and it shouldn't be wasted: always think if a functionality or
+  method you're using can be **extracted away and made reusable**
+  (even dumb functionalities).
+
 ## Specs
 
 * Follow the [betterspecs guidelines][betterspecs] (*very important!*).

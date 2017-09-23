@@ -35,13 +35,14 @@ module Fizzy::Tree::PathHandler
     def get_path_name_array(current_array_path = [])
       path_array = current_array_path + [name]
 
-      if !parent              # If detached node or root node.
+      if !parent # If detached node or root node.
         return path_array
-      else                    # Else recurse to parent node.
+      else # Else recurse to parent node.
         path_array = parent.get_path_name_array(path_array)
         return path_array
       end
     end
+
     protected :get_path_name_array
 
     # @!endgroup

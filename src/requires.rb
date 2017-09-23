@@ -32,11 +32,13 @@ require "io/console" if RUBY_VERSION > "1.9.2"
     require gem_name
   rescue
     puts("\e[31m☠ The gem `#{gem_name}` is not installed. " +
-        "To install run: `gem install #{gem_name}`. Aborting.\e[0m")
+         "To install run: `gem install #{gem_name}`. Aborting.\e[0m")
     exit(-1)
   end
 end
 
+#
 # Top-level namespace.
+#
 module Fizzy
 end

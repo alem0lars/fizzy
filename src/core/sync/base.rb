@@ -5,9 +5,8 @@ module Fizzy::Sync
   end
 
   def self.available
-    [ Fizzy::Sync::Local,
-      Fizzy::Sync::Git
-    ]
+    [Fizzy::Sync::Local,
+     Fizzy::Sync::Git]
   end
 
   def self.others(subject)
@@ -18,8 +17,8 @@ module Fizzy::Sync
   end
 
   def self.enabled(local_dir_path, remote_url)
-    available.map    { |e| e.new(local_dir_path, remote_url) }.
-              select { |e| e.enabled? }
+    available.map { |e| e.new(local_dir_path, remote_url) }.
+      select { |e| e.enabled? }
   end
 
   def self.selected(local_dir_path, remote_url)
@@ -31,7 +30,7 @@ module Fizzy::Sync
     tell("{c{Using synchronizer: `{m{#{synchronizer.name}}}`.}}")
 
     status   = true
-    status &&= synchronizer.update_local  if synchronizer.remote_changed?
+    status &&= synchronizer.update_local if synchronizer.remote_changed?
     status &&= synchronizer.update_remote if synchronizer.local_changed?
     status
   end
@@ -44,7 +43,7 @@ class Fizzy::Sync::Base
   attr_reader :name
 
   def initialize(name, local_dir_path, remote_url)
-    must "synchronizer name",    name,           be: :not_nil
+    must "synchronizer name", name, be: :not_nil
     must "local directory path", local_dir_path, be: Pathname
 
     @name           = name
@@ -68,7 +67,7 @@ class Fizzy::Sync::Base
                       @remote_url.to_s.start_with?("#{e.name}:")
                     }
     return true if default? && Fizzy::Sync.others(self).
-      map  { |e| e.new(@local_dir_path, @remote_url) }.
+      map { |e| e.new(@local_dir_path, @remote_url) }.
       all? { |e| !e.enabled? }
   end
 

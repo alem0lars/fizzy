@@ -48,18 +48,6 @@ Fizzy is distributed in two ways:
   can't use or don't have a Ruby interpreter,
   don't have permissions to install fizzy dependencies.
 
-### Bundle
-
-First, [download the bundle][download_bundle]; then:
-
-```shellsession
-$ mkdir fizzy_portable
-$ tar -xzf fizzy-*.tar.gz -C fizzy_portable
-$ cd fizzy_portable
-$ chmod +x ./fizzy
-$ ./fizzy
-```
-
 ### Standalone
 
 #### MacOSX (standalone)
@@ -73,6 +61,10 @@ Install via HomeBrew
 ```shellsession
 $ brew install fizzy
 ```
+
+*Note: the homebrew repository may not be in sync with the latest version.
+If that occurs, open a new issue at [alem0lars/homebrew-repo][homebrew_repo]
+and the missing fizzy version will be added as soon as possible.*
 
 #### One-liner (standalone)
 
@@ -88,13 +80,20 @@ $ curl -sL https://raw.githubusercontent.com/alem0lars/fizzy/master/build/fizzy 
 
 #### Others (standalone)
 
-You can provide integration with an existing package system.
+Drop [fizzy][fizzy_bin] everywhere (possibly in the system path) and make it
+executable.
 
-The dependencies are:
-* The [ruby][ruby_homepage] interpreter (`>= 2.0.0`). Yeah, any ruby since 2013!
+### Portable
 
-Then you can drop [fizzy][fizzy_bin] everywhere (possibly in the system path)
-and make it executable.
+First, [download the bundle][download_bundle]; then:
+
+```shellsession
+$ mkdir fizzy_portable
+$ tar -xzf fizzy-*.tar.gz -C fizzy_portable
+$ cd fizzy_portable
+$ chmod +x ./fizzy
+$ ./fizzy
+```
 
 ## Contributions
 
@@ -149,3 +148,5 @@ Made with ♥ by Alessandro Molari
 
 [fizzy_bin]:    ./build/fizzy
 [download_bundle]: https://github.com/alem0lars/fizzy/releases
+
+[homebrew_repo]: https://github.com/alem0lars/homebrew-repo

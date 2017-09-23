@@ -16,7 +16,7 @@ class Fizzy::CLI::Cleanup < Fizzy::CLI::Command
 
     # Perform cleanup.
     status =
-      if ask("Remove the fizzy root directory (`#{paths.root}`)")
+      if ask "Remove the fizzy root directory (#{✏ paths.root})"
         paths.root.rmtree
       end
 
@@ -25,14 +25,14 @@ class Fizzy::CLI::Cleanup < Fizzy::CLI::Command
 
   private
 
-  #
-  # Inform user about the cleanup status.
-  #
-  def inform_user(status, root_dir)
-    case status
-    when true  then tell("{g{Successfully cleaned: `#{root_dir}`.}}")
-    when false then error("Failed to cleanup: `#{root_dir}`.", :red)
-    when nil   then warning("Cleanup skipped.", ask_continue: false)
+    #
+    # Inform user about the cleanup status.
+    #
+    def inform_user(status, root_dir)
+      case status
+      when true  then success "{g{Successfully cleaned: #{✏ root_dir}.}}"
+      when false then error "Failed to cleanup: #{✏ root_dir}."
+      when nil   then warning "Cleanup skipped.", ask_continue: false
+      end
     end
-  end
 end

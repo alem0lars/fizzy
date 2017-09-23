@@ -7,11 +7,11 @@ module Fizzy::Vars
 
     def self.apply(blob)
       if blob.is_a? Hash
-        Hash[blob.map{|k, v| [k, apply(v)]}]
+        Hash[blob.map { |k, v| [k, apply(v)] }]
       elsif blob.is_a? Array
-        blob.map {|v| apply(v)}
+        blob.map { |v| apply(v) }
       else
-        if filter = (@filters || []).find{|f| f.match?(blob)}
+        if filter = (@filters || []).find { |f| f.match?(blob) }
           filter.apply(blob)
         else
           blob

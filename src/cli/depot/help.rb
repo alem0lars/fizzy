@@ -6,11 +6,11 @@ class Fizzy::CLI::Help < Fizzy::CLI::Command
     super("Show command help.",
           spec: {
             command_name: {
-              desc: "The command name to show help for",
-              abbrev: "C",
-              type: Fizzy::CLI::Command.available.map(&:command_name),
-              required: true
-            }
+              desc:     "The command name to show help for",
+              abbrev:   "C",
+              type:     Fizzy::CLI::Command.available.map(&:command_name),
+              required: true,
+            },
           })
   end
 

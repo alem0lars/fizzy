@@ -18,13 +18,13 @@ module Fizzy::ANSIColors
     def colorize(str, open_tag_regexp: nil, close_tag_regexp: nil)
       str = str.to_s
       begin
-        open_tag_regexp = default_open_tag_regexp if open_tag_regexp.nil?
+        open_tag_regexp  = default_open_tag_regexp if open_tag_regexp.nil?
         close_tag_regexp = default_close_tag_regexp if close_tag_regexp.nil?
 
         tree = TreeBuilder.new(open_tag_regexp, close_tag_regexp).build(str)
 
         colorized_str = str.dup
-        escapes_size = 0
+        escapes_size  = 0
         tree.visit do |node|
           if node.is_a?(StartTagNode)
             color_escape = Fizzy::ANSIColors.spec_to_color(node.color_spec)
@@ -58,7 +58,7 @@ module Fizzy::ANSIColors
         b: :blue,
         m: :magenta,
         c: :cyan,
-        w: :white
+        w: :white,
       }
 
       if color_spec.nil?
@@ -71,11 +71,11 @@ module Fizzy::ANSIColors
           color_spec.chars.collect do |char|
             color_name = names[char.downcase.to_sym]
 
-              if char == char.upcase # background color
-                Fizzy::ANSIColors.bg_colors[color_name]
-              else # foreground color
-                Fizzy::ANSIColors.fg_colors[color_name]
-              end
+            if char == char.upcase # background color
+              Fizzy::ANSIColors.bg_colors[color_name]
+            else # foreground color
+              Fizzy::ANSIColors.fg_colors[color_name]
+            end
           end.join
         end
       end
@@ -84,7 +84,7 @@ module Fizzy::ANSIColors
 
   class TreeBuilder
     def initialize(open_tag_regexp, close_tag_regexp)
-      @open_tag_regexp = open_tag_regexp
+      @open_tag_regexp  = open_tag_regexp
       @close_tag_regexp = close_tag_regexp
     end
 
@@ -103,7 +103,7 @@ module Fizzy::ANSIColors
 
       root_node = StartTagNode.new(0, 0, 0, :CLEAR)
 
-      parent_node = root_node
+      parent_node   = root_node
       previous_node = root_node
       tag_nodes.each do |current_node|
         if previous_node.is_a?(StartTagNode) && current_node.is_a?(StartTagNode)
@@ -118,7 +118,7 @@ module Fizzy::ANSIColors
       end
 
       # Add the end tag for the root node.
-      final_node = EndTagNode.new(str.length, str.length, 0)
+      final_node        = EndTagNode.new(str.length, str.length, 0)
       final_node.parent = root_node
       root_node.children.push(final_node)
 
@@ -133,11 +133,11 @@ module Fizzy::ANSIColors
     include Comparable
 
     def initialize(start_idx, end_idx, size)
-      @parent = nil
-      @children = []
+      @parent    = nil
+      @children  = []
       @start_idx = start_idx
-      @end_idx = end_idx
-      @size = size
+      @end_idx   = end_idx
+      @size      = size
     end
 
     def <=>(another)
@@ -146,10 +146,10 @@ module Fizzy::ANSIColors
 
     def visit(&block)
       yield(self)
-      children.each {|c| c.visit(&block)}
+      children.each { |c| c.visit(&block) }
     end
 
-    def to_pretty_str(indent_lvl=0, include_children: true)
+    def to_pretty_str(indent_lvl = 0, include_children: true)
       "#{"\t" * indent_lvl}#{self.class.name}(#{to_fields_str(indent_lvl, include_children)})"
     end
 
@@ -158,8 +158,8 @@ module Fizzy::ANSIColors
       if children.empty? || !include_children
         children_str = ""
       else
-        children_str = "children="
-        children_str = "\n#{indent_str}[\n"
+        children_str  = "children="
+        children_str  = "\n#{indent_str}[\n"
         children_str += children.map do |c|
           c.to_pretty_str(indent_lvl + 1, include_children: include_children)
         end.join("\n")
@@ -167,6 +167,7 @@ module Fizzy::ANSIColors
       end
       "start_idx=`#{start_idx}` end_idx=`#{end_idx}` size=`#{size}`#{children_str}"
     end
+
     protected :to_fields_str
   end
 
@@ -181,6 +182,7 @@ module Fizzy::ANSIColors
     def to_fields_str(indent_lvl, include_children)
       "color_spec=`#{color_spec}` #{super}"
     end
+
     protected :to_fields_str
   end
 
@@ -195,14 +197,14 @@ module Fizzy::ANSIColors
     #
     def fg_colors
       {
-        black: "\e[30m",
-        red: "\e[31m",
-        green: "\e[32m",
-        yellow: "\e[33m",
-        blue: "\e[34m",
+        black:   "\e[30m",
+        red:     "\e[31m",
+        green:   "\e[32m",
+        yellow:  "\e[33m",
+        blue:    "\e[34m",
         magenta: "\e[35m",
-        cyan: "\e[36m",
-        white: "\e[37m"
+        cyan:    "\e[36m",
+        white:   "\e[37m",
       }
     end
 
@@ -210,14 +212,14 @@ module Fizzy::ANSIColors
     #
     def bg_colors
       {
-        black: "\e[40m",
-        red: "\e[41m",
-        green: "\e[42m",
-        yellow: "\e[43m",
-        blue: "\e[44m",
+        black:   "\e[40m",
+        red:     "\e[41m",
+        green:   "\e[42m",
+        yellow:  "\e[43m",
+        blue:    "\e[44m",
         magenta: "\e[45m",
-        cyan: "\e[46m",
-        white: "\e[47m"
+        cyan:    "\e[46m",
+        white:   "\e[47m",
       }
     end
 

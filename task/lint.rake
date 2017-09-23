@@ -1,8 +1,10 @@
 begin
-  require "rubocop/rake_task"
+  require "rufo"
 
-  RuboCop::RakeTask.new :lint
-  task lint: :build
+  desc "Format Ruby code in current directory"
+  task :lint, [:files_or_dirs] do |task, rake_args|
+    Rufo::Command.run([$cfg[:paths][:src].to_s])
+  end
 rescue LoadError
-  error("Rubocop is not loaded: please `bundle install`")
+  error("Rufo is not loaded: please `bundle install`")
 end

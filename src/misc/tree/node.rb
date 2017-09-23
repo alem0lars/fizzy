@@ -145,7 +145,7 @@ class Fizzy::Tree::Node
     return nil if root?
 
     parentage_array = []
-    prev_parent = self.parent
+    prev_parent     = self.parent
     while (prev_parent)
       parentage_array << prev_parent
       prev_parent = prev_parent.parent
@@ -188,14 +188,14 @@ class Fizzy::Tree::Node
     @name, @content = name, content
 
     if name.kind_of?(Integer)
-      warning "Using integer as node name."\
-        " Semantics of TreeNode[] may not be what you expect!"\
-        " #{name} #{content}"
+      warning "Using integer as node name." \
+              " Semantics of TreeNode[] may not be what you expect!" \
+              " #{name} #{content}"
     end
 
     self.set_as_root!
     @children_hash = Hash.new
-    @children = []
+    @children      = []
   end
 
   # Returns a copy of this node, with its parent and children links removed.
@@ -232,11 +232,10 @@ class Fizzy::Tree::Node
 
   # Creates a dump representation of this node and returns the same as
   # a hash.
-  def create_dump_rep           # :nodoc:
-    { :name => @name,
-      :parent => (root? ? nil : @parent.name),
-      :content => Marshal.dump(@content)
-    }
+  def create_dump_rep # :nodoc:
+    { :name    => @name,
+      :parent  => (root? ? nil : @parent.name),
+      :content => Marshal.dump(@content) }
   end
 
   protected :create_dump_rep
@@ -251,20 +250,20 @@ class Fizzy::Tree::Node
   #       self and makes itself the root.
   #
   def marshal_load(dumped_tree_array)
-    nodes = { }
+    nodes = {}
     dumped_tree_array.each do |node_hash|
       name        = node_hash[:name]
       parent_name = node_hash[:parent]
       content     = Marshal.load(node_hash[:content])
 
-      if parent_name then
+      if parent_name
         nodes[name] = current_node = Fizzy::Tree::Node.new(name, content)
         nodes[parent_name].add current_node
       else
         # This is the root node, hence initialize self.
         initialize(name, content)
 
-        nodes[name] = self    # Add self to the list of nodes
+        nodes[name] = self # Add self to the list of nodes
       end
     end
   end
@@ -278,7 +277,7 @@ class Fizzy::Tree::Node
   def to_s
     "Node Name: #{@name}" +
       " Content: " + (@content.to_s || "<Empty>") +
-      " Parent: " + (root?()  ? "<None>" : @parent.name.to_s) +
+      " Parent: " + (root?() ? "<None>" : @parent.name.to_s) +
       " Children: #{@children.length}" +
       " Total Nodes: #{size()}"
   end
@@ -366,14 +365,14 @@ class Fizzy::Tree::Node
     if insertion_range.include?(at_index)
       @children.insert(at_index, child)
     else
-      raise "Attempting to insert a child at a non-existent location"\
-        " (#{at_index}) "\
-        "when only positions from "\
-        "#{insertion_range.min} to #{insertion_range.max} exist."
+      raise "Attempting to insert a child at a non-existent location" \
+            " (#{at_index}) " \
+            "when only positions from " \
+            "#{insertion_range.min} to #{insertion_range.max} exist."
     end
 
-    @children_hash[child.name]  = child
-    child.parent = self
+    @children_hash[child.name] = child
+    child.parent               = self
     return child
   end
 
@@ -396,7 +395,7 @@ class Fizzy::Tree::Node
     old_name = @name
 
     if root?
-      self.name=(new_name)
+      self.name = (new_name)
     else
       @parent.rename_child old_name, new_name
     end
@@ -416,8 +415,8 @@ class Fizzy::Tree::Node
       raise ArgumentError, "Invalid child name specified: #{old_name}"
     end
 
-    @children_hash[new_name] = @children_hash.delete(old_name)
-    @children_hash[new_name].name=(new_name)
+    @children_hash[new_name]      = @children_hash.delete(old_name)
+    @children_hash[new_name].name = (new_name)
   end
 
   # Protected method to set the name of this node.
@@ -483,8 +482,8 @@ class Fizzy::Tree::Node
   # @param [Fizzy::Tree::Node] parent The parent node.
   #
   # @return [Fizzy::Tree::Node] The parent node.
-  def parent=(parent)         # :nodoc:
-    @parent = parent
+  def parent=(parent) # :nodoc:
+    @parent     = parent
     @node_depth = nil
   end
 
@@ -533,7 +532,7 @@ class Fizzy::Tree::Node
   # The nodes become immutable after this operation.  In effect, the entire tree's
   # structure and contents become _read-only_ and cannot be changed.
   def freeze_tree!
-    each {|node| node.freeze}
+    each { |node| node.freeze }
   end
 
   # @!endgroup
@@ -573,7 +572,7 @@ class Fizzy::Tree::Node
   #
   # @see #add
   # @see #initialize
-  def [](name_or_index, num_as_name=false)
+  def [](name_or_index, num_as_name = false)
     raise ArgumentError,
       "Name_or_index needs to be provided!" if name_or_index == nil
 
@@ -601,16 +600,15 @@ class Fizzy::Tree::Node
   #
   # @return [Fizzy::Tree::Node] this node, if a block if given
   # @return [Enumerator] an enumerator on this tree, if a block is *not* given
-  def each(&block)             # :yields: node
-
+  def each(&block) # :yields: node
     return self.to_enum unless block_given?
 
-    node_stack = [self]   # Start with this node
+    node_stack = [self] # Start with this node
 
     until node_stack.empty?
-      current = node_stack.shift    # Pop the top-most node
-      if current                    # Might be 'nil' (esp. for binary trees)
-        yield current               # and process it
+      current = node_stack.shift # Pop the top-most node
+      if current                 # Might be 'nil' (esp. for binary trees)
+        yield current            # and process it
         # Stack children of the current node at top of the stack
         node_stack = current.children.concat(node_stack)
       end
@@ -629,7 +627,7 @@ class Fizzy::Tree::Node
   #
   # @return [Fizzy::Tree::Node] this node, if a block if given
   # @return [Enumerator] an enumerator on this tree, if a block is *not* given
-  def preordered_each(&block)  # :yields: node
+  def preordered_each(&block) # :yields: node
     each(&block)
   end
 
@@ -656,11 +654,11 @@ class Fizzy::Tree::Node
         peek_node.visited = true
         # Add the children to the stack. Use the marking structure.
         marked_children =
-          peek_node.node.children.map {|node| markednode.new(node, false)}
+          peek_node.node.children.map { |node| markednode.new(node, false) }
         node_stack = marked_children.concat(node_stack)
         next
       else
-        yield node_stack.shift.node           # Pop and yield the current node
+        yield node_stack.shift.node # Pop and yield the current node
       end
     end
 
@@ -681,7 +679,7 @@ class Fizzy::Tree::Node
   def breadth_each(&block)
     return self.to_enum(:breadth_each) unless block_given?
 
-    node_queue = [self]       # Create a queue with self as the initial entry
+    node_queue = [self] # Create a queue with self as the initial entry
 
     # Use a queue to do breadth traversal
     until node_queue.empty?
@@ -708,7 +706,7 @@ class Fizzy::Tree::Node
   #                                 is given.
   def children
     if block_given?
-      @children.each {|child| yield child}
+      @children.each { |child| yield child }
       return self
     else
       return @children.clone
@@ -733,7 +731,7 @@ class Fizzy::Tree::Node
       self.each { |node| yield(node) if node.leaf? }
       return self
     else
-      self.select { |node| node.leaf?}
+      self.select { |node| node.leaf? }
     end
   end
 
@@ -832,8 +830,9 @@ class Fizzy::Tree::Node
     else
       return [] if root?
       siblings = []
-      parent.children {|my_sibling|
-        siblings << my_sibling if my_sibling != self}
+      parent.children { |my_sibling|
+        siblings << my_sibling if my_sibling != self
+      }
       siblings
     end
   end
@@ -907,7 +906,8 @@ class Fizzy::Tree::Node
   # @param [Proc] block optional block to use for rendering
   def print_tree(level = node_depth, max_depth = nil,
                  block = lambda { |node, prefix|
-    puts "#{prefix} #{node.name}" })
+                   puts "#{prefix} #{node.name}"
+                 })
     prefix = ''
 
     if root?

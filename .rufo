@@ -1,0 +1,30 @@
+align_assignments   true
+align_case_when     true
+align_chained_calls true
+align_comments      true
+align_hash_keys     true
+
+double_newline_inside_type :dynamic
+
+indent_size 2
+
+spaces_after_comma        :one
+spaces_after_lambda_arrow :one
+spaces_after_method_name  :no
+spaces_around_binary      :one
+spaces_around_block_brace :one
+spaces_around_dot         :no
+spaces_around_equal       :one
+spaces_around_hash_arrow  :one
+spaces_around_unary       :no
+spaces_around_when        :one
+spaces_in_commands        :one
+spaces_in_suffix          :one
+spaces_in_ternary         :one
+spaces_inside_array_bracket :never
+spaces_inside_hash_brace  :always
+spaces_in_inline_expressions :one
+
+trailing_commas :always
+
+visibility_indent :indent

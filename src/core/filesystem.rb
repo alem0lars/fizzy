@@ -48,23 +48,23 @@ module Fizzy::Filesystem
   #
   def prepare_storage(root_path,
                       valid_meta: true, valid_cfg: true, valid_inst: true,
-                      meta_name: nil, cur_cfg_name: nil, cur_inst_name: nil)
+                      meta_name:  nil, cur_cfg_name: nil, cur_inst_name: nil)
     root_path = Pathname.new(root_path).expand_variables.expand_path
 
     # Paths based on internal conventions.
     parent_path = root_path.dirname
 
-    cfg_path = root_path.join("cfg")
-    cur_cfg_path = cfg_path.join(cur_cfg_name) if cur_cfg_name
-    cur_cfg_vars_path = cur_cfg_path.join("vars") if cur_cfg_path
+    cfg_path           = root_path.join("cfg")
+    cur_cfg_path       = cfg_path.join(cur_cfg_name) if cur_cfg_name
+    cur_cfg_vars_path  = cur_cfg_path.join("vars") if cur_cfg_path
     cur_cfg_elems_path = cur_cfg_path.join("elems") if cur_cfg_path
-    cur_cfg_meta_path = find_yaml_path(cur_cfg_path.join(meta_name)) if cur_cfg_path && meta_name
+    cur_cfg_meta_path  = find_yaml_path(cur_cfg_path.join(meta_name)) if cur_cfg_path && meta_name
 
-    inst_path = root_path.join("inst")
-    cur_inst_path = inst_path.join(cur_inst_name) if cur_inst_name
-    cur_inst_vars_path = cur_inst_path.join("vars") if cur_inst_path
+    inst_path           = root_path.join("inst")
+    cur_inst_path       = inst_path.join(cur_inst_name) if cur_inst_name
+    cur_inst_vars_path  = cur_inst_path.join("vars") if cur_inst_path
     cur_inst_elems_path = cur_inst_path.join("elems") if cur_inst_path
-    cur_inst_meta_path = find_yaml_path(cur_inst_path.join(meta_name)) if cur_inst_path && meta_name
+    cur_inst_meta_path  = find_yaml_path(cur_inst_path.join(meta_name)) if cur_inst_path && meta_name
 
     # Validate `root_path`.
     if !root_path.directory? && !parent_path.writable?
@@ -136,17 +136,17 @@ module Fizzy::Filesystem
 
     # Return the known storage paths.
     OpenStruct.new(
-      root:          root_path,
-      cfg:           cfg_path,
-      cur_cfg:       cur_cfg_path,
-      cur_cfg_vars:  cur_cfg_vars_path,
-      cur_cfg_elems: cur_cfg_elems_path,
-      cur_cfg_meta:  cur_cfg_meta_path,
-      inst:          inst_path,
-      cur_inst:      cur_inst_path,
-      cur_inst_vars: cur_inst_vars_path,
+      root:           root_path,
+      cfg:            cfg_path,
+      cur_cfg:        cur_cfg_path,
+      cur_cfg_vars:   cur_cfg_vars_path,
+      cur_cfg_elems:  cur_cfg_elems_path,
+      cur_cfg_meta:   cur_cfg_meta_path,
+      inst:           inst_path,
+      cur_inst:       cur_inst_path,
+      cur_inst_vars:  cur_inst_vars_path,
       cur_inst_elems: cur_inst_elems_path,
-      cur_inst_meta: cur_inst_meta_path
+      cur_inst_meta:  cur_inst_meta_path,
     )
   end
 end

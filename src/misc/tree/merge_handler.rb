@@ -36,8 +36,8 @@ module Fizzy::Tree::MergeHandler
   # @raise [ArgumentError] This exception is raised if `other_tree` does not
   #                        have the same root node as self.
   def merge!(other_tree)
-    check_merge_prerequisites( other_tree )
-    merge_trees( self.root, other_tree.root )
+    check_merge_prerequisites(other_tree)
+    merge_trees(self.root, other_tree.root)
   end
 
   # @!visibility protected
@@ -57,6 +57,7 @@ module Fizzy::Tree::MergeHandler
         'Unable to merge trees as they do not share the same root'
     end
   end
+
   protected :check_merge_prerequisites
 
   # @!visibility protected
@@ -78,10 +79,11 @@ module Fizzy::Tree::MergeHandler
     end
 
     tree1.children.each do |child|
-      merge_trees( child, tree2[child.name] ) unless tree2[child.name].nil?
+      merge_trees(child, tree2[child.name]) unless tree2[child.name].nil?
     end
 
     return tree1
   end
+
   protected :merge_trees
 end

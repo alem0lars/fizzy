@@ -1,4 +1,4 @@
-OptionParser.accept(Pathname) do |s,|
+OptionParser.accept(Pathname) do |s, |
   begin
     Pathname.new(s) if s
   rescue ArgumentError

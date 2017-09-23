@@ -12,8 +12,8 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   #
   def enabled?
     (super ||
-      (!@remote_url.nil? && @remote_url.to_s.start_with?("#{@name}:")) ||
-      local_valid_repo?)
+     (!@remote_url.nil? && @remote_url.to_s.start_with?("#{@name}:")) ||
+     local_valid_repo?)
   end
 
   # Update local from remote.
@@ -43,8 +43,8 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def local_changed?
     tell("{b{Checking if local repository is changed.}}")
     return false unless local_valid_repo?
-    return true  if     working_tree_changes?
-    return true  if     perform_fetch && should_push?
+    return true if working_tree_changes?
+    return true if perform_fetch && should_push?
     false
   end
 
@@ -53,7 +53,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def remote_changed?
     tell("{b{Checking if remote repository is changed.}}")
     return true unless local_valid_repo?
-    return true if     perform_fetch && should_pull?
+    return true if perform_fetch && should_pull?
     false
   end
 
@@ -61,26 +61,27 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   #
   def normalize_url(url, default_protocol: :ssh)
     return nil if url.nil?
-    url = url.to_s
+    url       = url.to_s
     protocols = %i[https ssh]
-    url = url.gsub(/^#{@name}:/, "") # Remove VCS name prefix (optional).
-    regexp = %r{
-      ^
-      (?<protocol>#{protocols.map { |p| "#{p}:" }.join("|")})?
-      (?<username>[a-z0-9\-_]+)
-      \/
-      (?<repository>[a-z0-9\-_]+)
-      $
-    }xi
+    url       = url.gsub(/^#{@name}:/, "") # Remove VCS name prefix (optional).
+    regexp    = %r{
+                  ^
+                  (?<protocol>#{protocols.map { |p| "#{p}:" }.join("|")})?
+                  (?<username>[a-z0-9\-_]+)
+                  \/
+                  (?<repository>[a-z0-9\-_]+)
+                  $
+                }xi
     md = url.match(regexp)
     return url unless md
     protocol = (md[:protocol] || default_protocol).to_s.gsub(/:$/, "").to_sym
     case protocol
     when :ssh   then "git@github.com:#{md[:username]}/#{md[:repository]}"
     when :https then "https://github.com/#{md[:username]}/#{md[:repository]}"
-    else        error("Invalid protocol for `{m{#{url}}}`: `{m{#{protocol}}}` not in `{m{[#{protocols.join(", ")}]}}`.")
+    else             error("Invalid protocol for `{m{#{url}}}`: `{m{#{protocol}}}` not in `{m{[#{protocols.join(", ")}]}}`.")
     end
   end
+
   protected :normalize_url
 
   # Check if the local directory holds a valid git repository.
@@ -88,6 +89,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def local_valid_repo?
     @local_dir_path.directory? && @local_dir_path.join(".git").directory?
   end
+
   protected :local_valid_repo?
 
   # Get the Working Tree (local) changes.
@@ -98,6 +100,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
       return `git status -uall --porcelain`.strip
     end
   end
+
   protected :working_tree_changes
 
   # Check if there are some changes in the Working Tree.
@@ -105,6 +108,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def working_tree_changes?
     !working_tree_changes.empty?
   end
+
   protected :working_tree_changes?
 
   # Get a `Hash` containing information about the local and remote repository.
@@ -112,15 +116,16 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def info
     error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
-      local = `git rev-parse @ 2> /dev/null`.strip
-      local = nil unless $CHILD_STATUS.success?
+      local  = `git rev-parse @ 2> /dev/null`.strip
+      local  = nil unless $CHILD_STATUS.success?
       remote = `git rev-parse @{u} 2> /dev/null`.strip
       remote = nil unless $CHILD_STATUS.success?
-      base = `git merge-base @ @{u} 2> /dev/null`.strip
-      base = nil unless $CHILD_STATUS.success?
+      base   = `git merge-base @ @{u} 2> /dev/null`.strip
+      base   = nil unless $CHILD_STATUS.success?
       return { local: local, remote: remote, base: base }
     end
   end
+
   protected :info
 
   # Check if a `pull` operation is needed.
@@ -128,6 +133,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def should_pull?
     info[:remote] != info[:base]
   end
+
   protected :should_pull?
 
   # Check if a `push` operation is needed.
@@ -135,6 +141,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def should_push?
     info[:local] != info[:base]
   end
+
   protected :should_push?
 
   # Get the list of the available remote git repositories.
@@ -145,6 +152,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
       return `git remote`.split(/\W+/).reject(&:empty?)
     end
   end
+
   protected :remotes
 
   # Get the list of the available git branches.
@@ -155,6 +163,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
       return `git branch`.split(/\W+/).reject(&:empty?)
     end
   end
+
   protected :branches
 
   # Add the changes from the Working Tree to the stage.
@@ -163,13 +172,14 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     error "Invalid files `#{files}`." unless files.nil? || files.is_a?(Array)
 
     cmd = %w[git add]
-    cmd << "-i"  if     interactive
-    cmd << "-A"  if     files.nil?
+    cmd << "-i" if interactive
+    cmd << "-A" if files.nil?
     cmd << files unless files.nil?
 
     error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
     exec_cmd(cmd, as_su: !existing_dir(@local_dir_path), chdir: @local_dir_path)
   end
+
   protected :perform_add
 
   # Commit the changes in the Working Tree.
@@ -187,8 +197,8 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
           message ||= ask("Type the commit message", type: :string)
 
           cmd = ["git", "commit", "-a"]
-          cmd << "--allow-empty-message" if     message.nil?
-          cmd += ["-m", message]         unless message.nil?
+          cmd << "--allow-empty-message" if message.nil?
+          cmd += ["-m", message] unless message.nil?
 
           error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
           status &&= exec_cmd(cmd,
@@ -200,6 +210,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
     status
   end
+
   protected :perform_commit
 
   def perform_fetch(remote: nil, branch: nil)
@@ -215,6 +226,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
     exec_cmd(cmd, as_su: !existing_dir(@local_dir_path), chdir: @local_dir_path)
   end
+
   protected :perform_fetch
 
   def perform_clone(recursive: true)
@@ -231,6 +243,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
     exec_cmd(cmd, as_su: !existing_dir(parent_dir), chdir: parent_dir)
   end
+
   protected :perform_clone
 
   # Pull from the provided `remote` in the provided `branch`.
@@ -262,6 +275,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
     status
   end
+
   protected :perform_pull
 
   # Push to the provided `remote` in the provided `branch`.
@@ -287,5 +301,6 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
     status
   end
+
   protected :perform_push
 end

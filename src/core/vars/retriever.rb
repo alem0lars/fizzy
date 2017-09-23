@@ -20,9 +20,9 @@ module Fizzy::Vars
 
       if expand
         case var.length
-          when 0 then nil
-          when 1 then var.first
-          else        var
+        when 0 then nil
+        when 1 then var.first
+        else        var
         end
       else
         var
@@ -39,16 +39,18 @@ module Fizzy::Vars
         typize(name, var, type: type, strict: strict)
       end
     end
+
     protected :_typize_var
 
     def _ensure_type!(name, var, *types)
-      if types.any?{|type| var.is_a?(type)}
+      if types.any? { |type| var.is_a?(type) }
         var
       else
         error("Invalid type for variable `#{name}`: " +
               "it's not a `#{type.name}`.")
       end
     end
+
     protected :_ensure_type!
 
     # Returns a list of variables matching the provided `name`, chosen from `vars`.
@@ -63,7 +65,7 @@ module Fizzy::Vars
 
       var_value = name.to_s
                       .scan(dot_split_regexp)
-                      .map{|match_group| match_group[0]}
+                      .map { |match_group| match_group[0] }
                       .reject(&:empty?)
                       .inject(vars) do |current_objects, name_component|
 
@@ -118,6 +120,7 @@ module Fizzy::Vars
       # Filter found variable value.
       Fizzy::Vars::Filters.apply(var_value)
     end
+
     protected :_get_var
 
   end

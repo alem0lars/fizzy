@@ -22,6 +22,7 @@ module Fizzy::Vars
   def var(var_name, **opts)
     Fizzy::Vars::Retriever.new(@vars).get(var_name, **opts)
   end
+
   alias_method :get_var, :var # NOTE: For backward compatibility
 
   # Same of `var`, but raise an error if the variable hasn't been found or
@@ -31,6 +32,7 @@ module Fizzy::Vars
     value = var(var_name, **opts)
     value.nil? ? error("Undefined variable: `#{var_name}`.") : value
   end
+
   alias_method :get_var!, :var! # NOTE: For backward compatibility
 
   # Check if the feature with the provided name (`feature_name`) is enabled.

@@ -9,7 +9,7 @@ module Fizzy::ArgParse
     attr_reader :command, :handlers
 
     def initialize
-      @command = Command.new
+      @command  = Command.new
       @handlers = []
     end
 

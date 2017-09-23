@@ -5,7 +5,7 @@ module Fizzy::Vars
     include Fizzy::Filesystem
 
     def initialize(vars_dir_path, name, bindings)
-      @binding = bindings
+      @binding       = bindings
       @vars_dir_path = vars_dir_path
       @name          = name
     end
@@ -29,6 +29,7 @@ module Fizzy::Vars
       parents_vars = merge_parents_vars(vars_dir_path, parents)
       merge_with_parents_vars(self_vars, parents_vars)
     end
+
     protected :setup_vars
 
     def read_vars(vars_dir_path, name)
@@ -42,47 +43,51 @@ module Fizzy::Vars
         [nil, nil]
       end
     end
+
     protected :read_vars
 
     def parse_vars(name, fmt, content)
       content = ERB.new(content).result(@binding)
       case fmt
-        when :yaml
-          begin
-            YAML.load(content) || {}
-          rescue Psych::SyntaxError => e
-            error("Invalid syntax in YAML `#{name}`: #{e.message}")
-          end
-        when :json
-          begin
-            JSON.parse(content)
-          rescue JSON::JSONError => e
-            error("Invalid JSON `#{name}`: #{e.message}.")
-          end
-        else error("Unrecognized format: `#{fmt}`")
+      when :yaml
+        begin
+          YAML.load(content) || {}
+        rescue Psych::SyntaxError => e
+          error("Invalid syntax in YAML `#{name}`: #{e.message}")
+        end
+      when :json
+        begin
+          JSON.parse(content)
+        rescue JSON::JSONError => e
+          error("Invalid JSON `#{name}`: #{e.message}.")
+        end
+      else error("Unrecognized format: `#{fmt}`")
       end.deep_symbolize_keys
     end
+
     protected :parse_vars
 
     def parse_parents_vars(fmt, content)
       parents_regexp = case fmt
-                         when :yaml then Fizzy::CFG.vars.yaml_regexp
-                         when :json then Fizzy::CFG.vars.json_regexp
-                         else       error("Unrecognized format: `#{fmt}`.")
+                       when :yaml then Fizzy::CFG.vars.yaml_regexp
+                       when :json then Fizzy::CFG.vars.json_regexp
+                       else            error("Unrecognized format: `#{fmt}`.")
                        end
       if md = content.match(parents_regexp)
         md[:parents].split(",")
                     .map(&:strip)
-                    .reject{|p| p =~ Fizzy::CFG.vars.parent_dummy_regexp}
+                    .reject { |p| p =~ Fizzy::CFG.vars.parent_dummy_regexp }
       else
         []
       end
     end
+
     protected :parse_parents_vars
 
     def merge_with_parents_vars(self_vars, parents_vars)
       parents_vars.magic_merge(self_vars)
     end
+
     protected :merge_with_parents_vars
 
     def merge_parents_vars(vars_dir_path, parents)
@@ -93,6 +98,7 @@ module Fizzy::Vars
         acc.magic_merge(parent_vars)
       end
     end
+
     protected :merge_parents_vars
 
   end

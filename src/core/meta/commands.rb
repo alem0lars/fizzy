@@ -1,6 +1,9 @@
+#
 # Manage commands declared in the meta file.
 #
 module Fizzy::Meta::Commands
+
+  #
   # Base command.
   #
   class Base
@@ -14,11 +17,13 @@ module Fizzy::Meta::Commands
       msg  = "Invalid `#{name}` provided to command `#{type}`: "
       msg += value.nil? ? "no value given." : "`#{value}`."
 
-      error(msg)
+      error msg
     end
+
     protected :invalid_spec
   end
 
+  #
   # Meta-Command that syncs a repository.
   #
   # Spec:
@@ -29,12 +34,12 @@ module Fizzy::Meta::Commands
   class Sync < Base
     def validate!(spec)
       # 1: Validate.
-      invalid_spec :repo unless spec.key?(:repo)
-      invalid_spec :dst  unless spec.key?(:dst)
+      invalid_spec :repo unless spec.key? :repo
+      invalid_spec :dst unless spec.key? :dst
 
       # 2: Normalize.
       @repo = spec[:repo]
-      @dst = Pathname.new(spec[:dst]).expand_variables.expand_path
+      @dst  = Pathname.new(spec[:dst]).expand_variables.expand_path
     end
 
     def execute
@@ -46,6 +51,7 @@ module Fizzy::Meta::Commands
     end
   end
 
+  #
   # Meta-Command that performs a file download.
   #
   # Spec:
@@ -56,8 +62,8 @@ module Fizzy::Meta::Commands
   class Download < Base
     def validate!(spec)
       # 1: Validate.
-      invalid_spec :url unless spec.key?(:url)
-      invalid_spec :dst unless spec.key?(:dst)
+      invalid_spec :url unless spec.key? :url
+      invalid_spec :dst unless spec.key? :dst
 
       # 2: Normalize.
       @url = URI(spec[:url])
@@ -66,13 +72,13 @@ module Fizzy::Meta::Commands
 
     def execute
       res = Net::HTTP.get_response(@url)
-      if res.is_a?(Net::HTTPSuccess)
+      if res.is_a? Net::HTTPSuccess
         # TODO: atm it requires the current user has write access.
         #      refactor when a more robust permission mgmt is implemented.
         FileUtils.mkdir_p(@dst.dirname)
         @dst.write(res.body)
       else
-        error("Network error: cannot retrieve `#{@url}`.")
+        error "Network error: cannot retrieve #{✏ @url}."
       end
     end
 
@@ -81,19 +87,25 @@ module Fizzy::Meta::Commands
     end
   end
 
+  #
+  # Get available meta-commands.
+  #
   def self.available
     [Sync, Download]
   end
 
+  #
+  # Find the matching meta-command from given type.
+  #
   def self.find_by_type(type)
     found = Fizzy::Meta::Commands.available.select do |command|
       command.type == type
     end
 
     if found.empty?
-      error "Failed to find a command with type `#{type}`."
+      error "Failed to find a command with type #{✏ type}."
     elsif found.length != 1
-      error "[BUG] Multiple commands matched type `#{type}`"
+      error "[BUG] Multiple commands matched type #{✏ type}."
     else
       found[0]
     end

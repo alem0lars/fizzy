@@ -2,10 +2,9 @@ class Object
 
   def must(name,
            value,
-           be: nil,
-           ge: nil, gt: nil, le: nil, lt: nil,
+           be:  nil,
+           ge:  nil, gt: nil, le: nil, lt: nil,
            msg: nil)
-
     def err(msg)
       error msg, exc: ArgumentError
     end
@@ -30,7 +29,7 @@ class Object
     # 3.1: greater-or-equal-than condition.
     if !ge.nil?
       must name, value, be: Number
-      must :ge,  ge,    be: Number
+      must :ge, ge, be: Number
       unless value >= ge
         err "Invalid `#{name}`: `#{value}` must be greater or equal than `#{ge}`"
       end
@@ -39,7 +38,7 @@ class Object
     # 3.2: greater-than condition.
     if !gt.nil?
       must name, value, be: Number
-      must :gt,  gt,    be: Number
+      must :gt, gt, be: Number
       unless value > gt
         err "Invalid `#{name}`: `#{value}` must be greater than `#{gt}`"
       end
@@ -48,7 +47,7 @@ class Object
     # 3.3: lesser-or-equal-than condition.
     if !le.nil?
       must name, value, be: Number
-      must :le,  le,    be: Number
+      must :le, le, be: Number
       unless value <= le
         err "Invalid `#{name}`: `#{value}` must be lesser or equal than `#{le}`"
       end
@@ -57,7 +56,7 @@ class Object
     # 3.4: lesser-than condition.
     if !lt.nil?
       must name, value, be: Number
-      must :lt,  lt,    be: Number
+      must :lt, lt, be: Number
       unless value < lt
         err "Invalid `#{name}`: `#{value}` must be lesser than `#{lt}`"
       end

@@ -73,12 +73,14 @@ require "io/console" if RUBY_VERSION > "1.9.2"
     require gem_name
   rescue
     puts("\e[31m☠ The gem `#{gem_name}` is not installed. " +
-        "To install run: `gem install #{gem_name}`. Aborting.\e[0m")
+         "To install run: `gem install #{gem_name}`. Aborting.\e[0m")
     exit(-1)
   end
 end
 
+#
 # Top-level namespace.
+#
 module Fizzy
 end
 
@@ -104,13 +106,13 @@ module Fizzy::ANSIColors
     def colorize(str, open_tag_regexp: nil, close_tag_regexp: nil)
       str = str.to_s
       begin
-        open_tag_regexp = default_open_tag_regexp if open_tag_regexp.nil?
+        open_tag_regexp  = default_open_tag_regexp if open_tag_regexp.nil?
         close_tag_regexp = default_close_tag_regexp if close_tag_regexp.nil?
 
         tree = TreeBuilder.new(open_tag_regexp, close_tag_regexp).build(str)
 
         colorized_str = str.dup
-        escapes_size = 0
+        escapes_size  = 0
         tree.visit do |node|
           if node.is_a?(StartTagNode)
             color_escape = Fizzy::ANSIColors.spec_to_color(node.color_spec)
@@ -144,7 +146,7 @@ module Fizzy::ANSIColors
         b: :blue,
         m: :magenta,
         c: :cyan,
-        w: :white
+        w: :white,
       }
 
       if color_spec.nil?
@@ -157,11 +159,11 @@ module Fizzy::ANSIColors
           color_spec.chars.collect do |char|
             color_name = names[char.downcase.to_sym]
 
-              if char == char.upcase # background color
-                Fizzy::ANSIColors.bg_colors[color_name]
-              else # foreground color
-                Fizzy::ANSIColors.fg_colors[color_name]
-              end
+            if char == char.upcase # background color
+              Fizzy::ANSIColors.bg_colors[color_name]
+            else # foreground color
+              Fizzy::ANSIColors.fg_colors[color_name]
+            end
           end.join
         end
       end
@@ -170,7 +172,7 @@ module Fizzy::ANSIColors
 
   class TreeBuilder
     def initialize(open_tag_regexp, close_tag_regexp)
-      @open_tag_regexp = open_tag_regexp
+      @open_tag_regexp  = open_tag_regexp
       @close_tag_regexp = close_tag_regexp
     end
 
@@ -189,7 +191,7 @@ module Fizzy::ANSIColors
 
       root_node = StartTagNode.new(0, 0, 0, :CLEAR)
 
-      parent_node = root_node
+      parent_node   = root_node
       previous_node = root_node
       tag_nodes.each do |current_node|
         if previous_node.is_a?(StartTagNode) && current_node.is_a?(StartTagNode)
@@ -204,7 +206,7 @@ module Fizzy::ANSIColors
       end
 
       # Add the end tag for the root node.
-      final_node = EndTagNode.new(str.length, str.length, 0)
+      final_node        = EndTagNode.new(str.length, str.length, 0)
       final_node.parent = root_node
       root_node.children.push(final_node)
 
@@ -219,11 +221,11 @@ module Fizzy::ANSIColors
     include Comparable
 
     def initialize(start_idx, end_idx, size)
-      @parent = nil
-      @children = []
+      @parent    = nil
+      @children  = []
       @start_idx = start_idx
-      @end_idx = end_idx
-      @size = size
+      @end_idx   = end_idx
+      @size      = size
     end
 
     def <=>(another)
@@ -232,10 +234,10 @@ module Fizzy::ANSIColors
 
     def visit(&block)
       yield(self)
-      children.each {|c| c.visit(&block)}
+      children.each { |c| c.visit(&block) }
     end
 
-    def to_pretty_str(indent_lvl=0, include_children: true)
+    def to_pretty_str(indent_lvl = 0, include_children: true)
       "#{"\t" * indent_lvl}#{self.class.name}(#{to_fields_str(indent_lvl, include_children)})"
     end
 
@@ -244,8 +246,8 @@ module Fizzy::ANSIColors
       if children.empty? || !include_children
         children_str = ""
       else
-        children_str = "children="
-        children_str = "\n#{indent_str}[\n"
+        children_str  = "children="
+        children_str  = "\n#{indent_str}[\n"
         children_str += children.map do |c|
           c.to_pretty_str(indent_lvl + 1, include_children: include_children)
         end.join("\n")
@@ -253,6 +255,7 @@ module Fizzy::ANSIColors
       end
       "start_idx=`#{start_idx}` end_idx=`#{end_idx}` size=`#{size}`#{children_str}"
     end
+
     protected :to_fields_str
   end
 
@@ -267,6 +270,7 @@ module Fizzy::ANSIColors
     def to_fields_str(indent_lvl, include_children)
       "color_spec=`#{color_spec}` #{super}"
     end
+
     protected :to_fields_str
   end
 
@@ -281,14 +285,14 @@ module Fizzy::ANSIColors
     #
     def fg_colors
       {
-        black: "\e[30m",
-        red: "\e[31m",
-        green: "\e[32m",
-        yellow: "\e[33m",
-        blue: "\e[34m",
+        black:   "\e[30m",
+        red:     "\e[31m",
+        green:   "\e[32m",
+        yellow:  "\e[33m",
+        blue:    "\e[34m",
         magenta: "\e[35m",
-        cyan: "\e[36m",
-        white: "\e[37m"
+        cyan:    "\e[36m",
+        white:   "\e[37m",
       }
     end
 
@@ -296,14 +300,14 @@ module Fizzy::ANSIColors
     #
     def bg_colors
       {
-        black: "\e[40m",
-        red: "\e[41m",
-        green: "\e[42m",
-        yellow: "\e[43m",
-        blue: "\e[44m",
+        black:   "\e[40m",
+        red:     "\e[41m",
+        green:   "\e[42m",
+        yellow:  "\e[43m",
+        blue:    "\e[44m",
         magenta: "\e[45m",
-        cyan: "\e[46m",
-        white: "\e[47m"
+        cyan:    "\e[46m",
+        white:   "\e[47m",
       }
     end
 
@@ -338,30 +342,6 @@ end
 #
 # Extensions for class `String`.
 #
-<<<<<<< HEAD
-# Safely encode templates before evaluating them.
-#
-# XXX Needed because of thor.
-#
-# TODO When thor dependency is removed, remove this shitty monkey patch!
-#
-class IO #:nodoc:
-  class << self
-    def binread(file, *args)
-      raise ArgumentError, "wrong number of arguments (#{1 + args.size} for 1..3)" unless args.size < 3
-      File.open(file, "rb") do |f|
-        f.read(*args).safe_encode
-      end
-    end
-  end
-end
-=======
-class String
->>>>>>> v2.3.4
-
-#
-# Extensions for class `String`.
-#
 class String
   include Fizzy::ANSIColors
 
@@ -373,12 +353,6 @@ class String
   #
   def shell_escape
     Shellwords.shellescape(self)
-  end
-
-  # ──────────────────────────────────────────────────────────────── Encoding ──
-
-  def safe_encode
-    self.encode("utf-8", invalid: :replace, undef: :replace, replace: "_")
   end
 
   # ────────────────────────────────────────────────────────────── Formatting ──
@@ -491,7 +465,7 @@ end
 class Hash
 
   # Extract `n` sample key/value pairs from the underlying `Hash`.
-  def sample(n=1)
+  def sample(n = 1)
     Hash[self.to_a.sample(n)]
   end
 
@@ -511,6 +485,7 @@ class Hash
       end
     end
   end
+
   private :magic_merge_strategy
 
   # Perform recursive merge with some magic, replacing current hash.
@@ -538,6 +513,7 @@ class Hash
       end
     end
   end
+
   private :deep_merge_strategy
 
   # Perform recursive merge, replacing current hash.
@@ -552,7 +528,7 @@ class Hash
     self.merge(second, &deep_merge_strategy)
   end
 
-  def fqkeys(prefix="")
+  def fqkeys(prefix = "")
     self.inject([]) do |acc, (k, v)|
       prefix_new = prefix.empty? ? k.to_s : "#{prefix}.#{k}"
       acc + (v.is_a?(Hash) ? v.fqkeys(prefix_new) : [prefix_new])
@@ -560,7 +536,7 @@ class Hash
   end
 
   def slice(*keys)
-    self.select{|k, _| keys.include?(k)}
+    self.select { |k, _| keys.include?(k) }
   end
 
   # ────────────────────────────────────────────────────────────────────────────
@@ -569,27 +545,27 @@ class Hash
   # Return a new `Hash` with all keys converted to `String`s.
   #
   def deep_stringify_keys
-    deep_transform_keys{ |key| key.to_s }
+    deep_transform_keys { |key| key.to_s }
   end
 
   # Destructively convert all keys to `String`s.
   #
   def deep_stringify_keys!
-    deep_transform_keys!{ |key| key.to_s }
+    deep_transform_keys! { |key| key.to_s }
   end
 
   # Return a new `Hash` with all keys converted to `Symbol`s, as long as they
   # respond to `to_sym`.
   #
   def deep_symbolize_keys
-    deep_transform_keys{ |key| key.to_sym rescue key }
+    deep_transform_keys { |key| key.to_sym rescue key }
   end
 
   # Destructively convert all keys to `Symbol`s, as long as they respond to
   # `to_sym`.
   #
   def deep_symbolize_keys!
-    deep_transform_keys!{ |key| key.to_sym rescue key }
+    deep_transform_keys! { |key| key.to_sym rescue key }
   end
 
   # Return a new `Hash` with all keys converted by the block operation.
@@ -611,25 +587,27 @@ class Hash
         result[yield(key)] = deep_transform_keys_in_object(value, &block)
       end
     when Array
-      object.map {|e| deep_transform_keys_in_object(e, &block)}
+      object.map { |e| deep_transform_keys_in_object(e, &block) }
     else object
     end
   end
+
   private :deep_transform_keys_in_object
 
   def deep_transform_keys_in_object!(object, &block)
     case object
     when Hash
       object.keys.each do |key|
-        value = object.delete(key)
+        value              = object.delete(key)
         object[yield(key)] = deep_transform_keys_in_object!(value, &block)
       end
       object
     when Array
-      object.map! {|e| deep_transform_keys_in_object!(e, &block)}
+      object.map! { |e| deep_transform_keys_in_object!(e, &block) }
     else object
     end
   end
+
   private :deep_transform_keys_in_object!
 
   # ────────────────────────────────────────────────────────────────────────────
@@ -663,10 +641,10 @@ class Thor
     # Monkey-patch to retrieve the template currently processed.
     old_template = instance_method(:template)
     remove_method :template
-    define_method :template, ->(source, *args, &blk) do
-      $fizzy_cur_template = source
-      old_template.bind(self).(source, *args, &blk)
-    end
+    define_method :template, -> (source, *args, &blk) do
+                    $fizzy_cur_template = source
+                    old_template.bind(self).(source, *args, &blk)
+                  end
 
   end
 end
@@ -677,6 +655,9 @@ Fizzy::CFG = OpenStruct.new
 
 # Fizzy version.
 Fizzy::CFG.version = "2.3.2"
+
+# Requirements.
+Fizzy::CFG.minimum_ruby_version = "2.0.0"
 
 # URL for reporting fizzy issues.
 Fizzy::CFG.issues_url = "https://github.com/alem0lars/fizzy/issues"
@@ -689,9 +670,9 @@ Fizzy::CFG.debug = ENV["FIZZY_DEBUG"] =~ /^(?:true|yes)$/
 
 # The operating-system which fizzy is running on.
 Fizzy::CFG.os = case RUBY_PLATFORM
-                  when /darwin/ then :osx
-                  when /linux/  then :linux
-                  else               :windows
+                when /darwin/ then :osx
+                when /linux/  then :linux
+                else               :windows
                 end
 
 # Remote URL for fizzy static files (must end with a slash).
@@ -702,9 +683,9 @@ Fizzy::CFG.static_files_base_url =
 Fizzy::CFG.default_fizzy_dir = Pathname.new(
   ENV["FIZZY_DIR"] ||
   case Fizzy::CFG.os
-    when :linux   then "/usr/share/fizzy"
-    when :osx     then "~/Library/Application Support/fizzy"
-    when :windows then "~/fizzy"
+  when :linux   then "/usr/share/fizzy"
+  when :osx     then "~/Library/Application Support/fizzy"
+  when :windows then "~/fizzy"
   end
 ).expand_variables.expand_path
 
@@ -713,9 +694,9 @@ Fizzy::CFG.default_meta_name = "meta.yml"
 
 # Variables inheritance.
 Fizzy::CFG.vars = OpenStruct.new(
-  yaml_regexp: /^#\s*=>\s*inherits\s*(:\s+)?(?<parents>.+)\s*<=\s*#\s*/,
-  json_regexp: /^\/\*\s*=>\s*inherits\s*(:\s+)?(?<parents>.+)\s*<=\s*\*\/\s*/,
-  parent_dummy_regexp: /none|nothing/i
+  yaml_regexp:         /^#\s*=>\s*inherits\s*(:\s+)?(?<parents>.+)\s*<=\s*#\s*/,
+  json_regexp:         /^\/\*\s*=>\s*inherits\s*(:\s+)?(?<parents>.+)\s*<=\s*\*\/\s*/,
+  parent_dummy_regexp: /none|nothing/i,
 )
 
 Fizzy::CFG.instantiate_exclude_pattern = /\.git|README/
@@ -723,52 +704,78 @@ Fizzy::CFG.instantiate_exclude_pattern = /\.git|README/
 # ─────────────────────────────────────────────────────────── Log ← Io ← Core ──
 
 module Fizzy::IO
+
   include Fizzy::ANSIColors
 
+  #
   # Display a debug message (with caller info).
   #
   def debug(msg)
     return unless Fizzy::CFG.debug
     caller_info = caller
-                  .map { |c| c[/`.*'/][1..-2].split(" ").first }
-                  .uniq[0..2]
-                  .join(" → ")
-    tell("{m{⚫}}{b{<}}{c{#{caller_info}}}{b{>}}{w{: #{msg}}}")
+      .map { |c| c[/`.*'/][1..-2].split(" ").first }
+      .uniq[0..2]
+      .join(" → ")
+    tell "{m{⚫}}#{✏ caller_info, %w({b{<}} {b{>}})}{w{: #{msg}}}"
   end
 
+  #
   # Display an informative message (`msg`) to the user.
   #
   # The `prefix` argument should contain some text displayed before the
   # message, typically to show the context which the message belongs to.
   #
   def info(prefix, msg)
-    tell("{b{☞ }}{c{#{prefix}}}{w{ #{msg}}}")
+    if msg.nil?
+      msg    = prefix
+      prefix = nil
+    end
+
+    output = []
+    output << "{b{☞}}"
+    output << "{c{#{prefix}}}" if prefix
+    outout << "{w{#{msg}}}" if msg
+
+    tell output.join(" ")
   end
 
-  # Display an informative message (`msg`) to the user.
   #
-  # If `ask_continue` is `true`, the user can interactively choose to stop
-  # the program or exit (with exit status `-1`).
+  # Display an success message (`msg`) to the user.
+  #
+  # The `prefix` argument should contain some text displayed before the
+  # message, typically to show the context which the message belongs to.
+  #
+  def success(msg)
+    tell "#{✔} {g{#{msg}}}"
+  end
+
+  #
+  # Display an warning message (`msg`) to the user.
+  #
+  # The `prefix` argument should contain some text displayed before the
+  # message, typically to show the context which the message belongs to.
   #
   def warning(msg, ask_continue: true)
-    tell("{y{☞ #{msg}}}")
+    tell "#{☞} {y{#{msg}}}"
     exit(-1) if ask_continue && !ask("continue")
   end
 
+  #
   # Display an error message (`msg`) to the user. Before returning, the
   # program will exit (with exit status `-1`).
   #
   def error(msg, exc: -1, silent: false)
-    tell("{r{☠ #{msg}}}") unless silent
+    tell "#{✘} {r{#{msg}}}" unless silent
 
     if exc.is_a? Integer
-      exit(exc)
+      exit exc
     elsif !exc.nil?
       raise exc if msg.nil?
       raise exc, msg
     end
   end
 
+  #
   # Tell something to the user.
   #
   def tell(*args, newline: true, **kwargs)
@@ -785,15 +792,33 @@ module Fizzy::IO
     end
   end
 
-  # ────────────────────────────────────────────────────────────────────────────
-  # ☞ Well-known messages
+  # ──────────────────────────────────────────────────── Formatting utilities ──
 
+  #
+  # Tokenize the provided string.
+  #
+  def ✏(str, sep = "`")
+    left_sep, right_sep = sep.is_a?(Array) ? sep : [sep, sep]
+    "#{left_sep}{c{#{str}}}#{right_sep}"
+  end
+
+  # ───────────────────────────────────────────────────── Well-known messages ──
+
+  #
   # Get colorized success symbol.
   #
   def ✔
     "{g{✔}}"
   end
 
+  #
+  # Get colorized warning symbol.
+  #
+  def ☞
+    "{y{☞}}"
+  end
+
+  #
   # Get colorized error symbol.
   #
   def ✘
@@ -829,8 +854,8 @@ module Fizzy::LineEditor
       true
     end
 
-    def initialize(prompt, options={})
-      @prompt = prompt
+    def initialize(prompt, options = {})
+      @prompt  = prompt
       @options = options
     end
 
@@ -841,17 +866,17 @@ module Fizzy::LineEditor
 
     private
 
-    def get_input
-      if echo?
-        $stdin.gets
-      else
-        $stdin.noecho(&:gets)
-      end.chomp
-    end
+      def get_input
+        if echo?
+          $stdin.gets
+        else
+          $stdin.noecho(&:gets)
+        end.chomp
+      end
 
-    def echo?
-      options.fetch(:echo, true)
-    end
+      def echo?
+        options.fetch(:echo, true)
+      end
   end
 end
 
@@ -885,6 +910,7 @@ module Fizzy::LineEditor
     def add_to_history?
       options.fetch(:add_to_history, true)
     end
+
     private :add_to_history?
 
     def completion_proc
@@ -896,16 +922,19 @@ module Fizzy::LineEditor
         end
       end
     end
+
     private :completion_proc
 
     def completion_options
       options.fetch(:limited_to, [])
     end
+
     private :completion_options
 
     def use_path_completion?
       options.fetch(:path, false)
     end
+
     private :use_path_completion?
 
     class PathCompletion
@@ -923,6 +952,7 @@ module Fizzy::LineEditor
       def relative_matches
         absolute_matches.map { |path| path.sub(base_path, "") }
       end
+
       private :relative_matches
 
       def absolute_matches
@@ -934,16 +964,19 @@ module Fizzy::LineEditor
           end
         end
       end
+
       private :absolute_matches
 
       def glob_pattern
         "#{base_path}#{text}*"
       end
+
       private :glob_pattern
 
       def base_path
         "#{Dir.pwd}/"
       end
+
       private :base_path
     end
   end
@@ -981,7 +1014,7 @@ module Fizzy::IO
               end
 
     line_editor = Fizzy::LineEditor.enabled.new("{Ml{ ? }}#{question}", options)
-    answer = line_editor.readline
+    answer      = line_editor.readline
 
     case type
     when :bool
@@ -1011,11 +1044,11 @@ end
 
 class Fizzy::Caller
 
-  def self.info(depth=1)
+  def self.info(depth = 1)
     parse_caller(caller(depth + 2).first)
   end
 
-  def self.method_name(depth=1)
+  def self.method_name(depth = 1)
     parse_caller(caller(depth + 2).first)[:method]
   end
 
@@ -1024,7 +1057,7 @@ class Fizzy::Caller
       file   = Regexp.last_match[1]
       line   = Regexp.last_match[2].to_i
       method = Regexp.last_match[3]
-      {file: file, line: line, method: method}
+      { file: file, line: line, method: method }
     end
   end
 
@@ -1036,10 +1069,9 @@ class Object
 
   def must(name,
            value,
-           be: nil,
-           ge: nil, gt: nil, le: nil, lt: nil,
+           be:  nil,
+           ge:  nil, gt: nil, le: nil, lt: nil,
            msg: nil)
-
     def err(msg)
       error msg, exc: ArgumentError
     end
@@ -1064,7 +1096,7 @@ class Object
     # 3.1: greater-or-equal-than condition.
     if !ge.nil?
       must name, value, be: Number
-      must :ge,  ge,    be: Number
+      must :ge, ge, be: Number
       unless value >= ge
         err "Invalid `#{name}`: `#{value}` must be greater or equal than `#{ge}`"
       end
@@ -1073,7 +1105,7 @@ class Object
     # 3.2: greater-than condition.
     if !gt.nil?
       must name, value, be: Number
-      must :gt,  gt,    be: Number
+      must :gt, gt, be: Number
       unless value > gt
         err "Invalid `#{name}`: `#{value}` must be greater than `#{gt}`"
       end
@@ -1082,7 +1114,7 @@ class Object
     # 3.3: lesser-or-equal-than condition.
     if !le.nil?
       must name, value, be: Number
-      must :le,  le,    be: Number
+      must :le, le, be: Number
       unless value <= le
         err "Invalid `#{name}`: `#{value}` must be lesser or equal than `#{le}`"
       end
@@ -1091,7 +1123,7 @@ class Object
     # 3.4: lesser-than condition.
     if !lt.nil?
       must name, value, be: Number
-      must :lt,  lt,    be: Number
+      must :lt, lt, be: Number
       unless value < lt
         err "Invalid `#{name}`: `#{value}` must be lesser than `#{lt}`"
       end
@@ -1155,6 +1187,7 @@ end
 
 module Fizzy::TypeSystem
 
+  #
   # Check/convert type of the provided `value`,
   # according to the argument `type`.
   #
@@ -1169,48 +1202,48 @@ module Fizzy::TypeSystem
       value
     else
       case type.to_s.gsub(/\?$/, "").to_sym
-        when :string, :str
-          strict ? _ensure_type!(name, value, String) : value.to_s
-        when :symbol, :sym
-          strict ? _ensure_type!(name, value, Symbol) : value.to_s.to_sym
-        when :integer, :int
-          strict ? _ensure_type!(name, value, Integer) : Integer(value)
-        when :boolean, :bool
-          if strict
-            _ensure_type!(name, value, TrueClass, FalseClass)
-          else
-            if value.nil?
-              nil
-            elsif value.is_a?(TrueClass) || value.to_s == "true"
-              true
-            elsif value.is_a?(FalseClass) || value.to_s == "false"
-              false
-            else
-              error("Invalid `#{value}` for value `#{name}`: " +
-                    "it can't be converted to a boolean.")
-            end
-          end
-        when :path, :pth then
-          if strict && !File.exist?(value)
-            error("Invalid `#{name}`: `#{value}` doesn't exist")
-          else
-            Pathname.new(value).expand_variables.expand_path
-          end
-        when :file then
-          if strict && !File.file?(value)
-            error("Invalid `#{name}`: `#{value}` isn't a file")
-          else
-            Pathname.new(value).expand_variables.expand_path
-          end
-        when :directory, :dir then
-          if strict && !File.directory?(value)
-            error("Invalid `#{name}`: `#{value}` isn't a directory")
-          else
-            Pathname.new(value).expand_variables.expand_path
-          end
+      when :string, :str
+        strict ? _ensure_type!(name, value, String) : value.to_s
+      when :symbol, :sym
+        strict ? _ensure_type!(name, value, Symbol) : value.to_s.to_sym
+      when :integer, :int
+        strict ? _ensure_type!(name, value, Integer) : Integer(value)
+      when :boolean, :bool
+        if strict
+          _ensure_type!(name, value, TrueClass, FalseClass)
         else
-          error("Unhandled type `#{type}`. If you need support for a new " +
-                "type, open an issue at `#{Fizzy::CFG.issues_url}`.")
+          if value.nil?
+            nil
+          elsif value.is_a?(TrueClass) || value.to_s == "true"
+            true
+          elsif value.is_a?(FalseClass) || value.to_s == "false"
+            false
+          else
+            error("Invalid `#{value}` for value `#{name}`: " +
+                  "it can't be converted to a boolean.")
+          end
+        end
+      when :path, :pth
+        if strict && !File.exist?(value)
+          error("Invalid `#{name}`: `#{value}` doesn't exist")
+        else
+          Pathname.new(value).expand_variables.expand_path
+        end
+      when :file
+        if strict && !File.file?(value)
+          error("Invalid `#{name}`: `#{value}` isn't a file")
+        else
+          Pathname.new(value).expand_variables.expand_path
+        end
+      when :directory, :dir
+        if strict && !File.directory?(value)
+          error("Invalid `#{name}`: `#{value}` isn't a directory")
+        else
+          Pathname.new(value).expand_variables.expand_path
+        end
+      else
+        error("Unhandled type `#{type}`. If you need support for a new " +
+              "type, open an issue at `#{Fizzy::CFG.issues_url}`.")
       end
     end
   end
@@ -1219,7 +1252,9 @@ end
 
 # ─────────────────────────────────────────────────────────────── Tree ← Misc ──
 
+#
 # Namespace for fizzy's tree data structure implementation.
+#
 module Fizzy::Tree
 end
 
@@ -1266,7 +1301,7 @@ module Fizzy::Tree::HashConverter
 
       child_nodes = []
       children.each do |child, grandchildren|
-        child_node = self.class.from_hash({child => grandchildren})
+        child_node = self.class.from_hash({ child => grandchildren })
         child_nodes << child_node
         self << child_node
       end
@@ -1348,7 +1383,7 @@ module Fizzy::Tree::HashConverter
     # @raise [ArgumentError] This exception is raised if `hash` contains
     #                        values that are not `Hash`es or `nil`s.
     def from_hash(hash)
-      must "hash",      hash,      be: Hash
+      must "hash", hash, be: Hash
       must "hash size", hash.size, eq: 1
 
       root, children = hash.first
@@ -1404,8 +1439,8 @@ module Fizzy::Tree::MergeHandler
   # @raise [ArgumentError] This exception is raised if `other_tree` does not
   #                        have the same root node as self.
   def merge!(other_tree)
-    check_merge_prerequisites( other_tree )
-    merge_trees( self.root, other_tree.root )
+    check_merge_prerequisites(other_tree)
+    merge_trees(self.root, other_tree.root)
   end
 
   # @!visibility protected
@@ -1425,6 +1460,7 @@ module Fizzy::Tree::MergeHandler
         'Unable to merge trees as they do not share the same root'
     end
   end
+
   protected :check_merge_prerequisites
 
   # @!visibility protected
@@ -1446,11 +1482,12 @@ module Fizzy::Tree::MergeHandler
     end
 
     tree1.children.each do |child|
-      merge_trees( child, tree2[child.name] ) unless tree2[child.name].nil?
+      merge_trees(child, tree2[child.name]) unless tree2[child.name].nil?
     end
 
     return tree1
   end
+
   protected :merge_trees
 end
 
@@ -1598,13 +1635,14 @@ module Fizzy::Tree::PathHandler
     def get_path_name_array(current_array_path = [])
       path_array = current_array_path + [name]
 
-      if !parent              # If detached node or root node.
+      if !parent # If detached node or root node.
         return path_array
-      else                    # Else recurse to parent node.
+      else # Else recurse to parent node.
         path_array = parent.get_path_name_array(path_array)
         return path_array
       end
     end
+
     protected :get_path_name_array
 
     # @!endgroup
@@ -1760,7 +1798,7 @@ class Fizzy::Tree::Node
     return nil if root?
 
     parentage_array = []
-    prev_parent = self.parent
+    prev_parent     = self.parent
     while (prev_parent)
       parentage_array << prev_parent
       prev_parent = prev_parent.parent
@@ -1803,14 +1841,14 @@ class Fizzy::Tree::Node
     @name, @content = name, content
 
     if name.kind_of?(Integer)
-      warning "Using integer as node name."\
-        " Semantics of TreeNode[] may not be what you expect!"\
-        " #{name} #{content}"
+      warning "Using integer as node name." \
+              " Semantics of TreeNode[] may not be what you expect!" \
+              " #{name} #{content}"
     end
 
     self.set_as_root!
     @children_hash = Hash.new
-    @children = []
+    @children      = []
   end
 
   # Returns a copy of this node, with its parent and children links removed.
@@ -1847,11 +1885,10 @@ class Fizzy::Tree::Node
 
   # Creates a dump representation of this node and returns the same as
   # a hash.
-  def create_dump_rep           # :nodoc:
-    { :name => @name,
-      :parent => (root? ? nil : @parent.name),
-      :content => Marshal.dump(@content)
-    }
+  def create_dump_rep # :nodoc:
+    { :name    => @name,
+      :parent  => (root? ? nil : @parent.name),
+      :content => Marshal.dump(@content) }
   end
 
   protected :create_dump_rep
@@ -1866,20 +1903,20 @@ class Fizzy::Tree::Node
   #       self and makes itself the root.
   #
   def marshal_load(dumped_tree_array)
-    nodes = { }
+    nodes = {}
     dumped_tree_array.each do |node_hash|
       name        = node_hash[:name]
       parent_name = node_hash[:parent]
       content     = Marshal.load(node_hash[:content])
 
-      if parent_name then
+      if parent_name
         nodes[name] = current_node = Fizzy::Tree::Node.new(name, content)
         nodes[parent_name].add current_node
       else
         # This is the root node, hence initialize self.
         initialize(name, content)
 
-        nodes[name] = self    # Add self to the list of nodes
+        nodes[name] = self # Add self to the list of nodes
       end
     end
   end
@@ -1893,7 +1930,7 @@ class Fizzy::Tree::Node
   def to_s
     "Node Name: #{@name}" +
       " Content: " + (@content.to_s || "<Empty>") +
-      " Parent: " + (root?()  ? "<None>" : @parent.name.to_s) +
+      " Parent: " + (root?() ? "<None>" : @parent.name.to_s) +
       " Children: #{@children.length}" +
       " Total Nodes: #{size()}"
   end
@@ -1981,14 +2018,14 @@ class Fizzy::Tree::Node
     if insertion_range.include?(at_index)
       @children.insert(at_index, child)
     else
-      raise "Attempting to insert a child at a non-existent location"\
-        " (#{at_index}) "\
-        "when only positions from "\
-        "#{insertion_range.min} to #{insertion_range.max} exist."
+      raise "Attempting to insert a child at a non-existent location" \
+            " (#{at_index}) " \
+            "when only positions from " \
+            "#{insertion_range.min} to #{insertion_range.max} exist."
     end
 
-    @children_hash[child.name]  = child
-    child.parent = self
+    @children_hash[child.name] = child
+    child.parent               = self
     return child
   end
 
@@ -2011,7 +2048,7 @@ class Fizzy::Tree::Node
     old_name = @name
 
     if root?
-      self.name=(new_name)
+      self.name = (new_name)
     else
       @parent.rename_child old_name, new_name
     end
@@ -2031,8 +2068,8 @@ class Fizzy::Tree::Node
       raise ArgumentError, "Invalid child name specified: #{old_name}"
     end
 
-    @children_hash[new_name] = @children_hash.delete(old_name)
-    @children_hash[new_name].name=(new_name)
+    @children_hash[new_name]      = @children_hash.delete(old_name)
+    @children_hash[new_name].name = (new_name)
   end
 
   # Protected method to set the name of this node.
@@ -2098,8 +2135,8 @@ class Fizzy::Tree::Node
   # @param [Fizzy::Tree::Node] parent The parent node.
   #
   # @return [Fizzy::Tree::Node] The parent node.
-  def parent=(parent)         # :nodoc:
-    @parent = parent
+  def parent=(parent) # :nodoc:
+    @parent     = parent
     @node_depth = nil
   end
 
@@ -2148,7 +2185,7 @@ class Fizzy::Tree::Node
   # The nodes become immutable after this operation.  In effect, the entire tree's
   # structure and contents become _read-only_ and cannot be changed.
   def freeze_tree!
-    each {|node| node.freeze}
+    each { |node| node.freeze }
   end
 
   # @!endgroup
@@ -2188,7 +2225,7 @@ class Fizzy::Tree::Node
   #
   # @see #add
   # @see #initialize
-  def [](name_or_index, num_as_name=false)
+  def [](name_or_index, num_as_name = false)
     raise ArgumentError,
       "Name_or_index needs to be provided!" if name_or_index == nil
 
@@ -2216,16 +2253,15 @@ class Fizzy::Tree::Node
   #
   # @return [Fizzy::Tree::Node] this node, if a block if given
   # @return [Enumerator] an enumerator on this tree, if a block is *not* given
-  def each(&block)             # :yields: node
-
+  def each(&block) # :yields: node
     return self.to_enum unless block_given?
 
-    node_stack = [self]   # Start with this node
+    node_stack = [self] # Start with this node
 
     until node_stack.empty?
-      current = node_stack.shift    # Pop the top-most node
-      if current                    # Might be 'nil' (esp. for binary trees)
-        yield current               # and process it
+      current = node_stack.shift # Pop the top-most node
+      if current                 # Might be 'nil' (esp. for binary trees)
+        yield current            # and process it
         # Stack children of the current node at top of the stack
         node_stack = current.children.concat(node_stack)
       end
@@ -2244,7 +2280,7 @@ class Fizzy::Tree::Node
   #
   # @return [Fizzy::Tree::Node] this node, if a block if given
   # @return [Enumerator] an enumerator on this tree, if a block is *not* given
-  def preordered_each(&block)  # :yields: node
+  def preordered_each(&block) # :yields: node
     each(&block)
   end
 
@@ -2271,11 +2307,11 @@ class Fizzy::Tree::Node
         peek_node.visited = true
         # Add the children to the stack. Use the marking structure.
         marked_children =
-          peek_node.node.children.map {|node| markednode.new(node, false)}
+          peek_node.node.children.map { |node| markednode.new(node, false) }
         node_stack = marked_children.concat(node_stack)
         next
       else
-        yield node_stack.shift.node           # Pop and yield the current node
+        yield node_stack.shift.node # Pop and yield the current node
       end
     end
 
@@ -2296,7 +2332,7 @@ class Fizzy::Tree::Node
   def breadth_each(&block)
     return self.to_enum(:breadth_each) unless block_given?
 
-    node_queue = [self]       # Create a queue with self as the initial entry
+    node_queue = [self] # Create a queue with self as the initial entry
 
     # Use a queue to do breadth traversal
     until node_queue.empty?
@@ -2323,7 +2359,7 @@ class Fizzy::Tree::Node
   #                                 is given.
   def children
     if block_given?
-      @children.each {|child| yield child}
+      @children.each { |child| yield child }
       return self
     else
       return @children.clone
@@ -2348,7 +2384,7 @@ class Fizzy::Tree::Node
       self.each { |node| yield(node) if node.leaf? }
       return self
     else
-      self.select { |node| node.leaf?}
+      self.select { |node| node.leaf? }
     end
   end
 
@@ -2447,8 +2483,9 @@ class Fizzy::Tree::Node
     else
       return [] if root?
       siblings = []
-      parent.children {|my_sibling|
-        siblings << my_sibling if my_sibling != self}
+      parent.children { |my_sibling|
+        siblings << my_sibling if my_sibling != self
+      }
       siblings
     end
   end
@@ -2522,7 +2559,8 @@ class Fizzy::Tree::Node
   # @param [Proc] block optional block to use for rendering
   def print_tree(level = node_depth, max_depth = nil,
                  block = lambda { |node, prefix|
-    puts "#{prefix} #{node.name}" })
+                   puts "#{prefix} #{node.name}"
+                 })
     prefix = ''
 
     if root?
@@ -2560,7 +2598,7 @@ module Fizzy::ArgParse
     attr_reader :command, :handlers
 
     def initialize
-      @command = Command.new
+      @command  = Command.new
       @handlers = []
     end
 
@@ -2579,7 +2617,7 @@ end
 
 # ─────────────────────────────────────────────────── Types ← Argparse ← Misc ──
 
-OptionParser.accept(Pathname) do |s,|
+OptionParser.accept(Pathname) do |s, |
   begin
     Pathname.new(s) if s
   rescue ArgumentError
@@ -2597,8 +2635,8 @@ class Fizzy::ArgParse::CommandParser
   include Fizzy::IO
 
   def initialize(name)
-    @name = name.to_s
-    @options = {}
+    @name     = name.to_s
+    @options  = {}
     @handlers = {}
   end
 
@@ -2633,9 +2671,9 @@ class Fizzy::ArgParse::CommandParser
 
   protected
 
-  def banner
-    error "Abstract method called"
-  end
+    def banner
+      error "Abstract method called"
+    end
 end
 
 # ────────────────────────────────────── Rootcommand parser ← argparse ← Misc ──
@@ -2671,7 +2709,7 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
     super(name)
 
     @subcommand_parsers = subcommand_parsers
-    @parser = OptionParser.new
+    @parser             = OptionParser.new
   end
 
   #
@@ -2685,7 +2723,7 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
   # Register a handler matching options.
   #
   def on_option(opt_name, opt_value = nil, &block)
-    handlers[{ regexp: opt_name, type: :option_name }] = block
+    handlers[{ regexp: opt_name, type: :option_name }]   = block
     handlers[{ regexp: opt_value, type: :option_value }] = block if opt_value
   end
 
@@ -2706,7 +2744,7 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
     if subcommand_parser.nil?
       error(subcommand_name,
             silent: true,
-            exc: Fizzy::ArgParse::InvalidSubCommandName)
+            exc:    Fizzy::ArgParse::InvalidSubCommandName)
     end
 
     parse_subcommand_arguments(subcommand_parser, args)
@@ -2731,54 +2769,54 @@ class Fizzy::ArgParse::RootCommandParser < Fizzy::ArgParse::CommandParser
 
   protected
 
-  def banner
-    [
-      "Usage: #{name} #{options[:command] || "[subcommand]"} [options]",
-      "Available sub-commands: #{subcommand_parsers.map(&:name).join(", ")}"
-    ].join("\n")
-  end
+    def banner
+      [
+        "Usage: #{name} #{options[:command] || "[subcommand]"} [options]",
+        "Available sub-commands: #{subcommand_parsers.map(&:name).join(", ")}",
+      ].join("\n")
+    end
 
   private
 
-  #
-  # Ensures that subcommand name is present in provided `args`.
-  #
-  # If present, it will be removed from `args` and returned.
-  #
-  def pop_subcommand_name!(args)
-    subcommand_name = args.shift
-    if subcommand_name.nil?
-      error(nil, silent: true, exc: Fizzy::ArgParse::NoSubCommandName)
-    else
-      subcommand_name
-    end
-  end
-
-  #
-  # Check if `regexp` (of provided `type`) matches with the current options.
-  #
-  def matches_options?(type, regexp)
-    case type
-    when :option_name  then options.any? { |n, _| regexp =~ n }
-    when :option_value then options.any? { |_, v| regexp =~ v }
-    when :command_name then regexp =~ options[:command]
-    end
-  end
-
-  def find_subcommand_parser(subcommand_name = nil)
-    subcommand_name ||= options[:command]
-    matching_subcommand_parsers =
-      subcommand_parsers.select do |c|
-        c.name == subcommand_name
+    #
+    # Ensures that subcommand name is present in provided `args`.
+    #
+    # If present, it will be removed from `args` and returned.
+    #
+    def pop_subcommand_name!(args)
+      subcommand_name = args.shift
+      if subcommand_name.nil?
+        error(nil, silent: true, exc: Fizzy::ArgParse::NoSubCommandName)
+      else
+        subcommand_name
       end
-    matching_subcommand_parsers.first unless matching_subcommand_parsers.empty?
-  end
+    end
 
-  def parse_subcommand_arguments(subcommand, args)
-    subcommand.parse!(args)
-  ensure
-    options.deep_merge!(subcommand.options)
-  end
+    #
+    # Check if `regexp` (of provided `type`) matches with the current options.
+    #
+    def matches_options?(type, regexp)
+      case type
+      when :option_name  then options.any? { |n, _| regexp =~ n }
+      when :option_value then options.any? { |_, v| regexp =~ v }
+      when :command_name then regexp =~ options[:command]
+      end
+    end
+
+    def find_subcommand_parser(subcommand_name = nil)
+      subcommand_name           ||= options[:command]
+      matching_subcommand_parsers =
+        subcommand_parsers.select do |c|
+          c.name == subcommand_name
+        end
+      matching_subcommand_parsers.first unless matching_subcommand_parsers.empty?
+    end
+
+    def parse_subcommand_arguments(subcommand, args)
+      subcommand.parse!(args)
+    ensure
+      options.deep_merge!(subcommand.options)
+    end
 end
 
 # ─────────────────────────────────────── Subcommand parser ← argparse ← Misc ──
@@ -2796,7 +2834,7 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
 
     @desc = desc.to_s
     @spec = {
-      verbose: { abbrev: "v", desc: "Run verbosely", type: :boolean }
+      verbose: { abbrev: "v", desc: "Run verbosely", type: :boolean },
     }.deep_merge(spec)
 
     options[:command] = @name
@@ -2809,8 +2847,8 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     parser.parse!(args)
 
     missing =
-      spec.select { |name, info|  info[:required] && options[name].nil? }
-          .map    { |name, _info| name }
+      spec.select { |name, info| info[:required] && options[name].nil? }
+          .map { |name, _info| name }
 
     return if missing.empty?
     raise OptionParser::MissingArgument, missing.join(", ")
@@ -2822,76 +2860,76 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
 
   protected
 
-  def banner
-    # TODO, replace "fizzy" with rootcommand name (find a way to find
-    #       rootcommand from subcommand)
-    [
-      "Usage: fizzy #{name} [options]",
-      desc
-    ].join("\n")
-  end
+    def banner
+      # TODO, replace "fizzy" with rootcommand name (find a way to find
+      #       rootcommand from subcommand)
+      [
+        "Usage: fizzy #{name} [options]",
+        desc,
+      ].join("\n")
+    end
 
   private
 
-  def fill_opts(opts)
-    spec.each do |opt_name, opt_info|
-      opt_info = default_opt_info.merge(opt_info)
+    def fill_opts(opts)
+      spec.each do |opt_name, opt_info|
+        opt_info = default_opt_info.merge(opt_info)
 
-      opt_args = compute_opt_args(opt_name, opt_info)
+        opt_args = compute_opt_args(opt_name, opt_info)
 
-      options[opt_name] = opt_info[:default] if opt_info[:default]
+        options[opt_name] = opt_info[:default] if opt_info[:default]
 
-      opts.on(*opt_args) { |opt_value| options[opt_name] = opt_value }
+        opts.on(*opt_args) { |opt_value| options[opt_name] = opt_value }
+      end
     end
-  end
 
-  def compute_opt_args(name, info)
-    args = []
-    args += compute_abbrev_args(info[:abbrev])
-    args += compute_type_args(name, info[:type], info[:required])
-    args += compute_desc_args(info[:desc], info[:default], info[:type])
-    args
-  end
-
-  def compute_abbrev_args(abbrev)
-    args = []
-    args << "-#{abbrev}" if abbrev
-    args
-  end
-
-  def compute_type_args(name, type, req)
-    arg_name = name.to_s.dasherize
-    args = []
-    if type == Array
-      args += ["--#{arg_name} x,y,z", type]
-    elsif type == :boolean
-      args << "--[no-]#{arg_name}"
-    else
-      args << if req
-                "--#{arg_name} #{name.upcase}"
-              else
-                "--#{arg_name} [#{name.upcase}]"
-              end
-      args << type if type
+    def compute_opt_args(name, info)
+      args  = []
+      args += compute_abbrev_args(info[:abbrev])
+      args += compute_type_args(name, info[:type], info[:required])
+      args += compute_desc_args(info[:desc], info[:default], info[:type])
+      args
     end
-    args
-  end
 
-  def compute_desc_args(desc, default, type)
-    full_desc = desc
-    full_desc << " (default: #{default})" if default
-    full_desc << " (allowed: #{type.join(", ")})" if type.is_a? Array
-    [full_desc]
-  end
+    def compute_abbrev_args(abbrev)
+      args = []
+      args << "-#{abbrev}" if abbrev
+      args
+    end
 
-  def default_opt_info
-    {
-      required: false,
-      abbrev: nil,
-      desc: nil,
-      type: nil
-    }
-  end
+    def compute_type_args(name, type, req)
+      arg_name = name.to_s.dasherize
+      args     = []
+      if type == Array
+        args += ["--#{arg_name} x,y,z", type]
+      elsif type == :boolean
+        args << "--[no-]#{arg_name}"
+      else
+        args << if req
+          "--#{arg_name} #{name.upcase}"
+        else
+          "--#{arg_name} [#{name.upcase}]"
+        end
+        args << type if type
+      end
+      args
+    end
+
+    def compute_desc_args(desc, default, type)
+      full_desc = desc
+      full_desc << " (default: #{default})" if default
+      full_desc << " (allowed: #{type.join(", ")})" if type.is_a? Array
+      [full_desc]
+    end
+
+    def default_opt_info
+      {
+        required: false,
+        abbrev:   nil,
+        desc:     nil,
+        type:     nil,
+      }
+    end
 end
 
 # ────────────────────────────────────────────────────── Base lexer ← Grammar ──
@@ -2936,36 +2974,36 @@ class Fizzy::BaseLexer
     t.first == :SKIP ? next_token : t
   end
 
-private
+  private
 
-  # (Re)build the list of tokens.
-  # Every token is: `[value, token_name]`.
-  def build_tokens
-    @tokens  = []
-    @tokens += find_tokens until @base.eos?
-    @tokens << [false, false] # Last token, meaning EOS.
-    debug("Built tokens: `#{@tokens}`.")
-  end
+    # (Re)build the list of tokens.
+    # Every token is: `[value, token_name]`.
+    def build_tokens
+      @tokens  = []
+      @tokens += find_tokens until @base.eos?
+      @tokens << [false, false] # Last token, meaning EOS.
+      debug("Built tokens: `#{@tokens}`.")
+    end
 
-  def find_tokens
-    @rules.each do |pattern, tokens|
-      matched_substring = @base.scan(pattern)
-      unless matched_substring.nil?
-        if @base[1].nil? # No captures, return the matched string.
-          error("Only one token, not `#{tokens.length}` (`#{tokens}`) should " +
-                "be provided.") if tokens.length != 1
-          return [[tokens.first, matched_substring]]
-        else
-          captures, base_idx = [], 0
-          captures << @base[base_idx] until @base[base_idx += 1].nil?
-          error("You need to provide `#{captures.length}` tokens, instead of " +
-                "`#{tokens.length}`.") unless captures.length == tokens.length
-          return tokens.zip(captures)
+    def find_tokens
+      @rules.each do |pattern, tokens|
+        matched_substring = @base.scan(pattern)
+        unless matched_substring.nil?
+          if @base[1].nil? # No captures, return the matched string.
+            error("Only one token, not `#{tokens.length}` (`#{tokens}`) should " +
+                  "be provided.") if tokens.length != 1
+            return [[tokens.first, matched_substring]]
+          else
+            captures, base_idx = [], 0
+            captures << @base[base_idx] until @base[base_idx += 1].nil?
+            error("You need to provide `#{captures.length}` tokens, instead of " +
+                  "`#{tokens.length}`.") unless captures.length == tokens.length
+            return tokens.zip(captures)
+          end
         end
       end
+      error("Unexpected characters.")
     end
-    error("Unexpected characters.")
-  end
 
 end
 
@@ -2978,23 +3016,23 @@ class Fizzy::LogicLexer < Fizzy::BaseLexer
 
     ignore(/\s+/)
 
-    token(/=/,    :EQ)
-    token(/&&/,   :AND)
+    token(/=/, :EQ)
+    token(/&&/, :AND)
     token(/\|\|/, :OR)
-    token(/\(/,   :LBRACKET)
-    token(/\)/,   :RBRACKET)
+    token(/\(/, :LBRACKET)
+    token(/\)/, :RBRACKET)
 
-    tokens(/(f\?)(#{name_with("-_")})/,  :FEATURE_PREFIX, :FEATURE_NAME)
-    tokens(/(v\?)(#{name_with("-_.")})/, :VAR_PREFIX,     :VAR_NAME)
+    tokens(/(f\?)(#{name_with("-_")})/, :FEATURE_PREFIX, :FEATURE_NAME)
+    tokens(/(v\?)(#{name_with("-_.")})/, :VAR_PREFIX, :VAR_NAME)
 
     token(/.+/, :VALUE) # Anything that would otherwise not match is a value.
   end
 
-private
+  private
 
-  def name_with(symbols)
-    /\w+(?:[#{symbols}]\w+)*/
-  end
+    def name_with(symbols)
+      /\w+(?:[#{symbols}]\w+)*/
+    end
 
 end
 
@@ -3016,8 +3054,8 @@ class Fizzy::LogicEvaluator
   end
 
   def and
-    arg1 = @stack.pop
-    arg2 = @stack.pop
+    arg1   = @stack.pop
+    arg2   = @stack.pop
     result = (arg1 == true) && (arg2 == true)
     @stack << result
     debug("Performed logical `and` between `#{arg1}` and `#{arg2}`, " +
@@ -3026,8 +3064,8 @@ class Fizzy::LogicEvaluator
   end
 
   def or
-    arg1 = @stack.pop
-    arg2 = @stack.pop
+    arg1   = @stack.pop
+    arg2   = @stack.pop
     result = arg1 == true || arg2 == true
     @stack << result
     debug("Performed logical `or` between `#{arg1}` and `#{arg2}`, " +
@@ -3044,7 +3082,7 @@ class Fizzy::LogicEvaluator
 
   def has_variable?(name)
     var_value = @receiver.get_var(name)
-    result = !var_value.nil?
+    result    = !var_value.nil?
     @stack << result
     debug("Parsed variable `#{name}` with value `#{var_value}`: " +
           "it's #{result ? "" : "not "}available.")
@@ -3053,7 +3091,7 @@ class Fizzy::LogicEvaluator
 
   def variable_value?(name, expected_value)
     var_value = @receiver.get_var(name)
-    result = var_value == expected_value
+    result    = var_value == expected_value
     @stack << result
     debug("Parsed variable `#{name}` with value `#{var_value}`: " +
           "it's #{result ? "" : "not "}equal to `#{expected_value}`.")
@@ -3063,6 +3101,7 @@ class Fizzy::LogicEvaluator
   def debug_stack_state
     debug("Stack state is: `#{@stack}`.")
   end
+
   protected :debug_stack_state
 
 end
@@ -3100,16 +3139,16 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 31)
 
 racc_action_table = [
      3,     3,     4,     4,     5,     5,     3,     3,     4,     4,
-     5,     5,     7,     8,     6,    15,     7,     8,    10,    11,
-    12,    16,     7,    17 ]
+     5,     5,     7,     8,    12,    15,     7,     8,     6,    11,
+    10,    16,     7,    17 ]
 
 racc_action_check = [
-     0,     3,     0,     3,     0,     3,     7,     8,     7,     8,
-     7,     8,     9,     9,     1,     9,     2,     2,     4,     5,
-     6,    11,    14,    16 ]
+     8,     7,     8,     7,     8,     7,     3,     0,     3,     0,
+     3,     0,     9,     9,     6,     9,     2,     2,     1,     5,
+     4,    11,    14,    16 ]
 
 racc_action_pointer = [
-    -5,    14,    13,    -4,    10,     9,    20,     1,     2,     9,
+     2,    18,    13,     1,    12,     9,    14,    -4,    -5,     9,
    nil,    19,   nil,   nil,    19,   nil,    12,   nil ]
 
 racc_action_default = [
@@ -3341,11 +3380,11 @@ module Fizzy::Execution
     run_mode = defined?(@run_mode) ? @run_mode : :normal
 
     really_run = case run_mode
-                   when :normal then true
-                   when :paranoid
-                     ask("Do you want to run command `#{full_cmd}`")
-                   when :dry then false
-                   else true
+                 when :normal then true
+                 when :paranoid
+                   ask("Do you want to run command `#{full_cmd}`")
+                 when :dry then false
+                 else           true
                  end
 
     if really_run || run_mode == :dry
@@ -3420,23 +3459,23 @@ module Fizzy::Filesystem
   #
   def prepare_storage(root_path,
                       valid_meta: true, valid_cfg: true, valid_inst: true,
-                      meta_name: nil, cur_cfg_name: nil, cur_inst_name: nil)
+                      meta_name:  nil, cur_cfg_name: nil, cur_inst_name: nil)
     root_path = Pathname.new(root_path).expand_variables.expand_path
 
     # Paths based on internal conventions.
     parent_path = root_path.dirname
 
-    cfg_path = root_path.join("cfg")
-    cur_cfg_path = cfg_path.join(cur_cfg_name) if cur_cfg_name
-    cur_cfg_vars_path = cur_cfg_path.join("vars") if cur_cfg_path
+    cfg_path           = root_path.join("cfg")
+    cur_cfg_path       = cfg_path.join(cur_cfg_name) if cur_cfg_name
+    cur_cfg_vars_path  = cur_cfg_path.join("vars") if cur_cfg_path
     cur_cfg_elems_path = cur_cfg_path.join("elems") if cur_cfg_path
-    cur_cfg_meta_path = find_yaml_path(cur_cfg_path.join(meta_name)) if cur_cfg_path && meta_name
+    cur_cfg_meta_path  = find_yaml_path(cur_cfg_path.join(meta_name)) if cur_cfg_path && meta_name
 
-    inst_path = root_path.join("inst")
-    cur_inst_path = inst_path.join(cur_inst_name) if cur_inst_name
-    cur_inst_vars_path = cur_inst_path.join("vars") if cur_inst_path
+    inst_path           = root_path.join("inst")
+    cur_inst_path       = inst_path.join(cur_inst_name) if cur_inst_name
+    cur_inst_vars_path  = cur_inst_path.join("vars") if cur_inst_path
     cur_inst_elems_path = cur_inst_path.join("elems") if cur_inst_path
-    cur_inst_meta_path = find_yaml_path(cur_inst_path.join(meta_name)) if cur_inst_path && meta_name
+    cur_inst_meta_path  = find_yaml_path(cur_inst_path.join(meta_name)) if cur_inst_path && meta_name
 
     # Validate `root_path`.
     if !root_path.directory? && !parent_path.writable?
@@ -3508,17 +3547,17 @@ module Fizzy::Filesystem
 
     # Return the known storage paths.
     OpenStruct.new(
-      root:          root_path,
-      cfg:           cfg_path,
-      cur_cfg:       cur_cfg_path,
-      cur_cfg_vars:  cur_cfg_vars_path,
-      cur_cfg_elems: cur_cfg_elems_path,
-      cur_cfg_meta:  cur_cfg_meta_path,
-      inst:          inst_path,
-      cur_inst:      cur_inst_path,
-      cur_inst_vars: cur_inst_vars_path,
+      root:           root_path,
+      cfg:            cfg_path,
+      cur_cfg:        cur_cfg_path,
+      cur_cfg_vars:   cur_cfg_vars_path,
+      cur_cfg_elems:  cur_cfg_elems_path,
+      cur_cfg_meta:   cur_cfg_meta_path,
+      inst:           inst_path,
+      cur_inst:       cur_inst_path,
+      cur_inst_vars:  cur_inst_vars_path,
       cur_inst_elems: cur_inst_elems_path,
-      cur_inst_meta: cur_inst_meta_path
+      cur_inst_meta:  cur_inst_meta_path,
     )
   end
 end
@@ -3532,7 +3571,7 @@ module Fizzy::Vars
     include Fizzy::Filesystem
 
     def initialize(vars_dir_path, name, bindings)
-      @binding = bindings
+      @binding       = bindings
       @vars_dir_path = vars_dir_path
       @name          = name
     end
@@ -3556,6 +3595,7 @@ module Fizzy::Vars
       parents_vars = merge_parents_vars(vars_dir_path, parents)
       merge_with_parents_vars(self_vars, parents_vars)
     end
+
     protected :setup_vars
 
     def read_vars(vars_dir_path, name)
@@ -3569,47 +3609,51 @@ module Fizzy::Vars
         [nil, nil]
       end
     end
+
     protected :read_vars
 
     def parse_vars(name, fmt, content)
       content = ERB.new(content).result(@binding)
       case fmt
-        when :yaml
-          begin
-            YAML.load(content) || {}
-          rescue Psych::SyntaxError => e
-            error("Invalid syntax in YAML `#{name}`: #{e.message}")
-          end
-        when :json
-          begin
-            JSON.parse(content)
-          rescue JSON::JSONError => e
-            error("Invalid JSON `#{name}`: #{e.message}.")
-          end
-        else error("Unrecognized format: `#{fmt}`")
+      when :yaml
+        begin
+          YAML.load(content) || {}
+        rescue Psych::SyntaxError => e
+          error("Invalid syntax in YAML `#{name}`: #{e.message}")
+        end
+      when :json
+        begin
+          JSON.parse(content)
+        rescue JSON::JSONError => e
+          error("Invalid JSON `#{name}`: #{e.message}.")
+        end
+      else error("Unrecognized format: `#{fmt}`")
       end.deep_symbolize_keys
     end
+
     protected :parse_vars
 
     def parse_parents_vars(fmt, content)
       parents_regexp = case fmt
-                         when :yaml then Fizzy::CFG.vars.yaml_regexp
-                         when :json then Fizzy::CFG.vars.json_regexp
-                         else       error("Unrecognized format: `#{fmt}`.")
+                       when :yaml then Fizzy::CFG.vars.yaml_regexp
+                       when :json then Fizzy::CFG.vars.json_regexp
+                       else            error("Unrecognized format: `#{fmt}`.")
                        end
       if md = content.match(parents_regexp)
         md[:parents].split(",")
                     .map(&:strip)
-                    .reject{|p| p =~ Fizzy::CFG.vars.parent_dummy_regexp}
+                    .reject { |p| p =~ Fizzy::CFG.vars.parent_dummy_regexp }
       else
         []
       end
     end
+
     protected :parse_parents_vars
 
     def merge_with_parents_vars(self_vars, parents_vars)
       parents_vars.magic_merge(self_vars)
     end
+
     protected :merge_with_parents_vars
 
     def merge_parents_vars(vars_dir_path, parents)
@@ -3620,6 +3664,7 @@ module Fizzy::Vars
         acc.magic_merge(parent_vars)
       end
     end
+
     protected :merge_parents_vars
 
   end
@@ -3635,18 +3680,12 @@ module Fizzy::Vars
     end
 
     def self.apply(blob)
-<<<<<<< HEAD
-      filter = (@filters || []).find { |f| f.match?(blob) }
-      if filter
-        filter.apply(blob)
-=======
       if blob.is_a? Hash
-        Hash[blob.map{|k, v| [k, apply(v)]}]
+        Hash[blob.map { |k, v| [k, apply(v)] }]
       elsif blob.is_a? Array
-        blob.map {|v| apply(v)}
->>>>>>> v2.3.4
+        blob.map { |v| apply(v) }
       else
-        if filter = (@filters || []).find{|f| f.match?(blob)}
+        if filter = (@filters || []).find { |f| f.match?(blob) }
           filter.apply(blob)
         else
           blob
@@ -3708,9 +3747,9 @@ module Fizzy::Vars
 
       if expand
         case var.length
-          when 0 then nil
-          when 1 then var.first
-          else        var
+        when 0 then nil
+        when 1 then var.first
+        else        var
         end
       else
         var
@@ -3727,16 +3766,18 @@ module Fizzy::Vars
         typize(name, var, type: type, strict: strict)
       end
     end
+
     protected :_typize_var
 
     def _ensure_type!(name, var, *types)
-      if types.any?{|type| var.is_a?(type)}
+      if types.any? { |type| var.is_a?(type) }
         var
       else
         error("Invalid type for variable `#{name}`: " +
               "it's not a `#{type.name}`.")
       end
     end
+
     protected :_ensure_type!
 
     # Returns a list of variables matching the provided `name`, chosen from `vars`.
@@ -3751,7 +3792,7 @@ module Fizzy::Vars
 
       var_value = name.to_s
                       .scan(dot_split_regexp)
-                      .map{|match_group| match_group[0]}
+                      .map { |match_group| match_group[0] }
                       .reject(&:empty?)
                       .inject(vars) do |current_objects, name_component|
 
@@ -3784,12 +3825,6 @@ module Fizzy::Vars
                          end.values
                        end
 
-<<<<<<< HEAD
-        # Filter `next_objects`.
-        next_objects = next_objects.map{|e| Fizzy::Vars::Filter.apply(e)}
-
-=======
->>>>>>> v2.3.4
         # Adjust `next_objects`, according to `single_match` argument.
         next_objects = if single_match
                          if single_match == :force && next_objects.length != 1
@@ -3812,6 +3847,7 @@ module Fizzy::Vars
       # Filter found variable value.
       Fizzy::Vars::Filters.apply(var_value)
     end
+
     protected :_get_var
 
   end
@@ -3843,6 +3879,7 @@ module Fizzy::Vars
   def var(var_name, **opts)
     Fizzy::Vars::Retriever.new(@vars).get(var_name, **opts)
   end
+
   alias_method :get_var, :var # NOTE: For backward compatibility
 
   # Same of `var`, but raise an error if the variable hasn't been found or
@@ -3852,6 +3889,7 @@ module Fizzy::Vars
     value = var(var_name, **opts)
     value.nil? ? error("Undefined variable: `#{var_name}`.") : value
   end
+
   alias_method :get_var!, :var! # NOTE: For backward compatibility
 
   # Check if the feature with the provided name (`feature_name`) is enabled.
@@ -3925,9 +3963,9 @@ module Fizzy::Locals
     attr_reader :locals
 
     def initialize(receiver)
-      @receiver = receiver
-      @locals   = {}
-      @prefix   = nil
+      @receiver       = receiver
+      @locals         = {}
+      @prefix         = nil
       @prefix_history = []
     end
 
@@ -3976,7 +4014,7 @@ module Fizzy::Locals
     # passing the locals' values.
     #
     def local?(*names, &block)
-      names.collect{|name| local(name)}.compact.length == names.length
+      names.collect { |name| local(name) }.compact.length == names.length
     end
 
     def prefixed(var, as: nil, optional: false)
@@ -3985,7 +4023,7 @@ module Fizzy::Locals
         return if optional
         error("Invalid variable prefix: `#{var}`.")
       end
-      @prefix = {var: var, local: as}
+      @prefix = { var: var, local: as }
       @prefix_history << @prefix
       yield
       @prefix = nil
@@ -3995,7 +4033,7 @@ module Fizzy::Locals
     # been defined; otherwise, `false`.
     #
     def prefix?(prefix)
-      @prefix_history.any?{|p| p[:local].to_s.start_with?(prefix.to_s)}
+      @prefix_history.any? { |p| p[:local].to_s.start_with?(prefix.to_s) }
     end
 
     # ──────────────────────────────────────────────────────────────────────────
@@ -4006,7 +4044,7 @@ module Fizzy::Locals
     end
 
     def _set_local(name, value)
-      name = @prefix && @prefix[:local] ? "#{@prefix[:local]}#{name}" : name
+      name                      = @prefix && @prefix[:local] ? "#{@prefix[:local]}#{name}" : name
       @locals[name.to_s.to_sym] = value
     end
 
@@ -4021,9 +4059,12 @@ end
 
 # ──────────────────────────────────────────────────── Commands ← Meta ← Core ──
 
+#
 # Manage commands declared in the meta file.
 #
 module Fizzy::Meta::Commands
+
+  #
   # Base command.
   #
   class Base
@@ -4037,11 +4078,13 @@ module Fizzy::Meta::Commands
       msg  = "Invalid `#{name}` provided to command `#{type}`: "
       msg += value.nil? ? "no value given." : "`#{value}`."
 
-      error(msg)
+      error msg
     end
+
     protected :invalid_spec
   end
 
+  #
   # Meta-Command that syncs a repository.
   #
   # Spec:
@@ -4052,12 +4095,12 @@ module Fizzy::Meta::Commands
   class Sync < Base
     def validate!(spec)
       # 1: Validate.
-      invalid_spec :repo unless spec.key?(:repo)
-      invalid_spec :dst  unless spec.key?(:dst)
+      invalid_spec :repo unless spec.key? :repo
+      invalid_spec :dst unless spec.key? :dst
 
       # 2: Normalize.
       @repo = spec[:repo]
-      @dst = Pathname.new(spec[:dst]).expand_variables.expand_path
+      @dst  = Pathname.new(spec[:dst]).expand_variables.expand_path
     end
 
     def execute
@@ -4069,6 +4112,7 @@ module Fizzy::Meta::Commands
     end
   end
 
+  #
   # Meta-Command that performs a file download.
   #
   # Spec:
@@ -4079,8 +4123,8 @@ module Fizzy::Meta::Commands
   class Download < Base
     def validate!(spec)
       # 1: Validate.
-      invalid_spec :url unless spec.key?(:url)
-      invalid_spec :dst unless spec.key?(:dst)
+      invalid_spec :url unless spec.key? :url
+      invalid_spec :dst unless spec.key? :dst
 
       # 2: Normalize.
       @url = URI(spec[:url])
@@ -4089,13 +4133,13 @@ module Fizzy::Meta::Commands
 
     def execute
       res = Net::HTTP.get_response(@url)
-      if res.is_a?(Net::HTTPSuccess)
+      if res.is_a? Net::HTTPSuccess
         # TODO: atm it requires the current user has write access.
         #      refactor when a more robust permission mgmt is implemented.
         FileUtils.mkdir_p(@dst.dirname)
         @dst.write(res.body)
       else
-        error("Network error: cannot retrieve `#{@url}`.")
+        error "Network error: cannot retrieve #{✏ @url}."
       end
     end
 
@@ -4104,19 +4148,25 @@ module Fizzy::Meta::Commands
     end
   end
 
+  #
+  # Get available meta-commands.
+  #
   def self.available
     [Sync, Download]
   end
 
+  #
+  # Find the matching meta-command from given type.
+  #
   def self.find_by_type(type)
     found = Fizzy::Meta::Commands.available.select do |command|
       command.type == type
     end
 
     if found.empty?
-      error "Failed to find a command with type `#{type}`."
+      error "Failed to find a command with type #{✏ type}."
     elsif found.length != 1
-      error "[BUG] Multiple commands matched type `#{type}`"
+      error "[BUG] Multiple commands matched type #{✏ type}."
     else
       found[0]
     end
@@ -4125,13 +4175,16 @@ end
 
 # ──────────────────────────────────────────────────────── Info ← Meta ← Core ──
 
+#
 # Access informations declared in the meta file.
 #
 module Fizzy::Meta::Info
+
   include Fizzy::IO
   include Fizzy::Vars
 
-  # Return the normalized and validated meta object.
+  #
+  # Get the normalized and validated meta object.
   #
   # Be sure to call `setup_vars` before calling this method.
   #
@@ -4147,8 +4200,7 @@ module Fizzy::Meta::Info
 
     meta[:all_elems_count] = meta[:elems].count
 
-    # ──────────────────────────────────────────────────────────────────────────
-    # ☞ Step 1: Normalize elements
+    # ──────────────────────────────────────────── Step 1: Normalize elements ──
 
     elem_erb_excluded_fields = %i[only]
 
@@ -4161,7 +4213,7 @@ module Fizzy::Meta::Info
       # Step 1.1: Validate `only` and determine if the element is selected.
       if elem.key?(:only) &&
          !(elem[:only].is_a?(Hash) ||
-         elem[:only].is_a?(String))
+           elem[:only].is_a?(String))
         error("The configuration element `#{elem_identifier}` has invalid " \
               "`only`: it's not a `Hash`.")
       end
@@ -4186,7 +4238,7 @@ module Fizzy::Meta::Info
         unless elem.key?(:dst)
           error("Element `#{elem_identifier}` doesn't contain `dst`.")
         end
-        elem[:perms] = elem[:perms].to_s if elem.key?(:perms)
+        elem[:perms]   = elem[:perms].to_s if elem.key?(:perms)
         elem[:fs_maps] = []
       end
 
@@ -4202,13 +4254,12 @@ module Fizzy::Meta::Info
           .map { |ebp| Pathname.new(ebp).expand_variables.expand_path }
           .select(&:file?)
           .each do |subfile_path|
-
         subfile_rel_path = subfile_path.relative_path_from(
           Pathname.new(elems_base_path)
         ).to_s
         md = Regexp.new(elem[:src]).match(subfile_rel_path.gsub(/\.tt$/, ""))
         next unless md
-        found = true
+        found    = true
         dst_path = elem[:dst].gsub(/<([0-9]+)>/) do
           idx = Integer(Regexp.last_match(1))
           if (1..md.length) === idx
@@ -4220,7 +4271,7 @@ module Fizzy::Meta::Info
         end
         elem[:fs_maps] << {
           src_path: Pathname.new(subfile_path).expand_variables.expand_path,
-          dst_path: Pathname.new(dst_path).expand_variables.expand_path
+          dst_path: Pathname.new(dst_path).expand_variables.expand_path,
         }
       end
 
@@ -4230,15 +4281,14 @@ module Fizzy::Meta::Info
       end
     end
 
-    # ──────────────────────────────────────────────────────────────────────────
-    # ☞ Step 2: Normalize commands
+    # ──────────────────────────────────────────── Step 2: Normalize commands ──
 
     command_excluded_erb_fields = [:only]
 
     meta[:commands] = [] unless meta.key?(:commands)
 
     meta[:commands] = meta[:commands].each_with_index.collect do |spec, idx|
-      spec[:type] = spec[:type].to_sym
+      spec[:type]   = spec[:type].to_sym
       spec[:name] ||= "type = #{spec[:type]}, index = #{idx}"
       info("\nCommand: ", spec[:name]) if verbose
 
@@ -4273,7 +4323,7 @@ module Fizzy::Meta::Info
         elem[:fs_maps].map { |m| m[:src_path] }
       end
     )
-    vars_files = Pathname.glob(vars_path.join("*"), File::FNM_DOTMATCH)
+    vars_files             = Pathname.glob(vars_path.join("*"), File::FNM_DOTMATCH)
     meta[:system_files]    = SortedSet.new(vars_files << meta_path)
     meta[:excluded_files]  = all_files - src_paths - meta[:system_files]
     meta[:all_files_count] = all_files.count
@@ -4281,18 +4331,19 @@ module Fizzy::Meta::Info
     meta
   end
 
-  # Return whether the provided `only` specification is evaluated as an allow
+  #
+  # Get whether the provided `only` specification is evaluated as an allow
   # (and not as a deny).
   #
   def selected_by_only?(only, verbose)
     selected = if only.is_a?(Hash) # Evaluate `only` has a Hash.
                  wants_features = only.key?(:features)
-                 wants_vars = only.key?(:vars)
+                 wants_vars     = only.key?(:vars)
                  if wants_features
                    feat_ok = only[:features].any? do |feature|
                      case feature
                      when Array then feature.all? { |f| has_feature?(f) }
-                     else has_feature?(feature)
+                     else            has_feature?(feature)
                      end
                    end
                  else
@@ -4307,23 +4358,23 @@ module Fizzy::Meta::Info
                            end
 
                  (!wants_features && !wants_vars) || (feat_ok && vars_ok)
-               elsif only.is_a?(String) # Evaluate `only` as a logic expression.
+               elsif only.is_a? String # Evaluate `only` as a logic expression.
                  Fizzy::LogicParser.new.parse(self, only)
                elsif only.nil? # By default, it's selected.
                  true
                else
-                 error("`#{spec[:name]}` has invalid `only`.")
+                 error "#{✏ spec[:name]} has invalid #{✏ only}."
                end
 
     if verbose
       if selected
         if only.nil?
-          info(" ↳ ", "#{✔} `only` is empty.")
+          info " ↳ ", "#{✔} #{✏ only} is empty."
         else
-          info(" ↳ ", "#{✔} `only` is present and satisfied.")
+          info " ↳ ", "#{✔} #{✏ only} is present and satisfied."
         end
       else
-        info(" ↳ ", "#{✘} `only` didn't match.")
+        info " ↳ ", "#{✘} #{✏ only} didn't match."
       end
     end
 
@@ -4333,70 +4384,73 @@ end
 
 # ──────────────────────────────────────────────────── Elements ← Meta ← Core ──
 
+#
 # Manage elements declared in the meta file.
 #
 module Fizzy::Meta::Elements
+
   include Fizzy::IO
   include Fizzy::Execution
 
-  # Return a list of functions capable to apply modifications on the system
+  #
+  # Get a list of functions capable to apply modifications on the system
   # based on the current elements configuration instance.
   #
   # In particular, an applier work for each element installed.
   #
   def elements_appliers
     [lambda { |elem| # Create parent directories.
-       elem[:fs_maps].each do |m|
-         parent_dir = m[:dst_path].dirname
-         unless parent_dir.directory?
-           exec_cmd("mkdir -p #{parent_dir.shell_escape}",
-                    as_su: !existing_dir(parent_dir))
-         end
-       end
-     },
+      elem[:fs_maps].each do |m|
+        parent_dir = m[:dst_path].dirname
+        unless parent_dir.directory?
+          exec_cmd("mkdir -p #{parent_dir.shell_escape}",
+                   as_su: !existing_dir(parent_dir))
+        end
+      end
+    },
      lambda { |elem| # Create a symlink for each elements' `src_path`.
-       elem[:fs_maps].each do |m|
-         tell("  {m{#{m[:src_path]}}} ← {m{#{m[:dst_path]}}}") if @verbose
-         cmd = "ln -s"
-         should_link = if m[:dst_path].file?
-                         if m[:dst_path].realpath != m[:src_path]
-                           cmd << " -f"
-                           ask("The destination file `#{m[:dst_path]}` " \
-                               "already exists. Overwrite")
-                         else
-                           false
-                         end
-                       elsif m[:dst_path].directory?
-                         if ask("The destination file `#{m[:dst_path]}` " \
-                                "is a directory. Delete it")
-                           exec_cmd("rm -Rf #{m[:dst_path]}",
-                                    as_su: !existing_dir(m[:dst_path].dirname))
-                         end
-                       else
-                         # Link does not exist yet.
-                         true
-                       end
+      elem[:fs_maps].each do |m|
+        tell("  {m{#{m[:src_path]}}} ← {m{#{m[:dst_path]}}}") if @verbose
+        cmd         = "ln -s"
+        should_link = if m[:dst_path].file?
+                        if m[:dst_path].realpath != m[:src_path]
+                          cmd << " -f"
+                          ask("The destination file `#{m[:dst_path]}` " \
+                              "already exists. Overwrite")
+                        else
+                          false
+                        end
+                      elsif m[:dst_path].directory?
+                        if ask("The destination file `#{m[:dst_path]}` " \
+                               "is a directory. Delete it")
+                          exec_cmd("rm -Rf #{m[:dst_path]}",
+                                   as_su: !existing_dir(m[:dst_path].dirname))
+                        end
+                      else
+                        # Link does not exist yet.
+                        true
+                      end
 
-         next unless should_link
-         cmd << " #{m[:src_path].shell_escape}"
-         cmd << " #{m[:dst_path].shell_escape}"
-         exec_cmd(cmd, as_su: !existing_dir(m[:dst_path].dirname))
-       end
-     },
+        next unless should_link
+        cmd << " #{m[:src_path].shell_escape}"
+        cmd << " #{m[:dst_path].shell_escape}"
+        exec_cmd(cmd, as_su: !existing_dir(m[:dst_path].dirname))
+      end
+    },
      lambda { |elem| # Change perms of the instantiated files (if specified).
-       if elem.key?(:perms)
-         elem[:fs_maps].each do |m|
-           if @verbose
-             tell("Changing permissions of `{m{#{m[:src_path]}}}` to " \
-                  "`{m{#{elem[:perms]}}}`.")
-           end
-           perms = elem[:perms].shell_escape
-           src_path = m[:src_path].shell_escape
-           exec_cmd("chmod #{perms} #{src_path}",
-                    as_su: !File.owned?(m[:src_path]))
-         end
-       end
-     }]
+      if elem.key?(:perms)
+        elem[:fs_maps].each do |m|
+          if @verbose
+            tell("Changing permissions of `{m{#{m[:src_path]}}}` to " \
+                 "`{m{#{elem[:perms]}}}`.")
+          end
+          perms    = elem[:perms].shell_escape
+          src_path = m[:src_path].shell_escape
+          exec_cmd("chmod #{perms} #{src_path}",
+                   as_su: !File.owned?(m[:src_path]))
+        end
+      end
+    }]
   end
 end
 
@@ -4409,9 +4463,8 @@ module Fizzy::Sync
   end
 
   def self.available
-    [ Fizzy::Sync::Local,
-      Fizzy::Sync::Git
-    ]
+    [Fizzy::Sync::Local,
+     Fizzy::Sync::Git]
   end
 
   def self.others(subject)
@@ -4422,8 +4475,8 @@ module Fizzy::Sync
   end
 
   def self.enabled(local_dir_path, remote_url)
-    available.map    { |e| e.new(local_dir_path, remote_url) }.
-              select { |e| e.enabled? }
+    available.map { |e| e.new(local_dir_path, remote_url) }.
+      select { |e| e.enabled? }
   end
 
   def self.selected(local_dir_path, remote_url)
@@ -4435,7 +4488,7 @@ module Fizzy::Sync
     tell("{c{Using synchronizer: `{m{#{synchronizer.name}}}`.}}")
 
     status   = true
-    status &&= synchronizer.update_local  if synchronizer.remote_changed?
+    status &&= synchronizer.update_local if synchronizer.remote_changed?
     status &&= synchronizer.update_remote if synchronizer.local_changed?
     status
   end
@@ -4448,7 +4501,7 @@ class Fizzy::Sync::Base
   attr_reader :name
 
   def initialize(name, local_dir_path, remote_url)
-    must "synchronizer name",    name,           be: :not_nil
+    must "synchronizer name", name, be: :not_nil
     must "local directory path", local_dir_path, be: Pathname
 
     @name           = name
@@ -4472,7 +4525,7 @@ class Fizzy::Sync::Base
                       @remote_url.to_s.start_with?("#{e.name}:")
                     }
     return true if default? && Fizzy::Sync.others(self).
-      map  { |e| e.new(@local_dir_path, @remote_url) }.
+      map { |e| e.new(@local_dir_path, @remote_url) }.
       all? { |e| !e.enabled? }
   end
 
@@ -4512,9 +4565,9 @@ class Fizzy::Sync::Local < Fizzy::Sync::Base
   # Check if the synchronizer is enabled.
   #
   def enabled?
-      ( super ||
-        !@remote_path.nil? && @remote_path.directory? ||
-        local_valid_repo?)
+    (super ||
+     !@remote_path.nil? && @remote_path.directory? ||
+     local_valid_repo?)
   end
 
   # Update local from the remote.
@@ -4565,8 +4618,8 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   #
   def enabled?
     (super ||
-      (!@remote_url.nil? && @remote_url.to_s.start_with?("#{@name}:")) ||
-      local_valid_repo?)
+     (!@remote_url.nil? && @remote_url.to_s.start_with?("#{@name}:")) ||
+     local_valid_repo?)
   end
 
   # Update local from remote.
@@ -4596,8 +4649,8 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def local_changed?
     tell("{b{Checking if local repository is changed.}}")
     return false unless local_valid_repo?
-    return true  if     working_tree_changes?
-    return true  if     perform_fetch && should_push?
+    return true if working_tree_changes?
+    return true if perform_fetch && should_push?
     false
   end
 
@@ -4606,7 +4659,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def remote_changed?
     tell("{b{Checking if remote repository is changed.}}")
     return true unless local_valid_repo?
-    return true if     perform_fetch && should_pull?
+    return true if perform_fetch && should_pull?
     false
   end
 
@@ -4614,26 +4667,27 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   #
   def normalize_url(url, default_protocol: :ssh)
     return nil if url.nil?
-    url = url.to_s
+    url       = url.to_s
     protocols = %i[https ssh]
-    url = url.gsub(/^#{@name}:/, "") # Remove VCS name prefix (optional).
-    regexp = %r{
-      ^
-      (?<protocol>#{protocols.map { |p| "#{p}:" }.join("|")})?
-      (?<username>[a-z0-9\-_]+)
-      \/
-      (?<repository>[a-z0-9\-_]+)
-      $
-    }xi
+    url       = url.gsub(/^#{@name}:/, "") # Remove VCS name prefix (optional).
+    regexp    = %r{
+         ^
+         (?<protocol>#{protocols.map { |p| "#{p}:" }.join("|")})?
+         (?<username>[a-z0-9\-_]+)
+         \/
+         (?<repository>[a-z0-9\-_]+)
+         $
+       }xi
     md = url.match(regexp)
     return url unless md
     protocol = (md[:protocol] || default_protocol).to_s.gsub(/:$/, "").to_sym
     case protocol
     when :ssh   then "git@github.com:#{md[:username]}/#{md[:repository]}"
     when :https then "https://github.com/#{md[:username]}/#{md[:repository]}"
-    else        error("Invalid protocol for `{m{#{url}}}`: `{m{#{protocol}}}` not in `{m{[#{protocols.join(", ")}]}}`.")
+    else             error("Invalid protocol for `{m{#{url}}}`: `{m{#{protocol}}}` not in `{m{[#{protocols.join(", ")}]}}`.")
     end
   end
+
   protected :normalize_url
 
   # Check if the local directory holds a valid git repository.
@@ -4641,6 +4695,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def local_valid_repo?
     @local_dir_path.directory? && @local_dir_path.join(".git").directory?
   end
+
   protected :local_valid_repo?
 
   # Get the Working Tree (local) changes.
@@ -4651,6 +4706,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
       return `git status -uall --porcelain`.strip
     end
   end
+
   protected :working_tree_changes
 
   # Check if there are some changes in the Working Tree.
@@ -4658,6 +4714,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def working_tree_changes?
     !working_tree_changes.empty?
   end
+
   protected :working_tree_changes?
 
   # Get a `Hash` containing information about the local and remote repository.
@@ -4665,15 +4722,16 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def info
     error "Invalid local repo: `#{@local_dir_path}`" unless local_valid_repo?
     FileUtils.cd(@local_dir_path) do
-      local = `git rev-parse @ 2> /dev/null`.strip
-      local = nil unless $CHILD_STATUS.success?
+      local  = `git rev-parse @ 2> /dev/null`.strip
+      local  = nil unless $CHILD_STATUS.success?
       remote = `git rev-parse @{u} 2> /dev/null`.strip
       remote = nil unless $CHILD_STATUS.success?
-      base = `git merge-base @ @{u} 2> /dev/null`.strip
-      base = nil unless $CHILD_STATUS.success?
+      base   = `git merge-base @ @{u} 2> /dev/null`.strip
+      base   = nil unless $CHILD_STATUS.success?
       return { local: local, remote: remote, base: base }
     end
   end
+
   protected :info
 
   # Check if a `pull` operation is needed.
@@ -4681,6 +4739,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def should_pull?
     info[:remote] != info[:base]
   end
+
   protected :should_pull?
 
   # Check if a `push` operation is needed.
@@ -4688,6 +4747,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
   def should_push?
     info[:local] != info[:base]
   end
+
   protected :should_push?
 
   # Get the list of the available remote git repositories.
@@ -4698,6 +4758,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
       return `git remote`.split(/\W+/).reject(&:empty?)
     end
   end
+
   protected :remotes
 
   # Get the list of the available git branches.
@@ -4708,6 +4769,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
       return `git branch`.split(/\W+/).reject(&:empty?)
     end
   end
+
   protected :branches
 
   # Add the changes from the Working Tree to the stage.
@@ -4716,13 +4778,14 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     error "Invalid files `#{files}`." unless files.nil? || files.is_a?(Array)
 
     cmd = %w[git add]
-    cmd << "-i"  if     interactive
-    cmd << "-A"  if     files.nil?
+    cmd << "-i" if interactive
+    cmd << "-A" if files.nil?
     cmd << files unless files.nil?
 
     error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
     exec_cmd(cmd, as_su: !existing_dir(@local_dir_path), chdir: @local_dir_path)
   end
+
   protected :perform_add
 
   # Commit the changes in the Working Tree.
@@ -4740,8 +4803,8 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
           message ||= ask("Type the commit message", type: :string)
 
           cmd = ["git", "commit", "-a"]
-          cmd << "--allow-empty-message" if     message.nil?
-          cmd += ["-m", message]         unless message.nil?
+          cmd << "--allow-empty-message" if message.nil?
+          cmd += ["-m", message] unless message.nil?
 
           error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
           status &&= exec_cmd(cmd,
@@ -4753,6 +4816,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
     status
   end
+
   protected :perform_commit
 
   def perform_fetch(remote: nil, branch: nil)
@@ -4768,6 +4832,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     error("Invalid local repo: `#{@local_dir_path}`") unless local_valid_repo?
     exec_cmd(cmd, as_su: !existing_dir(@local_dir_path), chdir: @local_dir_path)
   end
+
   protected :perform_fetch
 
   def perform_clone(recursive: true)
@@ -4784,6 +4849,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
     exec_cmd(cmd, as_su: !existing_dir(parent_dir), chdir: parent_dir)
   end
+
   protected :perform_clone
 
   # Pull from the provided `remote` in the provided `branch`.
@@ -4815,6 +4881,7 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
     status
   end
+
   protected :perform_pull
 
   # Push to the provided `remote` in the provided `branch`.
@@ -4840,18 +4907,19 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
 
     status
   end
+
   protected :perform_push
 end
 
 # ───────────────────────────────────────────────── Lastpass ← Filter ← Depot ──
 
-Fizzy::Vars::Filter.define(:lpass, description: """
+Fizzy::Vars::Filter.define(:lpass, description: "" "
 LastPass filter allows to retrieve informations stored in a lastpass account
 As arguments you can pass:
 - #0: A unique name or identifier of the element to be retrieved
 - #1 [optional]: What information should be retrieved from the element
                  (defaults to the element's password)
-""") do |args|
+" "") do |args|
   args = args.split_by_separator
   name = args[0].shell_escape
   what = args[1] || :password
@@ -4861,6 +4929,7 @@ end
 
 # ─────────────────────────────────────────────────────────────────────── Cli ──
 
+#
 # Namespace for fizzy commandline interface.
 #
 module Fizzy::CLI
@@ -4878,42 +4947,42 @@ module Fizzy::CLI
   KNOWN_ARGS = {
     run_mode: {
       desc: "How fizzy will perform its operations, e.g. simulating them " \
-        "or not",
-      abbrev: "R",
+      "or not",
+      abbrev:  "R",
       default: "normal",
-      type: %i[normal dry]
+      type:    %i[normal dry],
     },
     fizzy_dir: {
-      desc: "Specify fizzy directory",
-      abbrev: "D",
+      desc:    "Specify fizzy directory",
+      abbrev:  "D",
       default: Fizzy::CFG.default_fizzy_dir,
-      type: Pathname
+      type:    Pathname,
     },
     cfg_url: {
-      desc: "The URL to the repository holding configuration.",
-      abbrev: "U",
-      required: true
+      desc:     "The URL to the repository holding configuration.",
+      abbrev:   "U",
+      required: true,
     },
     cfg_name: {
-      desc: "The name of the configuration that should be used.",
-      abbrev: "C",
-      required: true
+      desc:     "The name of the configuration that should be used.",
+      abbrev:   "C",
+      required: true,
     },
     inst_name: {
-      desc: "The name for the configuration instance to be used.",
-      abbrev: "I",
-      required: true
+      desc:     "The name for the configuration instance to be used.",
+      abbrev:   "I",
+      required: true,
     },
     vars_name: {
-      desc: "The name for the variables file to be used.",
-      abbrev: "V",
-      required: true
+      desc:     "The name for the variables file to be used.",
+      abbrev:   "V",
+      required: true,
     },
     meta_name: {
-      desc: "The name of the meta file.",
-      abbrev: "M",
-      default: Fizzy::CFG.default_meta_name
-    }
+      desc:    "The name of the meta file.",
+      abbrev:  "M",
+      default: Fizzy::CFG.default_meta_name,
+    },
   }.freeze
 
   #
@@ -5023,7 +5092,7 @@ class Fizzy::CLI::Cd < Fizzy::CLI::Command
   end
 
   def run
-    paths = compute_paths
+    paths    = compute_paths
     dir_path = paths.cur_cfg || paths.cfg
     change_dir(dir_path)
     inform_user(dir_path)
@@ -5031,29 +5100,29 @@ class Fizzy::CLI::Cd < Fizzy::CLI::Command
 
   private
 
-  def compute_paths
-    prepare_storage(options[:fizzy_dir],
-                    valid_meta:   false,
-                    valid_inst:   false,
-                    valid_cfg:    !options[:cfg_name].nil? && :readonly,
-                    cur_cfg_name: options[:cfg_name])
-  end
+    def compute_paths
+      prepare_storage(options[:fizzy_dir],
+                      valid_meta:   false,
+                      valid_inst:   false,
+                      valid_cfg:    !options[:cfg_name].nil? && :readonly,
+                      cur_cfg_name: options[:cfg_name])
+    end
 
-  #
-  # Change directory to the provided path, spawning a new sub-shell.
-  #
-  def change_dir(dir_path)
-    tell("{c{Changing directory to: `#{dir_path}`.}}")
-    FileUtils.cd(dir_path)
-    system(get_env!(:SHELL))
-  end
+    #
+    # Change directory to the provided path, spawning a new sub-shell.
+    #
+    def change_dir(dir_path)
+      tell("{c{Changing directory to: `#{dir_path}`.}}")
+      FileUtils.cd(dir_path)
+      system(get_env!(:SHELL))
+    end
 
-  #
-  # Inform user about the change of directory.
-  #
-  def inform_user(dir_path)
-    tell("{g{CD done in: `#{dir_path}`.}}")
-  end
+    #
+    # Inform user about the change of directory.
+    #
+    def inform_user(dir_path)
+      tell("{g{CD done in: `#{dir_path}`.}}")
+    end
 end
 
 # ───────────────────────────────────────────────────── Cleanup ← Depot ← Cli ──
@@ -5076,7 +5145,7 @@ class Fizzy::CLI::Cleanup < Fizzy::CLI::Command
 
     # Perform cleanup.
     status =
-      if ask("Remove the fizzy root directory (`#{paths.root}`)")
+      if ask "Remove the fizzy root directory (#{✏ paths.root})"
         paths.root.rmtree
       end
 
@@ -5085,16 +5154,16 @@ class Fizzy::CLI::Cleanup < Fizzy::CLI::Command
 
   private
 
-  #
-  # Inform user about the cleanup status.
-  #
-  def inform_user(status, root_dir)
-    case status
-    when true  then tell("{g{Successfully cleaned: `#{root_dir}`.}}")
-    when false then error("Failed to cleanup: `#{root_dir}`.", :red)
-    when nil   then warning("Cleanup skipped.", ask_continue: false)
+    #
+    # Inform user about the cleanup status.
+    #
+    def inform_user(status, root_dir)
+      case status
+      when true  then success "{g{Successfully cleaned: #{✏ root_dir}.}}"
+      when false then error "Failed to cleanup: #{✏ root_dir}."
+      when nil   then warning "Cleanup skipped.", ask_continue: false
+      end
     end
-  end
 end
 
 # ──────────────────────────────────────────────────────── Help ← Depot ← Cli ──
@@ -5107,11 +5176,11 @@ class Fizzy::CLI::Help < Fizzy::CLI::Command
     super("Show command help.",
           spec: {
             command_name: {
-              desc: "The command name to show help for",
-              abbrev: "C",
-              type: Fizzy::CLI::Command.available.map(&:command_name),
-              required: true
-            }
+              desc:     "The command name to show help for",
+              abbrev:   "C",
+              type:     Fizzy::CLI::Command.available.map(&:command_name),
+              required: true,
+            },
           })
   end
 
@@ -5138,21 +5207,21 @@ class Fizzy::CLI::Info < Fizzy::CLI::Command
 
   private
 
-  def compute_paths
-    prepare_storage(options[:fizzy_dir],
-                    valid_meta:   false,
-                    valid_cfg:    :readonly,
-                    valid_inst:   false,
-                    cur_cfg_name: options[:cfg_name])
-  end
-
-  def tell_available_vars(cur_cfg_vars_path)
-    tell("{c{Available vars:}}")
-    avail_vars(cur_cfg_vars_path).each do |path|
-      name = path.basename(path.extname)
-      tell("\t→ {m{#{name}}}")
+    def compute_paths
+      prepare_storage(options[:fizzy_dir],
+                      valid_meta:   false,
+                      valid_cfg:    :readonly,
+                      valid_inst:   false,
+                      cur_cfg_name: options[:cfg_name])
     end
-  end
+
+    def tell_available_vars(cur_cfg_vars_path)
+      tell("{c{Available vars:}}")
+      avail_vars(cur_cfg_vars_path).each do |path|
+        name = path.basename(path.extname)
+        tell("\t→ {m{#{name}}}")
+      end
+    end
 end
 
 # ──────────────────────────────────────────────────────── Edit ← Depot ← Cli ──
@@ -5165,73 +5234,73 @@ class Fizzy::CLI::Edit < Fizzy::CLI::Command
     super("Find the files relative to PATTERN and edit them.",
           spec: Fizzy::CLI.known_args(:fizzy_dir, :cfg_name).merge(
             pattern: {
-              desc: "Pattern to find files to be edited",
-              abbrev: "P",
-              required: true
-            }
+              desc:     "Pattern to find files to be edited",
+              abbrev:   "P",
+              required: true,
+            },
           ))
   end
 
   def run
     # Prepare stuff for editing.
-    paths = compute_paths
-    find_path = (paths.cur_cfg || paths.cfg).join(options[:pattern])
-    cfg_files = find_cfg_files(find_path)
+    paths         = compute_paths
+    find_path     = (paths.cur_cfg || paths.cfg).join(options[:pattern])
+    cfg_files     = find_cfg_files(find_path)
     cfg_files_arg = build_cfg_files_arg(cfg_files)
-    status = perform_edit(cfg_files_arg)
+    status        = perform_edit(cfg_files_arg)
     inform_user(status, cfg_files_arg)
   end
 
   private
 
-  def compute_paths
-    prepare_storage(options[:fizzy_dir],
-                    valid_meta:   false,
-                    valid_inst:   false,
-                    cur_cfg_name: options[:cfg_name])
-  end
-
-  #
-  # Find configuration files to be edited.
-  #
-  def find_cfg_files(find_path)
-    if find_path.exist?
-      Array[find_path]
-    else
-      Pathname.glob("#{find_path}*", File::FNM_DOTMATCH).to_a
-              .select(&:file?)
-              .reject { |path| path.to_s =~ /\.git/ }
+    def compute_paths
+      prepare_storage(options[:fizzy_dir],
+                      valid_meta:   false,
+                      valid_inst:   false,
+                      cur_cfg_name: options[:cfg_name])
     end
-  end
 
-  def build_cfg_files_arg(cfg_files)
-    cfg_files.collect(&:shell_escape) .join(" ") .strip
-  end
-
-  #
-  # Perform edit.
-  #
-  def perform_edit(cfg_files_arg)
-    if cfg_files_arg.empty?
-      warning("No files matching `#{options[:cfg_name]}` have been found.",
-              ask_continue: false)
-      nil
-    else
-      tell("{c{Editing configuration file(s): `#{cfg_files_arg}`.}}")
-      system("#{Fizzy::CFG.editor} #{cfg_files_arg}")
+    #
+    # Find configuration files to be edited.
+    #
+    def find_cfg_files(find_path)
+      if find_path.exist?
+        Array[find_path]
+      else
+        Pathname.glob("#{find_path}*", File::FNM_DOTMATCH).to_a
+                .select(&:file?)
+                .reject { |path| path.to_s =~ /\.git/ }
+      end
     end
-  end
 
-  #
-  # Inform user about the editing status.
-  #
-  def inform_user(status, cfg_files_arg)
-    case status
-    when true  then tell("{g{Successfully edited: `#{cfg_files_arg}`.}}")
-    when false then error("Failed to edit: `#{cfg_files_arg}`.", :red)
-    when nil   then warning("Editing skipped.", ask_continue: false)
+    def build_cfg_files_arg(cfg_files)
+      cfg_files.collect(&:shell_escape).join(" ").strip
     end
-  end
+
+    #
+    # Perform edit.
+    #
+    def perform_edit(cfg_files_arg)
+      if cfg_files_arg.empty?
+        warning("No files matching `#{options[:cfg_name]}` have been found.",
+                ask_continue: false)
+        nil
+      else
+        tell("{c{Editing configuration file(s): `#{cfg_files_arg}`.}}")
+        system("#{Fizzy::CFG.editor} #{cfg_files_arg}")
+      end
+    end
+
+    #
+    # Inform user about the editing status.
+    #
+    def inform_user(status, cfg_files_arg)
+      case status
+      when true  then tell("{g{Successfully edited: `#{cfg_files_arg}`.}}")
+      when false then error("Failed to edit: `#{cfg_files_arg}`.", :red)
+      when nil   then warning("Editing skipped.", ask_continue: false)
+      end
+    end
 end
 
 # ──────────────────────────────────────────────────────── Sync ← Depot ← Cli ──
@@ -5247,35 +5316,35 @@ class Fizzy::CLI::Sync < Fizzy::CLI::Command
   end
 
   def run
-    paths = compute_paths
+    paths       = compute_paths
     sync_result = perform_sync(paths.cur_cfg)
     inform_user(sync_result, paths.cur_cfg)
   end
 
   private
 
-  def compute_paths
-    prepare_storage(options[:fizzy_dir],
-                    valid_meta:   false,
-                    valid_cfg:    false,
-                    valid_inst:   false,
-                    cur_cfg_name: options[:cfg_name])
-  end
-
-  def perform_sync(cur_cfg_path)
-    Fizzy::Sync.perform(cur_cfg_path, options[:cfg_url])
-  end
-
-  #
-  # Inform user about sync status.
-  #
-  def inform_user(sync_result, cur_cfg_path)
-    if sync_result
-      tell("{g{Synced to: `#{cur_cfg_path}`.}}")
-    else
-      error("Unable to sync.")
+    def compute_paths
+      prepare_storage(options[:fizzy_dir],
+                      valid_meta:   false,
+                      valid_cfg:    false,
+                      valid_inst:   false,
+                      cur_cfg_name: options[:cfg_name])
     end
-  end
+
+    def perform_sync(cur_cfg_path)
+      Fizzy::Sync.perform(cur_cfg_path, options[:cfg_url])
+    end
+
+    #
+    # Inform user about sync status.
+    #
+    def inform_user(sync_result, cur_cfg_path)
+      if sync_result
+        tell("{g{Synced to: `#{cur_cfg_path}`.}}")
+      else
+        error("Unable to sync.")
+      end
+    end
 end
 
 # ─────────────────────────────────────────────────── Incarnate ← Depot ← Cli ──
@@ -5297,79 +5366,79 @@ class Fizzy::CLI::Incarnate < Fizzy::CLI::Command
 
   private
 
-  def instantiate
-    # Before instantiation.
-    paths = prepare_storage(options[:fizzy_dir],
-                            meta_name:     options[:meta_name],
-                            valid_cfg:     :readonly,
-                            valid_inst:    false,
-                            cur_cfg_name:  options[:cfg_name],
-                            cur_inst_name: options[:inst_name])
-    setup_vars(paths.cur_cfg_vars, options[:vars_name])
+    def instantiate
+      # Before instantiation.
+      paths = prepare_storage(options[:fizzy_dir],
+                              meta_name:     options[:meta_name],
+                              valid_cfg:     :readonly,
+                              valid_inst:    false,
+                              cur_cfg_name:  options[:cfg_name],
+                              cur_inst_name: options[:inst_name])
+      setup_vars(paths.cur_cfg_vars, options[:vars_name])
 
-    meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg_elems,
-                    options[:verbose])
+      meta = get_meta(paths.cur_cfg_meta, paths.cur_cfg_vars, paths.cur_cfg_elems,
+                      options[:verbose])
 
-    info("meta: ", "{g{#{meta[:elems].count}}}/" \
-                   "#{meta[:all_elems_count]} elem(s) selected.")
-    info("meta: ", "{r{#{meta[:excluded_files].count}}}/" \
-                   "#{meta[:all_files_count]} file(s) excluded.")
-    tell
+      info("meta: ", "{g{#{meta[:elems].count}}}/" \
+                     "#{meta[:all_elems_count]} elem(s) selected.")
+      info("meta: ", "{r{#{meta[:excluded_files].count}}}/" \
+                     "#{meta[:all_files_count]} file(s) excluded.")
+      tell
 
-    # Create a configuration instance.
-    tell("{b{Creating a configuration instance named " \
-         "`#{options[:inst_name]}`}} from: `{m{#{paths.cur_cfg}}}`.")
+      # Create a configuration instance.
+      tell("{b{Creating a configuration instance named " \
+           "`#{options[:inst_name]}`}} from: `{m{#{paths.cur_cfg}}}`.")
 
-    exclude_pattern = Fizzy::CFG.instantiate_exclude_pattern
-    meta[:excluded_files].each do |excluded_file|
-      exclude_pattern = /#{exclude_pattern}|#{excluded_file}/
-    end
-
-    begin
-      directory(paths.cur_cfg, paths.cur_inst, exclude_pattern: exclude_pattern)
-    rescue SyntaxError
-      error("Error while processing the template: `#{$fizzy_cur_template}`.")
-    end
-
-    # After instantiation.
-    tell("{g{Created the configuration instance in: `#{paths.cur_inst}`.}}")
-  end
-
-  def install
-    # Prepare stuff for performing install.
-    @run_mode = options[:run_mode].to_sym
-    @verbose  = options[:verbose]
-    paths = prepare_storage(options[:fizzy_dir],
-                            valid_cfg:     false,
-                            meta_name:     options[:meta_name],
-                            cur_inst_name: options[:inst_name])
-    setup_vars(paths.cur_inst_vars, options[:vars_name])
-
-    meta = get_meta(paths.cur_inst_meta, paths.cur_inst_vars,
-                    paths.cur_inst_elems, options[:verbose])
-
-    # 1: Install the instance into the system.
-    tell("{b{Installing the configuration instance " \
-         "`#{options[:inst_name]}` into the system.}}")
-    # 1.1: Install the elements.
-    meta[:elems].each do |elem|
-      tell("{c{Installing element: `#{elem[:name]}`.}}")
-      elements_appliers.each { |applier| applier.call(elem) }
-      if elem[:notes]
-        tell("{y{Notes for `#{elem[:name]}`:}}\n" +
-             elem[:notes].split("\n").collect { |s| "  #{s}" }.join("\n"))
+      exclude_pattern = Fizzy::CFG.instantiate_exclude_pattern
+      meta[:excluded_files].each do |excluded_file|
+        exclude_pattern = /#{exclude_pattern}|#{excluded_file}/
       end
-    end
-    # 1.2: Install the commands.
-    meta[:commands].each do |command|
-      tell("{c{Executing command: `#{command.type}`.}}")
-      command.execute
+
+      begin
+        directory(paths.cur_cfg, paths.cur_inst, exclude_pattern: exclude_pattern)
+      rescue SyntaxError
+        error("Error while processing the template: `#{$fizzy_cur_template}`.")
+      end
+
+      # After instantiation.
+      tell("{g{Created the configuration instance in: `#{paths.cur_inst}`.}}")
     end
 
-    # Inform the user about installation status.
-    tell("{g{The configuration instance `#{options[:inst_name]}` has been " \
-         "installed into the system.}}")
-  end
+    def install
+      # Prepare stuff for performing install.
+      @run_mode = options[:run_mode].to_sym
+      @verbose  = options[:verbose]
+      paths     = prepare_storage(options[:fizzy_dir],
+                                  valid_cfg:     false,
+                                  meta_name:     options[:meta_name],
+                                  cur_inst_name: options[:inst_name])
+      setup_vars(paths.cur_inst_vars, options[:vars_name])
+
+      meta = get_meta(paths.cur_inst_meta, paths.cur_inst_vars,
+                      paths.cur_inst_elems, options[:verbose])
+
+      # 1: Install the instance into the system.
+      tell("{b{Installing the configuration instance " \
+           "`#{options[:inst_name]}` into the system.}}")
+      # 1.1: Install the elements.
+      meta[:elems].each do |elem|
+        tell("{c{Installing element: `#{elem[:name]}`.}}")
+        elements_appliers.each { |applier| applier.call(elem) }
+        if elem[:notes]
+          tell("{y{Notes for `#{elem[:name]}`:}}\n" +
+               elem[:notes].split("\n").collect { |s| "  #{s}" }.join("\n"))
+        end
+      end
+      # 1.2: Install the commands.
+      meta[:commands].each do |command|
+        tell("{c{Executing command: `#{command.type}`.}}")
+        command.execute
+      end
+
+      # Inform the user about installation status.
+      tell("{g{The configuration instance `#{options[:inst_name]}` has been " \
+           "installed into the system.}}")
+    end
 end
 
 # ─────────────────────────────────────────────────────── Usage ← Depot ← Cli ──
@@ -5416,6 +5485,10 @@ end
 #
 
 if $PROGRAM_NAME == __FILE__
+  if RUBY_VERSION < Fizzy::CFG.minimum_ruby_version
+    error "Invalid ruby version detected."
+  end
+
   commands = Fizzy::CLI::Command.available.collect(&:new)
   commands.each { |command| Fizzy::CLI::Main.instance.add_subcommand(command) }
   Fizzy::CLI::Main.instance.run if Fizzy::CLI::Main.instance.parse(ARGV)

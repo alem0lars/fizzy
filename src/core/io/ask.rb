@@ -28,7 +28,7 @@ module Fizzy::IO
               end
 
     line_editor = Fizzy::LineEditor.enabled.new("{Ml{ ? }}#{question}", options)
-    answer = line_editor.readline
+    answer      = line_editor.readline
 
     case type
     when :bool

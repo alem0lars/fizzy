@@ -11,6 +11,8 @@ traveling_ruby:
     osx:
     win32:
 
+minimum_ruby_version: 2.0.0
+
 grammars:
   - logic
   # TODO

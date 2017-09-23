@@ -1,7 +1,7 @@
 class Hash
 
   # Extract `n` sample key/value pairs from the underlying `Hash`.
-  def sample(n=1)
+  def sample(n = 1)
     Hash[self.to_a.sample(n)]
   end
 
@@ -21,6 +21,7 @@ class Hash
       end
     end
   end
+
   private :magic_merge_strategy
 
   # Perform recursive merge with some magic, replacing current hash.
@@ -48,6 +49,7 @@ class Hash
       end
     end
   end
+
   private :deep_merge_strategy
 
   # Perform recursive merge, replacing current hash.
@@ -62,7 +64,7 @@ class Hash
     self.merge(second, &deep_merge_strategy)
   end
 
-  def fqkeys(prefix="")
+  def fqkeys(prefix = "")
     self.inject([]) do |acc, (k, v)|
       prefix_new = prefix.empty? ? k.to_s : "#{prefix}.#{k}"
       acc + (v.is_a?(Hash) ? v.fqkeys(prefix_new) : [prefix_new])
@@ -70,7 +72,7 @@ class Hash
   end
 
   def slice(*keys)
-    self.select{|k, _| keys.include?(k)}
+    self.select { |k, _| keys.include?(k) }
   end
 
   # ────────────────────────────────────────────────────────────────────────────
@@ -79,27 +81,27 @@ class Hash
   # Return a new `Hash` with all keys converted to `String`s.
   #
   def deep_stringify_keys
-    deep_transform_keys{ |key| key.to_s }
+    deep_transform_keys { |key| key.to_s }
   end
 
   # Destructively convert all keys to `String`s.
   #
   def deep_stringify_keys!
-    deep_transform_keys!{ |key| key.to_s }
+    deep_transform_keys! { |key| key.to_s }
   end
 
   # Return a new `Hash` with all keys converted to `Symbol`s, as long as they
   # respond to `to_sym`.
   #
   def deep_symbolize_keys
-    deep_transform_keys{ |key| key.to_sym rescue key }
+    deep_transform_keys { |key| key.to_sym rescue key }
   end
 
   # Destructively convert all keys to `Symbol`s, as long as they respond to
   # `to_sym`.
   #
   def deep_symbolize_keys!
-    deep_transform_keys!{ |key| key.to_sym rescue key }
+    deep_transform_keys! { |key| key.to_sym rescue key }
   end
 
   # Return a new `Hash` with all keys converted by the block operation.
@@ -121,25 +123,27 @@ class Hash
         result[yield(key)] = deep_transform_keys_in_object(value, &block)
       end
     when Array
-      object.map {|e| deep_transform_keys_in_object(e, &block)}
+      object.map { |e| deep_transform_keys_in_object(e, &block) }
     else object
     end
   end
+
   private :deep_transform_keys_in_object
 
   def deep_transform_keys_in_object!(object, &block)
     case object
     when Hash
       object.keys.each do |key|
-        value = object.delete(key)
+        value              = object.delete(key)
         object[yield(key)] = deep_transform_keys_in_object!(value, &block)
       end
       object
     when Array
-      object.map! {|e| deep_transform_keys_in_object!(e, &block)}
+      object.map! { |e| deep_transform_keys_in_object!(e, &block) }
     else object
     end
   end
+
   private :deep_transform_keys_in_object!
 
   # ────────────────────────────────────────────────────────────────────────────

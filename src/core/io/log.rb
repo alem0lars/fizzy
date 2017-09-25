@@ -29,7 +29,7 @@ module Fizzy::IO
     output = []
     output << "{b{☞}}"
     output << "{c{#{prefix}}}" if prefix
-    outout << "{w{#{msg}}}" if msg
+    output << "{w{#{msg}}}" if msg
 
     tell output.join(" ")
   end

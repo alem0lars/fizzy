@@ -41,8 +41,8 @@ task :build do
   $cfg[:paths][:bin].chmod 0775
 
   # ☞ Link to a `.rb` file (mainly used for testing purposes).
-  $cfg[:paths][:bin_rb].unlink if $cfg[:paths][:bin_rb].symlink?
-  $cfg[:paths][:bin_rb].make_symlink $cfg[:paths][:bin]
+  $cfg[:paths][:bin_rb].unlink if $cfg[:paths][:bin_rb].file?
+  FileUtils.cp($cfg[:paths][:bin], $cfg[:paths][:bin_rb])
 
   info "Build successfully completed", success: true
 end

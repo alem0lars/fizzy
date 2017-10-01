@@ -37,6 +37,35 @@
 # ─────────────────────────────────────────────────────────────────────────────┘
 
 
+# ─────────────────────────────────────────────────────── Modules Declaration ──
+
+module Fizzy; end
+module Fizzy::ANSIColors; end
+module Fizzy::IO; end
+module Fizzy::LineEditor; end
+module Fizzy::TypeSystem; end
+module Fizzy::Tree; end
+module Fizzy::Tree::HashConverter; end
+module Fizzy::Tree::HashConverter::ClassMethods; end
+module Fizzy::Tree::MergeHandler; end
+module Fizzy::Tree::MetricsHandler; end
+module Fizzy::Tree::PathHandler; end
+module Fizzy::ArgParse; end
+module Fizzy::Template; end
+module Fizzy::Template::Context; end
+module Fizzy::Environment; end
+module Fizzy::Execution; end
+module Fizzy::Filesystem; end
+module Fizzy::Vars; end
+module Fizzy::Vars::Filter; end
+module Fizzy::Locals; end
+module Fizzy::Meta; end
+module Fizzy::Meta::Commands; end
+module Fizzy::Meta::Info; end
+module Fizzy::Meta::Elements; end
+module Fizzy::Sync; end
+module Fizzy::CLI; end
+
 # ────────────────────────────────────────────────────────────────── Requires ──
 
 # Core modules.
@@ -616,9 +645,12 @@ end
 
 # ──────────────────────────────────────────────────────────── Pathname ← Ext ──
 
+#
 # Extensions for class `Pathname`.
 #
 class Pathname
+
+  #
   # Escapes the string representation of the underlying object,
   # so that it can be safely used in a Bourne shell commandline.
   #
@@ -626,27 +658,13 @@ class Pathname
     Shellwords.shellescape(self)
   end
 
+  #
   # Example environment variables contained inside the path.
   #
   def expand_variables
     Pathname.new(to_s.expand_variables)
   end
-end
 
-# ──────────────────────────────────────────────────────────────── Thor ← Ext ──
-
-class Thor
-  module Actions
-
-    # Monkey-patch to retrieve the template currently processed.
-    old_template = instance_method(:template)
-    remove_method :template
-    define_method :template, -> (source, *args, &blk) do
-                    $fizzy_cur_template = source
-                    old_template.bind(self).(source, *args, &blk)
-                  end
-
-  end
 end
 
 # ───────────────────────────────────────────────────────────── Configuration ──
@@ -832,14 +850,12 @@ end
 
 # TODO move to separate files..
 
-module Fizzy
-  module LineEditor
-    def self.enabled
-      if Readline.available?
-        Readline
-      else
-        Basic
-      end
+module Fizzy::LineEditor
+  def self.enabled
+    if Readline.available?
+      Readline
+    else
+      Basic
     end
   end
 end
@@ -1260,14 +1276,17 @@ end
 
 # ────────────────────────────────────────────── Hash converter ← tree ← Misc ──
 
+#
 # Provides utility methods for converting between {Fizzy::Tree::Node} and
-# ruby's native `Hash`.
+# ruby's native {Hash}.
+#
 module Fizzy::Tree::HashConverter
-  def self.included(base)
-    # @!group Hash convertion
+  # @!group Hash conversion
 
+  def self.included(base)
     base.extend(ClassMethods)
 
+    #
     # Instantiate and insert child nodes from data in a ruby `Hash`.
     #
     # This method will instantiate a node instance for each top-level key of
@@ -1296,6 +1315,7 @@ module Fizzy::Tree::HashConverter
     # @raise [ArgumentError] If a non-`Hash` is passed.
     #
     # @see ClassMethods#from_hash
+    #
     def add_from_hash(children)
       must "children", children, be: Hash
 
@@ -1309,6 +1329,7 @@ module Fizzy::Tree::HashConverter
       child_nodes
     end
 
+    #
     # Convert a node and its subtree into a ruby `Hash`.
     #
     # @example
@@ -1320,6 +1341,7 @@ module Fizzy::Tree::HashConverter
     #                        [:child2, "child2 content"] => {} } }
     #
     # @return [Hash] `Hash` representation of the tree.
+    #
     def to_h
       key = has_content? ? [name, content] : name
 
@@ -1332,79 +1354,85 @@ module Fizzy::Tree::HashConverter
     end
   end
 
-  # Methods in {Fizzy::Tree::HashConverter::ClassMethods} will be added as
-  # class methods on any class mixing in the {Fizzy::Tree::HashConverter}
-  # module.
-  module ClassMethods
-    # Factory method builds a {Fizzy::Tree::Node} from a `Hash`.
-    #
-    # This method will interpret each key of your `Hash` as a
-    # {Fizzy::Tree::Node}.
-    #
-    # Nested hashes are expected and child nodes will be added accordingly.
-    #
-    # If a hash key is a single value that value will be used as the name for
-    # the node.
-    #
-    # If a hash key is an Array, both node name and content will be
-    # populated.
-    #
-    # A leaf element of the tree should be represented as a hash key with
-    # corresponding value `nil` or `{}`.
-    #
-    # @example
-    #
-    #   TreeNode.from_hash({:A => {:B => {}, :C => {:D => {}, :E => {}}}})
-    #   # ^- would be parsed into the following tree structure:
-    #   #
-    #   #    A
-    #   #   / \
-    #   #  B   C
-    #   #     / \
-    #   #    D   E
-    #
-    #   # The same tree would result from this `nil`-terminated `Hash`.
-    #   {:A => {:B => nil, :C => {:D => nil, :E => nil}}}
-    #
-    #   # A tree with equivalent structure but with content present for
-    #   # nodes A and D could be built from a hash like this:
-    #   {[:A, "A content"] => {:B => {},
-    #                          :C => { [:D, "D content"] => {},
-    #                                   :E => {}  }}}
-    #
-    # @param [Hash] hash Hash to build tree from.
-    #
-    # @return [Fizzy::Tree::Node] The node representing the root of your tree.
-    #
-    # @raise [ArgumentError] This exception is raised if a non-`Hash` is
-    #                        passed.
-    # @raise [ArgumentError] This exception is raised if the hash has multiple
-    #                        top-level elements.
-    # @raise [ArgumentError] This exception is raised if `hash` contains
-    #                        values that are not `Hash`es or `nil`s.
-    def from_hash(hash)
-      must "hash", hash, be: Hash
-      must "hash size", hash.size, eq: 1
+  # @!endgroup
+end
 
-      root, children = hash.first
+#
+# Methods in {Fizzy::Tree::HashConverter::ClassMethods} will be added as
+# class methods on any class mixing in the {Fizzy::Tree::HashConverter}
+# module.
+#
+module Fizzy::Tree::HashConverter::ClassMethods
 
-      must "hash children", children, be: [Hash, NilClass]
+  #
+  # Factory method builds a {Fizzy::Tree::Node} from a `Hash`.
+  #
+  # This method will interpret each key of your `Hash` as a
+  # {Fizzy::Tree::Node}.
+  #
+  # Nested hashes are expected and child nodes will be added accordingly.
+  #
+  # If a hash key is a single value that value will be used as the name for
+  # the node.
+  #
+  # If a hash key is an Array, both node name and content will be
+  # populated.
+  #
+  # A leaf element of the tree should be represented as a hash key with
+  # corresponding value `nil` or `{}`.
+  #
+  # @example
+  #
+  #   TreeNode.from_hash({:A => {:B => {}, :C => {:D => {}, :E => {}}}})
+  #   # ^- would be parsed into the following tree structure:
+  #   #
+  #   #    A
+  #   #   / \
+  #   #  B   C
+  #   #     / \
+  #   #    D   E
+  #
+  #   # The same tree would result from this `nil`-terminated `Hash`.
+  #   {:A => {:B => nil, :C => {:D => nil, :E => nil}}}
+  #
+  #   # A tree with equivalent structure but with content present for
+  #   # nodes A and D could be built from a hash like this:
+  #   {[:A, "A content"] => {:B => {},
+  #                          :C => { [:D, "D content"] => {},
+  #                                   :E => {}  }}}
+  #
+  # @param [Hash] hash Hash to build tree from.
+  #
+  # @return [Fizzy::Tree::Node] The node representing the root of your tree.
+  #
+  # @raise [ArgumentError] Raised if a non-`Hash` is passed.
+  # @raise [ArgumentError] Raised if the hash has multiple top-level elements.
+  # @raise [ArgumentError] Raised if `hash` contains invalid values.
+  #
+  def from_hash(hash)
+    must "hash", hash, be: Hash
+    must "hash size", hash.size, eq: 1
 
-      node = self.new(*root)
-      node.add_from_hash(children) unless children.nil?
-      node
-    end
+    root, children = hash.first
+
+    must "hash children", children, be: [Hash, NilClass]
+
+    node = self.new(*root)
+    node.add_from_hash(children) unless children.nil?
+    node
   end
 
-  # @!endgroup
 end
 
 # ─────────────────────────────────────────────── Merge handler ← tree ← Misc ──
 
+#
 # Provides utility methods to merge two {Fizzy::Tree::Node} based trees.
+#
 module Fizzy::Tree::MergeHandler
   # @!group Merging Trees
 
+  #
   # Merge two trees that share the same root node and returns *a new tree*.
   #
   # The new tree contains the contents of the merge between `other_tree` and
@@ -1417,16 +1445,16 @@ module Fizzy::Tree::MergeHandler
   #
   # @return [Fizzy::Tree::Node] The resulting tree following the merge.
   #
-  # @raise [TypeError] This exception is raised if `other_tree` is not a
-  #                    {Fizzy::Tree::Node}.
-  # @raise [ArgumentError] This exception is raised if `other_tree` does not
-  #                        have the same root node as self.
+  # @raise [TypeError] Raised if `other_tree` is not a {Fizzy::Tree::Node}.
+  # @raise [ArgumentError] Raised if `other_tree` does not have the same root node as self.
+  #
   def merge(other_tree)
     check_merge_prerequisites(other_tree)
     new_tree = merge_trees(self.root.dup, other_tree.root)
     return new_tree
   end
 
+  #
   # Merge in another tree (that shares the same root node) into this tree.
   #
   # Duplicate nodes (coming from `other_tree`) will **NOT** be overwritten in
@@ -1434,21 +1462,22 @@ module Fizzy::Tree::MergeHandler
   #
   # @param [Fizzy::Tree::Node] other_tree The other tree to merge with.
   #
-  # @raise [TypeError] This exception is raised if `other_tree` is not a
-  #                    {Fizzy::Tree::Node}.
-  # @raise [ArgumentError] This exception is raised if `other_tree` does not
-  #                        have the same root node as self.
+  # @raise [TypeError] Raised if `other_tree` is not a {Fizzy::Tree::Node}.
+  # @raise [ArgumentError] Raised if `other_tree` does not have the same root node as self.
+  #
   def merge!(other_tree)
     check_merge_prerequisites(other_tree)
     merge_trees(self.root, other_tree.root)
   end
 
+  #
   # @!visibility protected
   #
   # Utility function to check that the conditions for a tree merge are met.
   #
   # @see #merge
   # @see #merge!
+  #
   def check_merge_prerequisites(other_tree)
     unless other_tree.is_a?(Fizzy::Tree::Node)
       raise TypeError,
@@ -1463,15 +1492,16 @@ module Fizzy::Tree::MergeHandler
 
   protected :check_merge_prerequisites
 
+  #
   # @!visibility protected
   #
   # Utility function to recursivley merge two subtrees.
   #
   # @param [Fizzy::Tree::Node] tree1 The target tree to merge into.
-  # @param [Fizzy::Tree::Node] tree2 The donor tree (that will be merged
-  #                                  into target).
+  # @param [Fizzy::Tree::Node] tree2 The donor tree (that will be merged into target).
   #
   # @return [Fizzy::Tree::Node] The merged tree.
+  #
   def merge_trees(tree1, tree2)
     names1 = tree1.has_children? ? tree1.children.map { |c| c.name } : []
     names2 = tree2.has_children? ? tree2.children.map { |c| c.name } : []
@@ -2932,6 +2962,47 @@ class Fizzy::ArgParse::SubCommandParser < Fizzy::ArgParse::CommandParser
     end
 end
 
+# ──────────────────────────────────────────────── Renderer ← Template ← Misc ──
+
+class Fizzy::Template::Renderer
+  attr_reader :template, :validator
+
+  def initialize(template, validator)
+    @template  = template
+    @validator = validator
+  end
+
+  def render(data)
+    begin
+      validator.validate(data)
+    rescue Exception => error
+      error "Failed to validate template data #{✏ data}: #{error}"
+    end
+
+    ERB.new(template, 1).result(ContextCreator.new.create(data))
+  end
+end
+
+# ─────────────────────────────────────── Context validator ← template ← Misc ──
+
+class Fizzy::Template::Context::Validator
+  def validate(data)
+    true
+  end
+end
+
+# ───────────────────────────────────────── Context creator ← template ← Misc ──
+
+class Fizzy::Template::Context::Creator
+  def create(data)
+    b = binding
+    data.each do |key, value|
+      b.local_variable_set(key.taint, value.taint)
+    end
+    b.taint
+  end
+end
+
 # ────────────────────────────────────────────────────── Base lexer ← Grammar ──
 
 class Fizzy::BaseLexer
@@ -3672,55 +3743,58 @@ end
 
 # ────────────────────────────────────────────────────── Filter ← Vars ← Core ──
 
-module Fizzy::Vars
-  module Filter
-    def self.define(name, description: nil, &block)
-      @filters ||= []
-      @filters << SimpleFilter.new(name, description.strip, &block)
-    end
+# TODO move in separate files.
 
-    def self.apply(blob)
-      if blob.is_a? Hash
-        Hash[blob.map { |k, v| [k, apply(v)] }]
-      elsif blob.is_a? Array
-        blob.map { |v| apply(v) }
+module Fizzy::Vars::Filter
+
+  def self.define(name, description: nil, &block)
+    @filters ||= []
+    @filters << SimpleFilter.new(name, description.strip, &block)
+  end
+
+  def self.apply(blob)
+    if blob.is_a? Hash
+      Hash[blob.map { |k, v| [k, apply(v)] }]
+    elsif blob.is_a? Array
+      blob.map { |v| apply(v) }
+    else
+      if filter = (@filters || []).find { |f| f.match?(blob) }
+        filter.apply(blob)
       else
-        if filter = (@filters || []).find { |f| f.match?(blob) }
-          filter.apply(blob)
-        else
-          blob
-        end
-      end
-    end
-
-    class SimpleFilter
-      include Fizzy::IO
-
-      attr_reader :name, :desc
-
-      def initialize(name, desc, &block)
-        @name   = name
-        @desc   = desc
-        @block  = block
-        @regexp = /^<\{\s*(?<name>#{@name})\s*(?<args>\S+)\s*\}>$/
-      end
-
-      def match?(blob)
-        return false unless blob.is_a?(String) || blob.is_a?(Symbol)
-        @regexp =~ blob.to_s
-      end
-
-      def apply(blob)
-        md = @regexp.match(blob)
-        return if md.nil?
-        args = md[:args]
-        def args.split_by_separator(sep = ",")
-          split(/(?:\s*[#{sep}]\s*)/)
-        end
-        @block.call(args)
+        blob
       end
     end
   end
+
+end
+
+class Fizzy::Vars::Filter::SimpleFilter
+  include Fizzy::IO
+
+  attr_reader :name, :desc
+
+  def initialize(name, desc, &block)
+    @name   = name
+    @desc   = desc
+    @block  = block
+    @regexp = /^<\{\s*(?<name>#{@name})\s*(?<args>\S+)\s*\}>$/
+  end
+
+  def match?(blob)
+    return false unless blob.is_a?(String) || blob.is_a?(Symbol)
+    @regexp =~ blob.to_s
+  end
+
+  def apply(blob)
+    md = @regexp.match(blob)
+    return if md.nil?
+    args = md[:args]
+    def args.split_by_separator(sep = ",")
+      split(/(?:\s*[#{sep}]\s*)/)
+    end
+    @block.call(args)
+  end
+
 end
 
 # ─────────────────────────────────────────────────── Retriever ← Vars ← Core ──
@@ -4671,13 +4745,13 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     protocols = %i[https ssh]
     url       = url.gsub(/^#{@name}:/, "") # Remove VCS name prefix (optional).
     regexp    = %r{
-                     ^
-                     (?<protocol>#{protocols.map { |p| "#{p}:" }.join("|")})?
-                     (?<username>[a-z0-9\-_]+)
-                     \/
-                     (?<repository>[a-z0-9\-_]+)
-                     $
-                   }xi
+                                 ^
+                                 (?<protocol>#{protocols.map { |p| "#{p}:" }.join("|")})?
+                                 (?<username>[a-z0-9\-_]+)
+                                 \/
+                                 (?<repository>[a-z0-9\-_]+)
+                                 $
+                               }xi
     md = url.match(regexp)
     return url unless md
     protocol = (md[:protocol] || default_protocol).to_s.gsub(/:$/, "").to_sym
@@ -5394,11 +5468,13 @@ class Fizzy::CLI::Incarnate < Fizzy::CLI::Command
         exclude_pattern = /#{exclude_pattern}|#{excluded_file}/
       end
 
+=begin TODO ale
       begin
         directory(paths.cur_cfg, paths.cur_inst, exclude_pattern: exclude_pattern)
       rescue SyntaxError
         error("Error while processing the template: `#{$fizzy_cur_template}`.")
       end
+=end
 
       # After instantiation.
       tell("{g{Created the configuration instance in: `#{paths.cur_inst}`.}}")

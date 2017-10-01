@@ -27,7 +27,6 @@ sources:
   - ext/symbol
   - ext/hash
   - ext/pathname
-  - ext/thor
 
   - configuration
 
@@ -53,6 +52,10 @@ sources:
   - misc/argparse/command_parser
   - misc/argparse/rootcommand_parser
   - misc/argparse/subcommand_parser
+
+  - misc/template/renderer
+  - misc/template/context_validator
+  - misc/template/context_creator
 
   - grammar/base_lexer
   - <grammars>

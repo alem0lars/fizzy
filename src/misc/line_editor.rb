@@ -1,13 +1,11 @@
 # TODO move to separate files..
 
-module Fizzy
-  module LineEditor
-    def self.enabled
-      if Readline.available?
-        Readline
-      else
-        Basic
-      end
+module Fizzy::LineEditor
+  def self.enabled
+    if Readline.available?
+      Readline
+    else
+      Basic
     end
   end
 end

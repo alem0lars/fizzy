@@ -69,18 +69,6 @@ Here are a few examples:
 * At the end of the entry, add an implicit link to your GitHub user page as `([@username][])`.
 * If this is your first contribution to fizzy project, add a link definition for the implicit link to the bottom of the changelog as `[@username]: https://github.com/username`.
 
-## FAQ
-
-### Q: Certificates errors on Windows
-
-If you're developing with Windows you may encounter errors about certificates
-that can't be verified.
-
-To fix:
-
-1. Download the pem file from: https://curl.haxx.se/ca/cacert.pem
-2. Set the environment variable `SSL_CERT_FILE` to point to the downloaded file
-
 ----
 
 **Thank you for your contribution!**

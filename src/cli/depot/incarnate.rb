@@ -43,11 +43,13 @@ class Fizzy::CLI::Incarnate < Fizzy::CLI::Command
         exclude_pattern = /#{exclude_pattern}|#{excluded_file}/
       end
 
+=begin TODO ale
       begin
         directory(paths.cur_cfg, paths.cur_inst, exclude_pattern: exclude_pattern)
       rescue SyntaxError
         error("Error while processing the template: `#{$fizzy_cur_template}`.")
       end
+=end
 
       # After instantiation.
       tell("{g{Created the configuration instance in: `#{paths.cur_inst}`.}}")

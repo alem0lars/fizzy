@@ -12,25 +12,30 @@ task :build do
   write_bin("HashBang", $cfg[:hashbang], newlines: 2)
   write_bin("Header",   $cfg[:header],   newlines: 1)
 
-  # ☞ Write source files content.
-  $cfg[:sources].each do |src_file_name|
-    src_file_path = Pathname.new(src_file_name)
-    if src_file_path.absolute?
-      src_file_name = src_file_path.basename(src_file_path.extname)
-    else
-      src_file_path = $cfg[:paths][:src].join("#{src_file_path}.rb")
+  # Write module declarations.
+  regexp = /^\s*(module|class)\s+([a-zA-Z0-9_]+(?:(?:[:][:])?[a-zA-Z0-9_])*)\s*$/
+  section_name = "Modules declaration"
+  separator = generate_section_separator(section_name)
+  write_bin("Separator for section `#{section_name}`", "#{separator}", newlines: [1, 2])
+  foreach_source_file do |src_file_name, _, src_file_content|
+    src_file_content.split("\n").map { |line| line.match(regexp) }.map do |md|
+      next unless md
+      components = md[2].split("::")
+      components.pop if md[1] == "class"
+      components.each_with_index.map do |_, index|
+        components[0..index].join("::")
+      end
     end
-    src_file_name = src_file_name.to_s
+  end.flatten.compact.uniq.each do |mod|
+    write_bin("Module declaration `#{mod}`", "module #{mod}; end\n")
+  end
 
-    section_title = titleize_file_name(src_file_name, inverted: true)
-    sep_left    = "# "
-    sep_right   = " #{section_title} ──"
-    sep_padding = "─" * (80 - sep_left.length - sep_right.length)
-    write_bin("Separator for section `#{src_file_name}`",
-              "#{sep_left}#{sep_padding}#{sep_right}",
-              newlines: [1, 2])
+  # ☞ Write source files content.
+  foreach_source_file do |src_file_name, src_file_path, src_file_content|
+    separator = generate_section_separator(src_file_name)
+    write_bin("Separator for section `#{src_file_name}`", "#{separator}", newlines: [1, 2])
     write_bin("Content of file `#{src_file_name}`",
-              ErbFromOStruct.new({ build_cfg: $cfg }).render(src_file_path.read))
+              ErbFromOStruct.new({ build_cfg: $cfg }).render(src_file_content))
   end
 
   # ☞ Cleanup temporary files.

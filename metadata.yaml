@@ -11,7 +11,7 @@ traveling_ruby:
     osx:
     win32:
 
-minimum_ruby_version: 2.0.0
+minimum_ruby_version: 2.1.0
 
 grammars:
   - logic
@@ -57,6 +57,8 @@ sources:
   - misc/template/context_validator
   - misc/template/context_creator
 
+  - misc/diff
+
   - grammar/base_lexer
   - <grammars>
 
@@ -77,6 +79,7 @@ sources:
   - core/meta/commands
   - core/meta/info
   - core/meta/elements
+  - core/instantiator
 
   - core/sync/base
   - core/sync/local

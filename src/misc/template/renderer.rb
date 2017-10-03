@@ -1,12 +1,12 @@
 class Fizzy::Template::Renderer
-  attr_reader :template, :validator
+  attr_reader :data, :validator
 
-  def initialize(template, validator)
-    @template  = template
+  def initialize(data, validator)
+    @data  = data
     @validator = validator
   end
 
-  def render(data)
+  def render(template)
     begin
       validator.validate(data)
     rescue Exception => error

@@ -26,6 +26,16 @@ existing ecosystem
 
 Take a look at fizzy's [bignami](./BIGNAMI.md)
 
+## Requirements
+
+### Mandatory
+
+Ruby version >= 2.1.0
+
+### Optional
+
+-
+
 ## Usage
 
 The best way to learn how to use fizzy is to read the

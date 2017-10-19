@@ -2,7 +2,7 @@ class Fizzy::Template::Renderer
   attr_reader :data, :validator
 
   def initialize(data, validator)
-    @data  = data
+    @data      = data
     @validator = validator
   end
 

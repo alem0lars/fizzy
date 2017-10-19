@@ -271,7 +271,7 @@ module Fizzy::ANSIColors
       "#{"\t" * indent_lvl}#{self.class.name}(#{to_fields_str(indent_lvl, include_children)})"
     end
 
-    def to_fields_str(indent_lvl, include_children)
+    protected def to_fields_str(indent_lvl, include_children)
       indent_str = "#{"\t" * indent_lvl}"
       if children.empty? || !include_children
         children_str = ""
@@ -285,8 +285,6 @@ module Fizzy::ANSIColors
       end
       "start_idx=`#{start_idx}` end_idx=`#{end_idx}` size=`#{size}`#{children_str}"
     end
-
-    protected :to_fields_str
   end
 
   class StartTagNode < Node
@@ -297,11 +295,9 @@ module Fizzy::ANSIColors
       @color_spec = color_spec
     end
 
-    def to_fields_str(indent_lvl, include_children)
+    protected def to_fields_str(indent_lvl, include_children)
       "color_spec=`#{color_spec}` #{super}"
     end
-
-    protected :to_fields_str
   end
 
   class EndTagNode < Node
@@ -504,7 +500,7 @@ class Hash
   # 1. Merge hashes
   # 2. Concatenate arrays
   #
-  def magic_merge_strategy
+  private def magic_merge_strategy
     proc do |key, v1, v2|
       if Hash === v1 && Hash === v2
         v1.merge(v2, &magic_merge_strategy)
@@ -515,8 +511,6 @@ class Hash
       end
     end
   end
-
-  private :magic_merge_strategy
 
   # Perform recursive merge with some magic, replacing current hash.
   #
@@ -534,7 +528,7 @@ class Hash
   #
   # 1. Merge hashes
   #
-  def deep_merge_strategy
+  private def deep_merge_strategy
     proc do |key, v1, v2|
       if Hash === v1 && Hash === v2
         v1.merge(v2, &deep_merge_strategy)
@@ -543,8 +537,6 @@ class Hash
       end
     end
   end
-
-  private :deep_merge_strategy
 
   # Perform recursive merge, replacing current hash.
   #
@@ -610,7 +602,7 @@ class Hash
     deep_transform_keys_in_object!(self, &block)
   end
 
-  def deep_transform_keys_in_object(object, &block)
+  private def deep_transform_keys_in_object(object, &block)
     case object
     when Hash
       object.each_with_object({}) do |(key, value), result|
@@ -622,9 +614,7 @@ class Hash
     end
   end
 
-  private :deep_transform_keys_in_object
-
-  def deep_transform_keys_in_object!(object, &block)
+  private def deep_transform_keys_in_object!(object, &block)
     case object
     when Hash
       object.keys.each do |key|
@@ -637,8 +627,6 @@ class Hash
     else object
     end
   end
-
-  private :deep_transform_keys_in_object!
 
   # ────────────────────────────────────────────────────────────────────────────
 
@@ -924,13 +912,11 @@ module Fizzy::LineEditor
       end
     end
 
-    def add_to_history?
+    private def add_to_history?
       options.fetch(:add_to_history, true)
     end
 
-    private :add_to_history?
-
-    def completion_proc
+    private def completion_proc
       if use_path_completion?
         proc { |text| PathCompletion.new(text).matches }
       elsif completion_options.any?
@@ -940,19 +926,13 @@ module Fizzy::LineEditor
       end
     end
 
-    private :completion_proc
-
-    def completion_options
+    private def completion_options
       options.fetch(:limited_to, [])
     end
 
-    private :completion_options
-
-    def use_path_completion?
+    private def use_path_completion?
       options.fetch(:path, false)
     end
-
-    private :use_path_completion?
 
     class PathCompletion
       attr_reader :text
@@ -966,13 +946,11 @@ module Fizzy::LineEditor
         relative_matches
       end
 
-      def relative_matches
+      private def relative_matches
         absolute_matches.map { |path| path.sub(base_path, "") }
       end
 
-      private :relative_matches
-
-      def absolute_matches
+      private def absolute_matches
         Dir[glob_pattern].map do |path|
           if File.directory?(path)
             "#{path}/"
@@ -982,19 +960,13 @@ module Fizzy::LineEditor
         end
       end
 
-      private :absolute_matches
-
-      def glob_pattern
+      private def glob_pattern
         "#{base_path}#{text}*"
       end
 
-      private :glob_pattern
-
-      def base_path
+      private def base_path
         "#{Dir.pwd}/"
       end
-
-      private :base_path
     end
   end
 end
@@ -2969,7 +2941,7 @@ class Fizzy::Template::Renderer
   attr_reader :data, :validator
 
   def initialize(data, validator)
-    @data  = data
+    @data      = data
     @validator = validator
   end
 
@@ -3023,7 +2995,7 @@ class Fizzy::Diff::Generator
   # @return String The string representation of the computed difference
   #
   def generate_diff_str(tags:   self.class.default_tags,
-                        format: ->(*args) { self.class.format_colored(*args) })
+                        format: -> (*args) { self.class.format_colored(*args) })
     line_width = 4
 
     output_lines = []
@@ -3073,7 +3045,7 @@ class Fizzy::Diff::Generator
   #
   # @return Array<Array<Fixnum>> The resulting exploring graph.
   #
-  def compute_exploring_graph(a, b)
+  private def compute_exploring_graph(a, b)
     n = a.size
     m = b.size
 
@@ -3096,10 +3068,10 @@ class Fizzy::Diff::Generator
     # Store snapshots of `v`.
     trace = []
 
-    (0 .. max).step do |d|
+    (0..max).step do |d|
       trace << v.clone
 
-      (-d .. d).step(2) do |k|
+      (-d..d).step(2) do |k|
 
         # Get the `x` value of the chosen previous node.
         if k == -d or (k != d and v[k - 1] < v[k + 1])
@@ -3123,9 +3095,8 @@ class Fizzy::Diff::Generator
       end
     end
   end
-  private :compute_exploring_graph
 
-  def backtrack(trace, x, y)
+  private def backtrack(trace, x, y)
     trace.each_with_index.reverse_each do |v, d|
       # Calculate the `k` value.
       k = x - y
@@ -3160,11 +3131,10 @@ class Fizzy::Diff::Generator
       x, y = prev_x, prev_y
     end
   end
-  private :compute_exploring_graph
 
   # Maps a line type into a tag.
   def self.default_tags
-    {eql: " ", del: "-", ins: "+"}
+    { eql: " ", del: "-", ins: "+" }
   end
 
   # Format the given line diff information into a printable pretty string.
@@ -3172,7 +3142,7 @@ class Fizzy::Diff::Generator
   # In this case the output string contains formatting characters, so it should
   # be feeded into {Fizzy::ANSIColors::colorize} or similar functions.
   def self.format_colored(line_type, tag, old_line, new_line, text)
-    default_colors = {eql: "b", del: "r", ins: "g"}
+    default_colors = { eql: "b", del: "r", ins: "g" }
     "{#{default_colors[line_type]}{#{tag} #{old_line} #{new_line}    #{text}}}"
   end
 
@@ -4717,9 +4687,9 @@ class Fizzy::Instantiator
     must "source directory", src_dir_path, be: Pathname
     must "destination directory", dst_dir_path, be: Pathname
 
-    @src_dir_path = src_dir_path
-    @dst_dir_path = dst_dir_path
-    @renderer = Fizzy::Template::Renderer.new(context, validator)
+    @src_dir_path   = src_dir_path
+    @dst_dir_path   = dst_dir_path
+    @renderer       = Fizzy::Template::Renderer.new(context, validator)
     @include_regexp = kwargs[:include_regexp] if kwargs.has? :include_regexp
   end
 
@@ -4728,9 +4698,9 @@ class Fizzy::Instantiator
       src_file_path if !include_regexp || include_regexp.match(src_file_path)
     end.compact.map do |src_file_path|
       src_file_rel_path = src_file_path.relative_path_from(src_dir_path)
-      dst_file_path = dst_file_path.join(src_file_rel_path)
-      src_file_content = src_file_path.read
-      dst_file_content = renderer.render(src_file_content)
+      dst_file_path     = dst_file_path.join(src_file_rel_path)
+      src_file_content  = src_file_path.read
+      dst_file_content  = renderer.render(src_file_content)
       # TODO if file already exists compute diff and ask user if it is ok
       # TODO create destination file
     end
@@ -4954,13 +4924,13 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     protocols = %i[https ssh]
     url       = url.gsub(/^#{@name}:/, "") # Remove VCS name prefix (optional).
     regexp    = %r{
-                                    ^
-                                    (?<protocol>#{protocols.map { |p| "#{p}:" }.join("|")})?
-                                    (?<username>[a-z0-9\-_]+)
-                                    \/
-                                    (?<repository>[a-z0-9\-_]+)
-                                    $
-                                  }xi
+                                             ^
+                                             (?<protocol>#{protocols.map { |p| "#{p}:" }.join("|")})?
+                                             (?<username>[a-z0-9\-_]+)
+                                             \/
+                                             (?<repository>[a-z0-9\-_]+)
+                                             $
+                                           }xi
     md = url.match(regexp)
     return url unless md
     protocol = (md[:protocol] || default_protocol).to_s.gsub(/:$/, "").to_sym
@@ -5381,31 +5351,29 @@ class Fizzy::CLI::Cd < Fizzy::CLI::Command
     inform_user(dir_path)
   end
 
-  private
+  private def compute_paths
+    prepare_storage(options[:fizzy_dir],
+                    valid_meta:   false,
+                    valid_inst:   false,
+                    valid_cfg:    !options[:cfg_name].nil? && :readonly,
+                    cur_cfg_name: options[:cfg_name])
+  end
 
-    def compute_paths
-      prepare_storage(options[:fizzy_dir],
-                      valid_meta:   false,
-                      valid_inst:   false,
-                      valid_cfg:    !options[:cfg_name].nil? && :readonly,
-                      cur_cfg_name: options[:cfg_name])
-    end
+  #
+  # Change directory to the provided path, spawning a new sub-shell.
+  #
+  private def change_dir(dir_path)
+    tell("{c{Changing directory to: `#{dir_path}`.}}")
+    FileUtils.cd(dir_path)
+    system(get_env!(:SHELL))
+  end
 
-    #
-    # Change directory to the provided path, spawning a new sub-shell.
-    #
-    def change_dir(dir_path)
-      tell("{c{Changing directory to: `#{dir_path}`.}}")
-      FileUtils.cd(dir_path)
-      system(get_env!(:SHELL))
-    end
-
-    #
-    # Inform user about the change of directory.
-    #
-    def inform_user(dir_path)
-      tell("{g{CD done in: `#{dir_path}`.}}")
-    end
+  #
+  # Inform user about the change of directory.
+  #
+  private def inform_user(dir_path)
+    tell("{g{CD done in: `#{dir_path}`.}}")
+  end
 end
 
 # ───────────────────────────────────────────────────── Cleanup ← Depot ← Cli ──
@@ -5442,7 +5410,7 @@ class Fizzy::CLI::Cleanup < Fizzy::CLI::Command
     #
     def inform_user(status, root_dir)
       case status
-      when true  then success "{g{Successfully cleaned: #{✏ root_dir}.}}"
+      when true  then success "Successfully cleaned: #{✏ root_dir}."
       when false then error "Failed to cleanup: #{✏ root_dir}."
       when nil   then warning "Cleanup skipped.", ask_continue: false
       end

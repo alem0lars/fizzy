@@ -153,7 +153,7 @@ module Fizzy::ANSIColors
       "#{"\t" * indent_lvl}#{self.class.name}(#{to_fields_str(indent_lvl, include_children)})"
     end
 
-    def to_fields_str(indent_lvl, include_children)
+    protected def to_fields_str(indent_lvl, include_children)
       indent_str = "#{"\t" * indent_lvl}"
       if children.empty? || !include_children
         children_str = ""
@@ -167,8 +167,6 @@ module Fizzy::ANSIColors
       end
       "start_idx=`#{start_idx}` end_idx=`#{end_idx}` size=`#{size}`#{children_str}"
     end
-
-    protected :to_fields_str
   end
 
   class StartTagNode < Node
@@ -179,11 +177,9 @@ module Fizzy::ANSIColors
       @color_spec = color_spec
     end
 
-    def to_fields_str(indent_lvl, include_children)
+    protected def to_fields_str(indent_lvl, include_children)
       "color_spec=`#{color_spec}` #{super}"
     end
-
-    protected :to_fields_str
   end
 
   class EndTagNode < Node

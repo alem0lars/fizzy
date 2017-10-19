@@ -73,13 +73,11 @@ module Fizzy::LineEditor
       end
     end
 
-    def add_to_history?
+    private def add_to_history?
       options.fetch(:add_to_history, true)
     end
 
-    private :add_to_history?
-
-    def completion_proc
+    private def completion_proc
       if use_path_completion?
         proc { |text| PathCompletion.new(text).matches }
       elsif completion_options.any?
@@ -89,19 +87,13 @@ module Fizzy::LineEditor
       end
     end
 
-    private :completion_proc
-
-    def completion_options
+    private def completion_options
       options.fetch(:limited_to, [])
     end
 
-    private :completion_options
-
-    def use_path_completion?
+    private def use_path_completion?
       options.fetch(:path, false)
     end
-
-    private :use_path_completion?
 
     class PathCompletion
       attr_reader :text
@@ -115,13 +107,11 @@ module Fizzy::LineEditor
         relative_matches
       end
 
-      def relative_matches
+      private def relative_matches
         absolute_matches.map { |path| path.sub(base_path, "") }
       end
 
-      private :relative_matches
-
-      def absolute_matches
+      private def absolute_matches
         Dir[glob_pattern].map do |path|
           if File.directory?(path)
             "#{path}/"
@@ -131,19 +121,13 @@ module Fizzy::LineEditor
         end
       end
 
-      private :absolute_matches
-
-      def glob_pattern
+      private def glob_pattern
         "#{base_path}#{text}*"
       end
 
-      private :glob_pattern
-
-      def base_path
+      private def base_path
         "#{Dir.pwd}/"
       end
-
-      private :base_path
     end
   end
 end

@@ -15,7 +15,7 @@ class Fizzy::Diff::Generator
   # @return String The string representation of the computed difference
   #
   def generate_diff_str(tags:   self.class.default_tags,
-                        format: ->(*args) { self.class.format_colored(*args) })
+                        format: -> (*args) { self.class.format_colored(*args) })
     line_width = 4
 
     output_lines = []
@@ -65,7 +65,7 @@ class Fizzy::Diff::Generator
   #
   # @return Array<Array<Fixnum>> The resulting exploring graph.
   #
-  def compute_exploring_graph(a, b)
+  private def compute_exploring_graph(a, b)
     n = a.size
     m = b.size
 
@@ -88,10 +88,10 @@ class Fizzy::Diff::Generator
     # Store snapshots of `v`.
     trace = []
 
-    (0 .. max).step do |d|
+    (0..max).step do |d|
       trace << v.clone
 
-      (-d .. d).step(2) do |k|
+      (-d..d).step(2) do |k|
 
         # Get the `x` value of the chosen previous node.
         if k == -d or (k != d and v[k - 1] < v[k + 1])
@@ -115,9 +115,8 @@ class Fizzy::Diff::Generator
       end
     end
   end
-  private :compute_exploring_graph
 
-  def backtrack(trace, x, y)
+  private def backtrack(trace, x, y)
     trace.each_with_index.reverse_each do |v, d|
       # Calculate the `k` value.
       k = x - y
@@ -152,11 +151,10 @@ class Fizzy::Diff::Generator
       x, y = prev_x, prev_y
     end
   end
-  private :compute_exploring_graph
 
   # Maps a line type into a tag.
   def self.default_tags
-    {eql: " ", del: "-", ins: "+"}
+    { eql: " ", del: "-", ins: "+" }
   end
 
   # Format the given line diff information into a printable pretty string.
@@ -164,7 +162,7 @@ class Fizzy::Diff::Generator
   # In this case the output string contains formatting characters, so it should
   # be feeded into {Fizzy::ANSIColors::colorize} or similar functions.
   def self.format_colored(line_type, tag, old_line, new_line, text)
-    default_colors = {eql: "b", del: "r", ins: "g"}
+    default_colors = { eql: "b", del: "r", ins: "g" }
     "{#{default_colors[line_type]}{#{tag} #{old_line} #{new_line}    #{text}}}"
   end
 

@@ -30,7 +30,7 @@ class Fizzy::CLI::Cleanup < Fizzy::CLI::Command
     #
     def inform_user(status, root_dir)
       case status
-      when true  then success "{g{Successfully cleaned: #{✏ root_dir}.}}"
+      when true  then success "Successfully cleaned: #{✏ root_dir}."
       when false then error "Failed to cleanup: #{✏ root_dir}."
       when nil   then warning "Cleanup skipped.", ask_continue: false
       end

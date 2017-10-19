@@ -65,13 +65,13 @@ class Fizzy::Sync::Git < Fizzy::Sync::Base
     protocols = %i[https ssh]
     url       = url.gsub(/^#{@name}:/, "") # Remove VCS name prefix (optional).
     regexp    = %r{
-                                    ^
-                                    (?<protocol>#{protocols.map { |p| "#{p}:" }.join("|")})?
-                                    (?<username>[a-z0-9\-_]+)
-                                    \/
-                                    (?<repository>[a-z0-9\-_]+)
-                                    $
-                                  }xi
+                                             ^
+                                             (?<protocol>#{protocols.map { |p| "#{p}:" }.join("|")})?
+                                             (?<username>[a-z0-9\-_]+)
+                                             \/
+                                             (?<repository>[a-z0-9\-_]+)
+                                             $
+                                           }xi
     md = url.match(regexp)
     return url unless md
     protocol = (md[:protocol] || default_protocol).to_s.gsub(/:$/, "").to_sym

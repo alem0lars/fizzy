@@ -10,7 +10,7 @@ class Hash
   # 1. Merge hashes
   # 2. Concatenate arrays
   #
-  def magic_merge_strategy
+  private def magic_merge_strategy
     proc do |key, v1, v2|
       if Hash === v1 && Hash === v2
         v1.merge(v2, &magic_merge_strategy)
@@ -21,8 +21,6 @@ class Hash
       end
     end
   end
-
-  private :magic_merge_strategy
 
   # Perform recursive merge with some magic, replacing current hash.
   #
@@ -40,7 +38,7 @@ class Hash
   #
   # 1. Merge hashes
   #
-  def deep_merge_strategy
+  private def deep_merge_strategy
     proc do |key, v1, v2|
       if Hash === v1 && Hash === v2
         v1.merge(v2, &deep_merge_strategy)
@@ -49,8 +47,6 @@ class Hash
       end
     end
   end
-
-  private :deep_merge_strategy
 
   # Perform recursive merge, replacing current hash.
   #
@@ -116,7 +112,7 @@ class Hash
     deep_transform_keys_in_object!(self, &block)
   end
 
-  def deep_transform_keys_in_object(object, &block)
+  private def deep_transform_keys_in_object(object, &block)
     case object
     when Hash
       object.each_with_object({}) do |(key, value), result|
@@ -128,9 +124,7 @@ class Hash
     end
   end
 
-  private :deep_transform_keys_in_object
-
-  def deep_transform_keys_in_object!(object, &block)
+  private def deep_transform_keys_in_object!(object, &block)
     case object
     when Hash
       object.keys.each do |key|
@@ -143,8 +137,6 @@ class Hash
     else object
     end
   end
-
-  private :deep_transform_keys_in_object!
 
   # ────────────────────────────────────────────────────────────────────────────
 

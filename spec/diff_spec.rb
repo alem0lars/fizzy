@@ -3,7 +3,7 @@ require "spec_helper"
 describe Fizzy::Diff::Generator do
   let(:previous_string) { "foo\nbar\nbaz\nqwe" }
   let(:current_string)  { "foo foo\nbaz\nbar\nbaz" }
-  let(:differ) { described_class.new(previous_string, current_string) }
+  let(:diff_generator) { described_class.new(previous_string, current_string) }
 
   context("#generate_diff") do
     let(:expected) {
@@ -17,7 +17,7 @@ describe Fizzy::Diff::Generator do
         Fizzy::Diff::Line.new(:ins, nil, 4,   "baz")
       ]
     }
-    subject { differ.generate_diff }
+    subject { diff_generator.generate_diff }
 
     it { is_expected.to eq(expected) }
   end
@@ -34,7 +34,7 @@ describe Fizzy::Diff::Generator do
         "{g{+         4    baz}}",
       ].join("\n")
     }
-    subject { differ.generate_diff_str }
+    subject { diff_generator.generate_diff_str }
 
     it { is_expected.to eq(expected) }
   end

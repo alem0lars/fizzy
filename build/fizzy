@@ -2941,7 +2941,7 @@ end
 class Fizzy::Template::Renderer
   attr_reader :data, :validator
 
-  def initialize(data, validator)
+  def initialize(data, validator: Fizzy::Template::Context::Validator.new)
     @data      = data
     @validator = validator
   end
@@ -2953,21 +2953,30 @@ class Fizzy::Template::Renderer
       error "Failed to validate template data #{✏ data}: #{error}"
     end
 
-    ERB.new(template, 1).result(ContextCreator.new.create(data))
+    ERB.new(template, 1).result(Fizzy::Template::Context::Creator.new.create(data))
   end
 end
 
 # ─────────────────────────────────────── Context validator ← template ← Misc ──
 
 class Fizzy::Template::Context::Validator
+
+  #
+  # Validate the provided data based on the underlying validator's policy.
+  #
   def validate(data)
     true
   end
+
 end
 
 # ───────────────────────────────────────── Context creator ← template ← Misc ──
 
 class Fizzy::Template::Context::Creator
+
+  #
+  # Create a new context based on the provided data.
+  #
   def create(data)
     b = binding
     data.each do |key, value|
@@ -2975,6 +2984,7 @@ class Fizzy::Template::Context::Creator
     end
     b.taint
   end
+
 end
 
 # ─────────────────────────────────────────────────── Generator ← Diff ← Misc ──
@@ -5397,6 +5407,11 @@ class Fizzy::CLI::Cleanup < Fizzy::CLI::Command
   # Cleanup all fizzy's related files.
   #
   private def perform_cleanup
+    # TODO implement different cleanups:
+    # 1. Remove both instantiation output and installation output
+    # 2. Remove just installation output
+    # Allow to select which config (defaults to all) should be cleaned up
+
     if ask "Remove the fizzy root directory (#{✏ paths.root})"
       paths.root.rmtree
     end

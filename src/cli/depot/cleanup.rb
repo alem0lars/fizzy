@@ -27,6 +27,11 @@ class Fizzy::CLI::Cleanup < Fizzy::CLI::Command
   # Cleanup all fizzy's related files.
   #
   private def perform_cleanup
+    # TODO implement different cleanups:
+    # 1. Remove both instantiation output and installation output
+    # 2. Remove just installation output
+    # Allow to select which config (defaults to all) should be cleaned up
+
     if ask "Remove the fizzy root directory (#{✏ paths.root})"
       paths.root.rmtree
     end

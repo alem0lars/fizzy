@@ -1,7 +1,7 @@
 class Fizzy::Template::Renderer
   attr_reader :data, :validator
 
-  def initialize(data, validator)
+  def initialize(data, validator: Fizzy::Template::Context::Validator.new)
     @data      = data
     @validator = validator
   end
@@ -13,6 +13,6 @@ class Fizzy::Template::Renderer
       error "Failed to validate template data #{✏ data}: #{error}"
     end
 
-    ERB.new(template, 1).result(ContextCreator.new.create(data))
+    ERB.new(template, 1).result(Fizzy::Template::Context::Creator.new.create(data))
   end
 end

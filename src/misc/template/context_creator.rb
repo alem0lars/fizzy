@@ -1,4 +1,8 @@
 class Fizzy::Template::Context::Creator
+
+  #
+  # Create a new context based on the provided data.
+  #
   def create(data)
     b = binding
     data.each do |key, value|
@@ -6,4 +10,5 @@ class Fizzy::Template::Context::Creator
     end
     b.taint
   end
+
 end

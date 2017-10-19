@@ -57,7 +57,8 @@ sources:
   - misc/template/context_validator
   - misc/template/context_creator
 
-  - misc/diff
+  - misc/diff/generator
+  - misc/diff/line
 
   - grammar/base_lexer
   - <grammars>

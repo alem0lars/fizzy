@@ -4,37 +4,42 @@ module Fizzy::Vars
 
   attr_reader :vars
 
-  # Return a list of the available variables files.
+  #
+  # @return Array<Pathname> A list of the available variables files.
   #
   def avail_vars(vars_dir_path)
     Pathname.glob(vars_dir_path.join("*"))
   end
 
-  # See `Fizzy::Vars::Setup#run`
+  #
+  # @see {Fizzy::Vars::Setup#run}
   #
   def setup_vars(vars_dir_path, name)
-    info("vars: ", name)
+    info "vars: ", name
     @vars = Fizzy::Vars::Setup.new(vars_dir_path, name, binding).run()
   end
 
-  # See `Fizzy::Vars::Retriever#run`
+  #
+  # @see {Fizzy::Vars::Retriever#run}
   #
   def var(var_name, **opts)
     Fizzy::Vars::Retriever.new(@vars).get(var_name, **opts)
   end
 
-  alias_method :get_var, :var # NOTE: For backward compatibility
+  alias_method :get_var, :var # NOTE: For backward compatibility, remove asap
 
+  #
   # Same of `var`, but raise an error if the variable hasn't been found or
   # is `nil`.
   #
   def var!(var_name, **opts)
     value = var(var_name, **opts)
-    value.nil? ? error("Undefined variable: `#{var_name}`.") : value
+    value.nil? ? error("Undefined variable #{✏ var_name}.") : value
   end
 
-  alias_method :get_var!, :var! # NOTE: For backward compatibility
+  alias_method :get_var!, :var! # NOTE: For backward compatibility, remove asap
 
+  #
   # Check if the feature with the provided name (`feature_name`) is enabled.
   #
   # Since the features are defined just using variables, before calling this
@@ -47,6 +52,7 @@ module Fizzy::Vars
     end
   end
 
+  #
   # Filter the values associated to the features, keeping only those
   # associated to available features.
   #

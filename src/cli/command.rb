@@ -46,6 +46,6 @@ class Fizzy::CLI::Command
   end
 
   def run
-    error("Abstract method called")
+    error "Abstract method called."
   end
 end

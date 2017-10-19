@@ -12,13 +12,12 @@ module Fizzy::Meta::Info
   # Be sure to call `setup_vars` before calling this method.
   #
   def get_meta(meta_path, vars_path, elems_base_path, verbose)
-    tell("{b{Getting meta informations.}}")
+    info "Getting meta informations."
 
     begin
       meta = YAML.safe_load(File.read(meta_path)).deep_symbolize_keys
     rescue Psych::SyntaxError => exc
-      error("Failed to parse meta file: `#{meta_path}`. " \
-            "Reason: `#{exc.message}`.")
+      error "Failed to parse meta file: #{✏ meta_path}. Reason: #{✏ exc.message}."
     end
 
     meta[:all_elems_count] = meta[:elems].count
@@ -37,8 +36,7 @@ module Fizzy::Meta::Info
       if elem.key?(:only) &&
          !(elem[:only].is_a?(Hash) ||
            elem[:only].is_a?(String))
-        error("The configuration element `#{elem_identifier}` has invalid " \
-              "`only`: it's not a `Hash`.")
+        error "The configuration element #{✏ elem_identifier} has invalid #{✏ "only"}: it's not a #{✏ "Hash"}."
       end
       selected = selected_by_only?(elem[:only], verbose)
 
@@ -55,11 +53,11 @@ module Fizzy::Meta::Info
       #           `name`, `src`, `dst`, `fs_maps`, `perms`.
       if selected
         unless elem.key?(:src)
-          error("Element `#{elem_identifier}` doesn't contain `src`.")
+          error "Element #{✏ elem_identifier} doesn't contain #{✏ "src"}."
         end
         elem[:name] = elem[:src] unless elem.key?(:name)
         unless elem.key?(:dst)
-          error("Element `#{elem_identifier}` doesn't contain `dst`.")
+          error "Element #{✏ elem_identifier} doesn't contain #{✏ "dst"}."
         end
         elem[:perms]   = elem[:perms].to_s if elem.key?(:perms)
         elem[:fs_maps] = []
@@ -88,8 +86,7 @@ module Fizzy::Meta::Info
           if (1..md.length) === idx
             md[idx]
           else
-            error("Invalid `dst` for element `#{elem[:name]}`: nothing " \
-                  "captured at index `#{idx}`.")
+            error "Invalid #{✏ "dst"} for element #{✏ elem[:name]}: nothing captured at index #{✏ "idx"}."
           end
         end
         elem[:fs_maps] << {
@@ -99,8 +96,7 @@ module Fizzy::Meta::Info
       end
 
       unless found
-        warning("Inconsistency found for elem `#{elem[:name]}`: no file " \
-                "matches src: `#{elem[:src]}`.")
+        warning "Inconsistency found for element #{✏ elem[:name]}: no file matches the source #{✏ elem[:src]}."
       end
     end
 

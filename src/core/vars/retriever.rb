@@ -118,7 +118,7 @@ module Fizzy::Vars
       end
 
       # Filter found variable value.
-      Fizzy::Vars::Filter.apply(var_value)
+      Fizzy::Filter.apply(var_value)
     end
 
     protected :_get_var

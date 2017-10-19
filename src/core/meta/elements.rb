@@ -2,7 +2,6 @@
 # Manage elements declared in the meta file.
 #
 module Fizzy::Meta::Elements
-
   include Fizzy::IO
   include Fizzy::Execution
 
@@ -24,19 +23,17 @@ module Fizzy::Meta::Elements
     },
      lambda { |elem| # Create a symlink for each elements' `src_path`.
       elem[:fs_maps].each do |m|
-        tell("  {m{#{m[:src_path]}}} ← {m{#{m[:dst_path]}}}") if @verbose
+        tell("  #{✏ m[:src_path]} ← #{✏ m[:dst_path]}") if @verbose
         cmd         = "ln -s"
         should_link = if m[:dst_path].file?
                         if m[:dst_path].realpath != m[:src_path]
                           cmd << " -f"
-                          ask("The destination file `#{m[:dst_path]}` " \
-                              "already exists. Overwrite")
+                          ask "The destination file #{✏ m[:dst_path]} already exists. Overwrite"
                         else
                           false
                         end
                       elsif m[:dst_path].directory?
-                        if ask("The destination file `#{m[:dst_path]}` " \
-                               "is a directory. Delete it")
+                        if ask "The destination file #{✏ m[:dst_path]}  is a directory. Delete it"
                           exec_cmd("rm -Rf #{m[:dst_path]}",
                                    as_su: !existing_dir(m[:dst_path].dirname))
                         end
@@ -55,8 +52,7 @@ module Fizzy::Meta::Elements
       if elem.key?(:perms)
         elem[:fs_maps].each do |m|
           if @verbose
-            tell("Changing permissions of `{m{#{m[:src_path]}}}` to " \
-                 "`{m{#{elem[:perms]}}}`.")
+            info "Changing permissions of #{✏ m[:src_path]} to #{✏ elem[:perms]}."
           end
           perms    = elem[:perms].shell_escape
           src_path = m[:src_path].shell_escape

@@ -12,7 +12,7 @@ class Fizzy::CLI::Usage < Fizzy::CLI::Command
     if res.is_a?(Net::HTTPSuccess)
       tell("\n#{res.body}\n")
     else
-      error("Network error: cannot retrieve `#{url}`.")
+      error "Network error: cannot retrieve #{✏ url}."
     end
   end
 end

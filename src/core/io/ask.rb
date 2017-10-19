@@ -1,5 +1,6 @@
 module Fizzy::IO
 
+  #
   # Ask a question to the user.
   #
   # The message is made by the `question` string, with some additions (like
@@ -24,7 +25,7 @@ module Fizzy::IO
               when :string
                 {}
               else
-                error("Unhandled question type: `{m{#{type}}}`.")
+                error "Unhandled question type: #{✏ type}."
               end
 
     line_editor = Fizzy::LineEditor.enabled.new("{Ml{ ? }}#{question}", options)
@@ -37,18 +38,18 @@ module Fizzy::IO
       elsif answer =~ /(n|no|fuck|fuck\s+you|fuck\s+off)$/i
         false
       else
-        tell("{y{Answer misunderstood}}.")
+        warning "Answer misunderstood", ask_continue: false
         ask(question, type: type)
       end
     when :string, :path
       if answer.empty?
-        warning("Empty answer", ask_continue: false)
+        warning "Empty answer", ask_continue: false
         ask(question, type: type)
       else
         answer
       end
     else
-      error("Unhandled question type: `{m{#{type}}}`.")
+      error "Unhandled question type #{✏ type}."
     end
   end
 

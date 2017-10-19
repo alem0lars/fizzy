@@ -69,14 +69,16 @@ sources:
 
   - core/filesystem
 
+  - core/filter/api
+  - core/filter/base
+  - core/filter/simple
+
   - core/vars/setup
-  - core/vars/filter
   - core/vars/retriever
   - core/vars/api
 
   - core/locals
 
-  - core/meta/init
   - core/meta/commands
   - core/meta/info
   - core/meta/elements

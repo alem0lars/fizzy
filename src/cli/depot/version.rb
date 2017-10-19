@@ -7,7 +7,7 @@ class Fizzy::CLI::Version < Fizzy::CLI::Command
   end
 
   def run
-    info("fizzy version", "{m{#{Fizzy::CFG.version}}}")
-    info("ruby version", "{m{ruby #{RUBY_VERSION}p#{RUBY_PATCHLEVEL}}}")
+    info "fizzy version", "#{✏ Fizzy::CFG.version}"
+    info "ruby version", "#{✏ "#{RUBY_VERSION}p#{RUBY_PATCHLEVEL}"}"
   end
 end

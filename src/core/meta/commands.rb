@@ -13,14 +13,12 @@ module Fizzy::Meta::Commands
       self.class.type
     end
 
-    def invalid_spec(name, value = nil)
-      msg  = "Invalid `#{name}` provided to command `#{type}`: "
-      msg += value.nil? ? "no value given." : "`#{value}`."
+    protected def invalid_spec(name, value = nil)
+      msg  = "Invalid #{✏ name} provided to command #{✏ type}: "
+      msg += value.nil? ? "no value given." : "#{✏ value}."
 
       error msg
     end
-
-    protected :invalid_spec
   end
 
   #

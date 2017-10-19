@@ -38,6 +38,13 @@ The following changes will break backward compatibility:
 * Minimal required version of ruby is `2.1.0` (was `2.0.0`)
   [@alem0lars][@alem0lars]
 
+#### Deprecations
+
+The following functions are deprecated and will be removed soon:
+
+- `get_var`: use `var` instead
+- `get_var!`: use `var!` instead 
+
 ### Dev changes
 
 * Add initial checks to ensure underlying system meets all needed requirements

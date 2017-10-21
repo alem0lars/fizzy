@@ -1,5 +1,5 @@
 shared_context :docker do
-
+  #
   # Execute expectations just inside a docker container; otherwise, skip.
   #
   def self.just_in_docker
@@ -10,6 +10,7 @@ shared_context :docker do
     end
   end
 
+  #
   # Check if the expectations will be run inside a docker container.
   #
   def self.in_docker?
@@ -19,5 +20,4 @@ shared_context :docker do
       line.split(":")[2].start_with?("/docker")
     end
   end
-
 end

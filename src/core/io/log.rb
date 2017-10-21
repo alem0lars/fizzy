@@ -20,7 +20,7 @@ module Fizzy::IO
   # The `prefix` argument should contain some text displayed before the
   # message, typically to show the context which the message belongs to.
   #
-  def info(prefix, msg)
+  def info(prefix, msg = nil)
     if msg.nil?
       msg    = prefix
       prefix = nil

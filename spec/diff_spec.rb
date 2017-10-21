@@ -34,7 +34,7 @@ describe Fizzy::Diff::Generator do
         "{g{+         4    baz}}",
       ].join("\n")
     }
-    subject { diff_generator.generate_diff_str }
+    subject { described_class.diff_to_str(diff_generator.generate_diff) }
 
     it { is_expected.to eq(expected) }
   end

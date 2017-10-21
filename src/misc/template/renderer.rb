@@ -13,6 +13,6 @@ class Fizzy::Template::Renderer
       error "Failed to validate template data #{✏ data}: #{error}"
     end
 
-    ERB.new(template, 1).result(Fizzy::Template::Context::Creator.new.create(data))
+    ERB.new(template).result(Fizzy::Template::Context::Creator.new.create(data))
   end
 end

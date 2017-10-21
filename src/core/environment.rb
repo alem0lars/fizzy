@@ -3,6 +3,7 @@
 module Fizzy::Environment
   include Fizzy::IO
 
+  #
   # Find an executable called `name` in the `$PATH`.
   # Note: `name` can also be a path pointing to the executable.
   #
@@ -17,6 +18,7 @@ module Fizzy::Environment
     nil
   end
 
+  #
   # Return the environment variable matching the provided `name`.
   #
   def get_env(name, default: nil)

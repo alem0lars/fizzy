@@ -14,7 +14,7 @@ group :development do
   #gem "rainbow", "=2.0", require: false # XXX workaround, see issue #44.
   gem "rufo", require: false
 
-  # Testing.
+  # Testing frameworks.
   gem "cucumber", require: false
   gem "fuubar",   require: false
   gem "rspec",    require: false
@@ -36,22 +36,23 @@ group :development do
   gem "simplecov"
 end
 
+# TODO uncomment (on windows it doesn't work)
 group :website do
   # For faster file watcher updates on Windows.
-  gem "wdm", "~> 0.1.0", platforms: %i[mswin mingw]
+  # gem "wdm", "~> 0.1.0", platforms: %i[mswin mingw32]
 
   # Windows does not come with time zone data.
-  gem "tzinfo-data", platforms: %i[mswin mingw jruby]
+  # gem "tzinfo-data", platforms: %i[mswin mingw32]
 
-  # Middleman gems.
-  gem "middleman", ">= 4.0.0"
-  gem "middleman-livereload"
-  gem "middleman-sprockets"
-  gem "sprockets-es6"
-
-  # Twitter Bootstrap.
-  gem "bootstrap", "~> 4.0.0.alpha6"
-  source "https://rails-assets.org" do
-    gem "rails-assets-tether", ">= 1.1.0"
-  end
+  # # Middleman gems.
+  # gem "middleman", ">= 4.0.0"
+  # gem "middleman-livereload"
+  # gem "middleman-sprockets"
+  # gem "sprockets-es6"
+  #
+  # # Twitter Bootstrap.
+  # gem "bootstrap", "~> 4.0.0.alpha6"
+  # source "https://rails-assets.org" do
+  #   gem "rails-assets-tether", ">= 1.1.0"
+  # end
 end

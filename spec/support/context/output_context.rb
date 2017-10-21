@@ -1,5 +1,6 @@
 shared_context :output do
 
+  #
   # Redirect stderr and stout to a null-stream.
   #
   def silence_output
@@ -12,6 +13,7 @@ shared_context :output do
     $stdout = File.open(File::NULL, "w")
   end
 
+  #
   # Replace stderr and stdout so anything else is output correctly.
   #
   def enable_output

@@ -14,13 +14,14 @@ class Fizzy::Diff::Generator
   #
   # @return String The string representation of the computed difference
   #
-  def generate_diff_str(tags:   self.class.default_tags,
-                        format: -> (*args) { self.class.format_colored(*args) })
+  def self.diff_to_str(diff,
+                       tags:   default_tags,
+                       format: -> (*args) { format_colored(*args) })
     line_width = 4
 
     output_lines = []
 
-    generate_diff.each do |line|
+    diff.each do |line|
       tag      = tags[line.type]
       old_line = line.old_line.to_s.rjust(line_width, " ")
       new_line = line.new_line.to_s.rjust(line_width, " ")

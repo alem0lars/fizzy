@@ -4,7 +4,7 @@ RSpec.configure do |config|
     begin
       example.run
     rescue SystemExit
-      raise "Got SystemExit!"
+      raise "Got `SystemExit`!"
     end
   end
 end

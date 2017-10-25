@@ -1,5 +1,6 @@
 source "https://rubygems.org"
 
+# TODO remove just before release `3.0.0`.
 gem "thor"
 
 # External tools used **only** during development.
@@ -34,25 +35,4 @@ group :development do
 
   # Code coverage.
   gem "simplecov"
-end
-
-# TODO uncomment (on windows it doesn't work)
-group :website do
-  # For faster file watcher updates on Windows.
-  # gem "wdm", "~> 0.1.0", platforms: %i[mswin mingw32]
-
-  # Windows does not come with time zone data.
-  # gem "tzinfo-data", platforms: %i[mswin mingw32]
-
-  # # Middleman gems.
-  # gem "middleman", ">= 4.0.0"
-  # gem "middleman-livereload"
-  # gem "middleman-sprockets"
-  # gem "sprockets-es6"
-  #
-  # # Twitter Bootstrap.
-  # gem "bootstrap", "~> 4.0.0.alpha6"
-  # source "https://rails-assets.org" do
-  #   gem "rails-assets-tether", ">= 1.1.0"
-  # end
 end

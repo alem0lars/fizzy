@@ -1,0 +1,22 @@
+{
+  "name": "fizzy-website",
+  "version": "3.0.0",
+  "description": "fizzy official website",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alem0lars/fizzy.git"
+  },
+  "keywords": [
+    "fizzy",
+    "configuration-management"
+  ],
+  "author": "Alessandro Molari <molari.alessandro@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/alem0lars/fizzy/issues"
+  },
+  "homepage": "https://alem0lars.github.io/fizzy"
+}

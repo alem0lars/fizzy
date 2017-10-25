@@ -1,42 +1,31 @@
-set :build_dir, "../docs"
+set :build_dir, "../doc"
 
-# TODO: Add prefix in build to docs so it will be served relative do docs
+# TODO: Add prefix in build to `doc` so it will be served relative do `doc`
 
-# Per-page layout changes:
-#
+# ─────────────────────────────────────────────────── Per-page layout changes ──
+
 # With no layout
 page "/*.xml", layout: false
 page "/*.json", layout: false
 page "/*.txt", layout: false
 
-# Reload the browser automatically whenever files change
-require "middleman-livereload"
-configure :development do
-  activate :livereload
-end
+# ────────────────────────────────────────────────────────────────────── Misc ──
 
 # Change the asset's filename every time you change one of your assets.
 activate :asset_hash
 
 # Create a folder for each `.html` file and place the built template file as
 # the index of that folder.
-# activate :directory_indexes
+activate :directory_indexes
 
-# Manage assets with sprockets.
-require "sprockets/es6"
-require "middleman-sprockets"
-activate :sprockets do |c|
-  c.expose_middleman_helpers = true
-  c.supported_output_extensions << ".es6"
-end
-sprockets.append_path File.join root, "bower_components"
+# ──────────────────────────────────────── Development-specific configuration ──
 
-# Development-specific configuration.
 configure :development do
   set :debug_assets, true
 end
 
-# Build-specific configuration.
+# ────────────────────────────────────────────── Build-specific configuration ──
+
 configure :build do
   # Set the prefix used in production.
   set :http_prefix, "/docs"
@@ -50,3 +39,13 @@ configure :build do
   # Serve compressed files to user agents that can handle it.
   activate :gzip
 end
+
+# ────────────────────────────────────────────────────────────────── Pipeline ──
+
+activate :external_pipeline,
+         name: :webpack,
+         command: build? ?
+         "./node_modules/webpack/bin/webpack.js --bail -p" :
+         "./node_modules/webpack/bin/webpack.js --watch -d --progress --color",
+         source: ".tmp/dist",
+         latency: 1

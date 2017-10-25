@@ -1,0 +1,8 @@
+# Ignore bundler stuff.
+/.bundle
+
+/.sass-cache
+/.cache
+/source/doc/api
+/source/doc/coverage
+/source/doc/test-results.html

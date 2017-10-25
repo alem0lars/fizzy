@@ -16,12 +16,3 @@
 
 # Ignore bundler stuff.
 /.bundle
-/website/.bundle
-
-# Ignore stuff specific for the website.
-/website/.sass-cache
-/website/.cache
-/website/bower_components
-/website/source/docs/api
-/website/source/docs/coverage
-/website/source/docs/test-results.html

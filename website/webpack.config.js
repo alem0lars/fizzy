@@ -12,15 +12,18 @@ const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 
 // ──────────────────────────────────────────────────────────────── Constants ──
 
+const isProduction = process.env.FIZZY_ENV === "production";
+
+const scriptRelDir = path.join("asset", "script");
+const styleRelDir = path.join("asset", "style");
+const imageRelDir = path.join("asset", "image");
+const fontRelDir = path.join("asset", "font");
+const nodeModulesRelDir = "node_modules";
+
+const srcDir = path.resolve(__dirname, "src");
 const outputDir = path.resolve(__dirname, "build");
 
-const scriptRelDir = path.join("src", "asset", "script");
-const styleRelDir = path.join("src", "asset", "style");
-const imageRelDir = path.join("src", "asset", "image");
-const fontRelDir = path.join("src", "asset", "font");
-const nodeModulesDir = "node_modules";
-
-const isProduction = process.env.FIZZY_ENV === "production";
+const nodeModulesDir = path.resolve(__dirname, nodeModulesRelDir);
 
 // ──────────────────────────────────────────────────────────── Configuration ──
 
@@ -43,13 +46,15 @@ webpackConfig.entry = {
   ],
 };
 
+webpackConfig.context = srcDir;
+
 webpackConfig.resolve = {
   modules: [
-    path.resolve(__dirname, scriptRelDir),
-    path.resolve(__dirname, styleRelDir),
-    path.resolve(__dirname, imageRelDir),
-    path.resolve(__dirname, fontRelDir),
-    path.resolve(__dirname, nodeModulesDir),
+    path.join(srcDir, scriptRelDir),
+    path.join(srcDir, styleRelDir),
+    path.join(srcDir, imageRelDir),
+    path.join(srcDir, fontRelDir),
+    path.join(srcDir, nodeModulesRelDir),
   ],
 };
 
@@ -71,7 +76,7 @@ webpackConfig.module = {};
 webpackConfig.module.loaders = [
   {
     test: /\.js$/,
-    exclude: new RegExp(nodeModulesDir),
+    exclude: new RegExp(nodeModulesRelDir),
     use: {
       loader: "babel-loader",
       options: {
@@ -86,11 +91,13 @@ webpackConfig.module.loaders = [
         { // Translate final CSS into CommonJS.
           loader: "css-loader",
           options: {
+            sourceMap: true,
           },
         },
         { // Perform post processing on CSS.
           loader: "postcss-loader",
           options: {
+            sourceMap: true,
             plugins: () => [].concat(
               require("autoprefixer")()
             ).concat(
@@ -98,12 +105,17 @@ webpackConfig.module.loaders = [
             ),
           }
         },
+        { // Resolve `url(..)` statements based on source files location.
+          loader: "resolve-url-loader",
+          options: {
+            sourceMap: true,
+          }
+        },
         { // Compile Sass to CSS.
           loader: "sass-loader",
           options: {
-            includePaths: [
-              path.resolve(__dirname, nodeModulesDir),
-            ],
+            sourceMap: true,
+            includePaths: [nodeModulesDir],
           },
         }],
     }),
@@ -113,8 +125,8 @@ webpackConfig.module.loaders = [
     use: {
       loader: "url-loader",
       options: {
-        limit: 10000,
-        name: appendIfProd("asset/font/[name].[ext]", "?[hash]"),
+        limit: 10 * 1024,
+        name: appendIfProd("[path][name].[ext]", "?[hash]"),
       },
     },
   },
@@ -123,8 +135,8 @@ webpackConfig.module.loaders = [
     use: {
       loader: "url-loader",
       options: {
-        limit: 10000,
-        name: appendIfProd("asset/image/[name].[ext]", "?[hash]"),
+        limit: 10 * 1024,
+        name: appendIfProd("[path][name].[ext]", "?[hash]"),
       },
     },
   },
@@ -137,11 +149,11 @@ webpackConfig.plugins = [
   }),
   // Build HTML files.
   new HtmlWebpackPlugin({
-    template: "./src/index.html",
+    template: "./index.html",
   }),
   // Extract styles to separate file.
   new ExtractTextPlugin({
-    filename: appendIfProd("asset/style/[name].bundle.css", "?[contenthash]"),
+    filename: appendIfProd(`${styleRelDir}/[name].bundle.css`, "?[contenthash]"),
   }),
   // Uglify javascript.
   new UglifyJSPlugin(),

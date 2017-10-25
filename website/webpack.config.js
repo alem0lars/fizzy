@@ -6,6 +6,7 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
+const CompressionPlugin = require("compression-webpack-plugin");
 const CleanPlugin = require("clean-webpack-plugin");
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 
@@ -15,9 +16,21 @@ const outputDir = path.resolve(__dirname, "build");
 
 const scriptRelDir = path.join("src", "asset", "script");
 const styleRelDir = path.join("src", "asset", "style");
+const imageRelDir = path.join("src", "asset", "image");
+const fontRelDir = path.join("src", "asset", "font");
 const nodeModulesDir = "node_modules";
 
 const isProduction = process.env.FIZZY_ENV === "production";
+
+// ──────────────────────────────────────────────────────────── Configuration ──
+
+function appendIfProd(base, other) {
+  if (isProduction) {
+    return base + other;
+  } else {
+    return base;
+  }
+}
 
 // ──────────────────────────────────────────────────────────── Configuration ──
 
@@ -34,6 +47,8 @@ webpackConfig.resolve = {
   modules: [
     path.resolve(__dirname, scriptRelDir),
     path.resolve(__dirname, styleRelDir),
+    path.resolve(__dirname, imageRelDir),
+    path.resolve(__dirname, fontRelDir),
     path.resolve(__dirname, nodeModulesDir),
   ],
 };
@@ -43,7 +58,7 @@ webpackConfig.output = {
   // placed.
   path: outputDir,
   // Name of the resulting file.
-  filename: "asset/script/[name].bundle.js?[hash]",
+  filename: appendIfProd("asset/script/[name].bundle.js", "?[hash]"),
   // TODO publicPath is needed?
 };
 
@@ -65,7 +80,7 @@ webpackConfig.module.loaders = [
     },
   },
   {
-    test: /\.scss$/,
+    test: /\.scss|css$/,
     use: ExtractTextPlugin.extract({
       use: [
         { // Translate final CSS into CommonJS.
@@ -97,20 +112,20 @@ webpackConfig.module.loaders = [
     test: /\.(ttf|eot|svg|woff(2)?)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
     use: {
       loader: "url-loader",
-    },
-    options: {
-      limit: 10000,
-      name: "asset/font/[name].[ext]?[hash]",
+      options: {
+        limit: 10000,
+        name: appendIfProd("asset/font/[name].[ext]", "?[hash]"),
+      },
     },
   },
   {
-    test: /\.(jpeg|png|gif)$/,
+    test: /\.jpeg|png|gif$/,
     use: {
       loader: "url-loader",
-    },
-    options: {
-      limit: 10000,
-      name: "asset/image/[name].[ext]?[hash]",
+      options: {
+        limit: 10000,
+        name: appendIfProd("asset/image/[name].[ext]", "?[hash]"),
+      },
     },
   },
 ];
@@ -126,10 +141,12 @@ webpackConfig.plugins = [
   }),
   // Extract styles to separate file.
   new ExtractTextPlugin({
-    filename: "asset/style/[name].bundle.css?[contenthash]",
+    filename: appendIfProd("asset/style/[name].bundle.css", "?[contenthash]"),
   }),
   // Uglify javascript.
   new UglifyJSPlugin(),
+  // Compress files.
+  new CompressionPlugin(),
   // Cleanup build directory before each build.
   new CleanPlugin([outputDir]),
   // Live reloading using browsersync.

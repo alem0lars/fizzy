@@ -3,7 +3,9 @@
   "version": "3.0.0",
   "description": "fizzy official website",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "serve": "FIZZY_ENV=development ./node_modules/webpack/bin/webpack.js --watch -d --progress --color",
+    "build": "FIZZY_ENV=production ./node_modules/webpack/bin/webpack.js --bail -p",
+    "save": "rm -R ../docs ; cp -r ./build ../docs"
   },
   "repository": {
     "type": "git",
@@ -23,9 +25,13 @@
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.1",
+    "browser-sync": "^2.18.13",
+    "browser-sync-webpack-plugin": "^1.2.0",
     "clean-webpack-plugin": "^0.1.17",
     "css-loader": "^0.28.7",
     "extract-text-webpack-plugin": "^3.0.1",
+    "html-webpack-plugin": "^2.30.1",
+    "materialize-css": "^0.100.2",
     "node-sass": "^4.5.3",
     "postcss-loader": "^2.0.8",
     "sass-loader": "^6.0.6",

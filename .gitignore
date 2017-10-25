@@ -4,15 +4,18 @@
 # Ignore OS-specific stuff.
 .DS_Store
 
-# Ignore build artifacts.
+# Build artifacts.
 /build/*
 !/build/fizzy
 
-# Ignore documentation artifacts.
+# Documentation artifacts.
 /.yardoc
 
-# Ignore debugging artifacts.
+# Debugging artifacts.
 /.byebug_history
 
-# Ignore bundler stuff.
+# Bundler.
 /.bundle
+
+# Misc.
+/.tern-port

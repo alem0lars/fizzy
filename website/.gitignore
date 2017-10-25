@@ -6,7 +6,7 @@
 # Website temporary artifacts.
 /node_modules
 /.sass-cache
-/tmp
+/build
 
 # Tools.
 /.bundle

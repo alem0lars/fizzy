@@ -158,6 +158,11 @@ webpackConfig.plugins = [
   }),
   // Uglify javascript.
   new UglifyJSPlugin(),
+  // Globally available scripts.
+  new webpack.ProvidePlugin({
+    $: "jquery",
+    jQuery: "jquery",
+  }),
   // Compress files.
   new CompressionPlugin(),
   // Cleanup build directory before each build.

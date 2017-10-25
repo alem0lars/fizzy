@@ -8,7 +8,7 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
 const CompressionPlugin = require("compression-webpack-plugin");
 const CleanPlugin = require("clean-webpack-plugin");
-const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
+const BrowserSyncPlugin = require("browser-sync-webpack-plugin");
 
 // ──────────────────────────────────────────────────────────────── Constants ──
 
@@ -41,7 +41,7 @@ const webpackConfig = {}
 
 webpackConfig.entry = {
   main: [
-    `./${scriptRelDir}/main.js`,  // Entry-point of scripts.
+    `./${scriptRelDir}/main.jsx`, // Entry-point of scripts.
     `./${styleRelDir}/main.scss`, // Entry-point of styles.
   ],
 };
@@ -54,7 +54,7 @@ webpackConfig.resolve = {
     path.join(srcDir, styleRelDir),
     path.join(srcDir, imageRelDir),
     path.join(srcDir, fontRelDir),
-    path.join(srcDir, nodeModulesRelDir),
+    path.join(__dirname, nodeModulesRelDir),
   ],
 };
 
@@ -64,7 +64,8 @@ webpackConfig.output = {
   path: outputDir,
   // Name of the resulting file.
   filename: appendIfProd("asset/script/[name].bundle.js", "?[hash]"),
-  // TODO publicPath is needed?
+  // Prepend `/` to all paths so they are absolutized.
+  publicPath: "/",
 };
 
 if (!isProduction) {
@@ -75,12 +76,12 @@ if (!isProduction) {
 webpackConfig.module = {};
 webpackConfig.module.loaders = [
   {
-    test: /\.js$/,
+    test: /\.jsx?$/,
     exclude: new RegExp(nodeModulesRelDir),
     use: {
       loader: "babel-loader",
       options: {
-        presets: ["env"],
+        presets: ["env", "react"],
       }
     },
   },

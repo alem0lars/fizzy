@@ -4,7 +4,7 @@ set :build_dir, "../doc"
 
 # ─────────────────────────────────────────────────── Per-page layout changes ──
 
-# With no layout
+# Without layout
 page "/*.xml", layout: false
 page "/*.json", layout: false
 page "/*.txt", layout: false
@@ -45,7 +45,19 @@ end
 activate :external_pipeline,
          name: :webpack,
          command: build? ?
-         "./node_modules/webpack/bin/webpack.js --bail -p" :
-         "./node_modules/webpack/bin/webpack.js --watch -d --progress --color",
-         source: ".tmp/dist",
+                  %w[
+                    FIZZY_ENV=production
+                    ./node_modules/webpack/bin/webpack.js
+                    --bail
+                    -p
+                  ].join(" ") :
+                  %w[
+                    FIZZY_ENV=development
+                    ./node_modules/webpack/bin/webpack.js
+                    --watch
+                    -d
+                    --progress
+                    --color
+                  ].join(" "),
+         source: "./tmp/dist",
          latency: 1

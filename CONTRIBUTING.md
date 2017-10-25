@@ -8,6 +8,9 @@ to abide by the [Code of Conduct][code_of_conduct].
 ### 1: Prepare
 
 - Fork, then clone the repo: `git clone git@github.com:your-username/fizzy.git`.
+- You may want to have zsh plugin `Tarrasch/zsh-autoenv` installed or run
+  commands listed in `.autoenv.zsh` by hand in order to setup development
+  environment and handy shortcuts.
 - Set up Ruby dependencies via Bundler: `bundle install`.
 - If you use vim, you may want to source `.exrc`.
 - Make sure the tests pass: `bundle exec rake docker:test`.

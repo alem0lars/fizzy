@@ -16,6 +16,7 @@
 
 # Bundler.
 /.bundle
+/vendor
 
 # Misc.
 /.tern-port

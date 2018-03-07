@@ -223,3 +223,10 @@ $ fizzy cfg sync -C git
 **fizzy** vi chiedera' quali file volete tracciare e vi chiedera' di specificare 
 un messaggio di commit. A questo punto in maniera estremamente trasparente, 
 **fizzy** effettuera' il commit e push delle modifiche.
+
+## Thanks
+
+* **alem0lars**
+* **jake**
+  for initial idea and the original bignami,
+  available at: https://github.com/jak3/fizzy-bignami

@@ -1,7 +1,7 @@
 # Fizzy bignami
 
 In Italian a *bignami* is a little book with only formulas. In old days when no
-smartinor electronic device were common, students use *bignami* like quick and
+smart electronic device were common, students use *bignami* like quick and
 fast method to remember.
 
 This document has the intent to be used like a *bignami* for fizzy.

@@ -1,4 +1,12 @@
-# FIZZY - the hassle free configuration manager
+# Fizzy bignami
+
+In Italian a *bignami* is a little book with only formulas. In old days when no
+smartinor electronic device were common, students use *bignami* like quick and
+fast method to remember.
+
+This document has the intent to be used like a *bignami* for fizzy.
+
+# Fizzy - the hassle free configuration manager
 fizzy is an easy-to-use, learn-by-doing, lightweight, configuration management
 tool meant to be mainly used by developers, hackers, experienced users
 

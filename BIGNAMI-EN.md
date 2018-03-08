@@ -1,15 +1,15 @@
 # Fizzy bignami
 In Italian a *bignami* is a little book with only formulas. In old days when no
-smart electronic device were common, students use *bignami* like quick and
+smart electronic devices were common, students used *bignami* as a quick and
 fast method to remember.
 
 This document has the intent to be used like a *bignami* for fizzy.
 
 # Fizzy - the hassle free configuration manager
 fizzy is an easy-to-use, learn-by-doing, lightweight, configuration management
-tool meant to be mainly used by developers, hackers, experienced users
+tool meant to be mainly used by developers, hackers and experienced users.
 
-It doesn't try to reimplement the wheel, instead it follows the unix philosophy
+It doesn't seek to reimplement the wheel, instead it follows the unix philosophy
 do one thing and do it well making extremely easy to integrate with your 
 existing ecosystem.
 
@@ -192,3 +192,40 @@ user:
 ```
 thus the dot specifies that email is a subcategory of user.
 
+## Incarnation
+
+At this point we are ready to *incarnate* our config:
+```
+$ fizzy qi -C git -I git -V personal
+```
+Now **fizzy** will parse the file and it will create, inside
+`~/.fizzy/inst/git/elems`, the files ready to be used, and afterwards it will
+add a symbolic link pointing to them inside the filesystem at the location
+specified previously in `meta.yml`.
+
+Thanks to the power of **fizzy** we can even instantiate the config containing
+the parameters of the work profile in the workstation without having to dismiss
+the first configuration:
+```
+$ fizzy qi -C git -I git -V work
+```
+
+Enjoy!
+
+## Sync config
+
+It is necessary to syncronize the repo after any update of the config, to do
+this use the following command:
+```
+$ fizzy cfg sync -C git
+```
+**fizzy** will ask you which files you want to track, and also to specify a
+commit message. At this point in an extremely transparent way, **fizzy** will
+commit and push the updates.
+
+## Thanks
+
+* **alem0lars**
+* **jake**
+  for initial idea and the original bignami,
+  available at: https://github.com/jak3/fizzy-bignami

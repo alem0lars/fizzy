@@ -29,7 +29,6 @@ Now prepare fizzy enviroment:
 ```
 $ mkdir ~/.fizzy
 $ export FIZZY_DIR=~/.fizzy
-$ mkdir ~/.fizzy
 ```
 
 ## Getting Started

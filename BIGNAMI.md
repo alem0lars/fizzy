@@ -1,5 +1,4 @@
 # Fizzy bignami
-
 In Italian a *bignami* is a little book with only formulas. In old days when no
 smart electronic device were common, students use *bignami* like quick and
 fast method to remember.
@@ -91,6 +90,7 @@ essere preceduta dalla stringa `f?` a significare *feature*.
 Per questo esempio prendiamo una semplice e banale config di **git**.
 
 ### meta.yml
+
 Il file di configurazione globale di **git** risiede nell home folder dell 
 utente, quindi in `~/.gitconfig`.
 Come prima cosa prepariamo il file `meta.yml` in modo che il file di config
@@ -105,7 +105,9 @@ elems:
 
 # vim: set filetype=eruby.yaml :
 ```
+
 ### vars
+
 Ora ci spostiamo nella cartella `vars` e andiamo a definire tutti i parametri
 che dovranno essere istanziati nella config.
 All'interno della cartella `vars` e' bene definire **sempre** un file chiamato
@@ -146,6 +148,7 @@ E' possibile specificare piu' file separandoli da virgola in questo modo:
 NB: non bisogna spcificare l'estensione dei file che si vogliono ereditare.
 
 #### Creazione di un altro profilo
+
 E' possibile creare quanti profili si vogliono; per esempio, sfruttando sempre 
 la config di **git**, vogliamo realizzare anche un profilo che potrebbe servire 
 a **John Doe** nella sua postazione di lavoro. In questo caso creamo un nuovo 
@@ -196,6 +199,7 @@ user:
 e quindi il punto serve a separare le categorie.
 
 ## Incarnazione
+
 A questo punto siamo pronti per poter *incarnare* la nostra config:
 ```
 $ fizzy qi -C git -I git -V personal
@@ -215,6 +219,7 @@ $ fizzy qi -C git -I git -V work
 Enjoy!
 
 ## Sync della config
+
 A seguito di modifiche della config e' necessario poter sincronizzare la repo, 
 per fare questo usare il comando:
 ```

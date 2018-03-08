@@ -13,7 +13,7 @@ It doesn't try to reimplement the wheel, instead it follows the unix philosophy
 do one thing and do it well making extremely easy to integrate with your 
 existing ecosystem.
 
-## Installazione
+## Installation
 The destination can be everywhere, I suggest `/usr/local/bin` in GNU/Linux 
 based systems because it's almost always in the PATH environment variable, 
 so you can run fizzy from everywhere.
@@ -44,7 +44,7 @@ As a result of the previous command, **fizzy** cloned the repo to the following
 path:
 `~/.fizzy/cfg/<name>`
 
-The structure of a *fizzy compliant* configuration shoul following the follwing
+The structure of a *fizzy compliant* configuration should following the follwing
 pattern:
 ```
 - <name>

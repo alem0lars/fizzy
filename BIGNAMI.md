@@ -1,19 +1,19 @@
 # Fizzy bignami
 In Italian a *bignami* is a little book with only formulas. In old days when no
-smart electronic device were common, students use *bignami* like quick and
+smart electronic devices were common, students used *bignami* as a quick and
 fast method to remember.
 
 This document has the intent to be used like a *bignami* for fizzy.
 
 # Fizzy - the hassle free configuration manager
 fizzy is an easy-to-use, learn-by-doing, lightweight, configuration management
-tool meant to be mainly used by developers, hackers, experienced users
+tool meant to be mainly used by developers, hackers and experienced users.
 
-It doesn't try to reimplement the wheel, instead it follows the unix philosophy
+It doesn't seek to reimplement the wheel, instead it follows the unix philosophy
 do one thing and do it well making extremely easy to integrate with your 
 existing ecosystem.
 
-## Installazione
+## Installation
 The destination can be everywhere, I suggest `/usr/local/bin` in GNU/Linux 
 based systems because it's almost always in the PATH environment variable, 
 so you can run fizzy from everywhere.
@@ -29,21 +29,22 @@ Now prepare fizzy enviroment:
 ```
 $ mkdir ~/.fizzy
 $ export FIZZY_DIR=~/.fizzy
-$ mkdir ~/.fizzy
 ```
 
 ## Getting Started
-Creare una repository su GitHub con il nome della config che si vuole 
-realizzare, un buon pattern per il nome e' `<name>-configs`.
+Create a repository on GitHub and name it as the desired config, a good pattern
+for the name is `<name>-configs`.
 
-Ora, utilizzando **fizzy** cloniamo la repo:
+Now, let's clone the repo using **fizzy**:
 ```
 $ fizzy cfg s -C <name> -U username/<name>-config
 ```
-A seguito di questo comando **fizzy** ha clonato la repo al percorso: 
+As a result of the previous command, **fizzy** cloned the repo to the following
+path:
 `~/.fizzy/cfg/<name>`
 
-La struttura di una configurazione *fizzy compliant* e' la seguente:
+The structure of a *fizzy compliant* configuration should following the follwing
+pattern:
 ```
 - <name>
   |
@@ -53,20 +54,17 @@ La struttura di una configurazione *fizzy compliant* e' la seguente:
   |
   `-- meta.yml
 ```
-Creiamo ora le due cartelle:
+Create now the two directories
 ```
 $ mkdir elems vars
 ```
 
-All'interno della cartella `elems` risiedono tutti i file di configurazione
-parametrizzati con estenzione `.tt`, invece nella cartella `vars` risiedono 
-i parametri che dovranno essere utilizzati per generare la vera e 
-propria config.
+`elems` contains all the parametrized configuration files `.tt`. Inside `vars`
+are kept the parameters that will be used to generate the custom config.
 
-Il file `meta.yml` contiene i percorsi in cui dovranno essere istanziate le
-config e quali file con estensione `.tt` dovranno essere utilizzati per la
-generazione di quest'ultime.
-Un esempio di questo file e' il seguente:
+`meta.yml` contains the paths where the configs will be instantiated and which
+file `.tt` will be used to generate them.
+Here's an example of this file:
 ```
 elems:
 
@@ -77,24 +75,24 @@ elems:
 
 # vim: set filetype=eruby.yaml :
 ```
-Il tag `src` specifica quale file all'inerno della folder `elems` deve essere
-utilizzato. Il tag `dst` specifica dove verra' istanziato il file nel sistema.
-Infine il tag `only` serve a inidicare selettivamente se questo file dovra'
-essere istanziato oppure no: se in uno dei file all'interno di `vars` abbiamo 
-definito una `features` che matcha con quella presente in `only`, allora il 
-file verra' istanziato, in caso sontrario no. Ogni features nel tag `only` deve 
-essere preceduta dalla stringa `f?` a significare *feature*.
+The tag `src` specifies which file, inside `elems` folder, should be used. The
+tag `dst` specifies where should the file be instantiated in the system.
+Finally, `only` tells fizzy whether the file should be instatiated:
+depending on the defined *features*: the configuration file will be instantiated
+only if `vars` contains a file were it was priorly defined a *feature* matching
+the one specified by the tag `only`. Every feature in `only` must be appended to
+the string `f?` that stands for *feature*.
 
-## Config di esempio
+## Example of config
 
-Per questo esempio prendiamo una semplice e banale config di **git**.
+For this example we will consider a simple and trivial **git** config.
 
-### meta.yml
+## meta.yml
 
-Il file di configurazione globale di **git** risiede nell home folder dell 
-utente, quindi in `~/.gitconfig`.
-Come prima cosa prepariamo il file `meta.yml` in modo che il file di config
-venga salvato nel punto giusto nella home.
+**Git** global configuration file is placed inside the user's home folder, so
+`~/.gitconfig`.
+First of all let's create `meta.yml` so that the config file will be saved
+in the correct point inside the home.
 ```
 elems:
 
@@ -108,13 +106,12 @@ elems:
 
 ### vars
 
-Ora ci spostiamo nella cartella `vars` e andiamo a definire tutti i parametri
-che dovranno essere istanziati nella config.
-All'interno della cartella `vars` e' bene definire **sempre** un file chiamato
-`generic.yml` in cui si definiscono i parametri efeatures comuni a tutte le 
-diverse istanze.
+We can now move to `vars` folder to define all the parameters that should be
+instantiated inside the config.
+It is a good practice to **always** create a file called `generic.yml`
+containing all the parameters and features shared by every instances.
 
-Un esempio di `general.yml` potrebbe essere il seguente:
+Following is a possible example of the `general.yml` file:
 ```
 features:
   - git
@@ -126,8 +123,8 @@ user:
 # vim: set filetype=eruby.yml :
 ```
 
-Andimo ora a definire un profilo che conterra' i parametri specifici per 
-l'istanza che vogliamo creare, quindi creiamo un file `personal.yml`
+Let's now define a profile which will contain the specific parameters for the
+instance that we want to create, create a file called `personal.yml`
 ```
 # => inherits: generic <= #
 
@@ -137,22 +134,21 @@ user:
 
 # vim: set filetype=eruby.yml :
 ```
-Il file appena creato contiene un *magic comment* che **fizzy** interpreta, 
-mediante *inherits: ...* specifichiamo quali file vogliamo ereditare per 
-l'istanza corrente.
-E' possibile specificare piu' file separandoli da virgola in questo modo:
+The file that was just created contains a *magic comment* interpreted by
+**fizzy**. By using *inherits: ...* we are specifying which files we want to
+inherit for the current instance.
+It is possible to specify multiple files separated by comma as shown below:
 ```
 # => inherits: generic, file1, file2 <= #
 ...
 ```
-NB: non bisogna spcificare l'estensione dei file che si vogliono ereditare.
+NOTE: the inherited files shouldn't include the extension
 
-#### Creazione di un altro profilo
+#### Creation of a second profile
 
-E' possibile creare quanti profili si vogliono; per esempio, sfruttando sempre 
-la config di **git**, vogliamo realizzare anche un profilo che potrebbe servire 
-a **John Doe** nella sua postazione di lavoro. In questo caso creamo un nuovo 
-profilo `work.yml`
+It is possible to create as many profile as desired; for example, extending the
+same **git** config, we also want to create a profile that could be used by
+**John Doe** in his workstation. In this case we need a new profile `work.yml`
 ```
 # inherits: genric <= #
 
@@ -163,15 +159,14 @@ user:
 
 ### elems
 
-Spostiamoci ora nella cartella `elems`. Qui saranno presenti tutti i file 
-con sintassi corrispondente a quella della vera e propria config. 
-NB: i file preseni in questa cartella che contengono i parametri che **fizzy** 
-dovra' interpretare **DEVONO** avere estensione `.tt`, quindi nel nostro caso il
- file dovra' avere questo nome `gitconfig.tt`. Se invece il file di 
- configurazione ha gia' una sua estensione, quello che si dovra' fare e' 
-semplicemente appendere l'estensione `.tt` quindi per esempio `dunst.conf.tt`.
+Let's move inside `elems` folder now. The files inside this folder will have the
+same syntax of those representing the actual config.
+NOTE: the files placed inside this folder, containing the parameters interpreted
+by **fizzy** **MUST** end in `.tt`, thus in our case the file should be named
+`gitconfig.tt`. If the actual config file already as his own extension, what we
+need to do is just to append `.tt` e.g. `dunst.conf.tt`.
 
-Procediamo ora a creare il file `gitconfig.tt`:
+Let's proceed now by creating the file `gitconfig.tt`:
 ```
 [user]
   email = <%= get_var! 'user.email' %>
@@ -186,48 +181,47 @@ Procediamo ora a creare il file `gitconfig.tt`:
   user = <%= get_var! 'user.username' %>
 <% end %>
 ```
-Come si puo' osservare dall'esempio con il tag `<%= get_var! 'varname' %>`
-si chiede a **fizzy** di poter sostituire al tag il nome della variabile 
-definita in precedeza in un file presente nella cartella `vars`. Inoltre 
-nell'esempio proposto si puo' osservare che la variabile a cui facciamo 
-riferimento e' `user.email`, la separazione con il punto e' dovuta al fatto 
-che nel file `personal.yml` abbiamo definito:
+By using the tag `<%= get_var! 'varname' %>`, as shown in the example, we are
+asking **fizzy** to replace the tag with the name of the variable priorly
+defined in a file contained inside `vars` folder. Taking one more look at the
+given example we can also notice that the used variable is `user.email`, the two
+parts are separated by a dot because inside `personal.yml` file we defined:
 ```
 user:
   email: john@doe.com
 ```
-e quindi il punto serve a separare le categorie.
+thus the dot specifies that email is a subcategory of user.
 
-## Incarnazione
+## Incarnation
 
-A questo punto siamo pronti per poter *incarnare* la nostra config:
+At this point we are ready to *incarnate* our config:
 ```
 $ fizzy qi -C git -I git -V personal
 ```
-A questo punto **fizzy** effettuera' il parsing del file e creera' all'interno 
-della cartella `~/.fizzy/inst/git/elems` i file pronti per essere usati e 
-successivamente effettuera' un link simbolico alla posizione nel filesystem 
-specificata il precedenza nel file `meta.yml`.
+Now **fizzy** will parse the file and it will create, inside
+`~/.fizzy/inst/git/elems`, the files ready to be used, and afterwards it will
+add a symbolic link pointing to them inside the filesystem at the location
+specified previously in `meta.yml`.
 
-Sfruttando la potenza di **fizzy** possiamo istanziare la config con i parametri
- del profilo lavorativo nella postazione di lavoro manenendo anche la precedente
- configurazione:
+Thanks to the power of **fizzy** we can even instantiate the config containing
+the parameters of the work profile in the workstation without having to dismiss
+the first configuration:
 ```
 $ fizzy qi -C git -I git -V work
 ```
 
 Enjoy!
 
-## Sync della config
+## Sync config
 
-A seguito di modifiche della config e' necessario poter sincronizzare la repo, 
-per fare questo usare il comando:
+It is necessary to syncronize the repo after any update of the config, to do
+this use the following command:
 ```
 $ fizzy cfg sync -C git
 ```
-**fizzy** vi chiedera' quali file volete tracciare e vi chiedera' di specificare 
-un messaggio di commit. A questo punto in maniera estremamente trasparente, 
-**fizzy** effettuera' il commit e push delle modifiche.
+**fizzy** will ask you which files you want to track, and also to specify a
+commit message. At this point in an extremely transparent way, **fizzy** will
+commit and push the updates.
 
 ## Thanks
 

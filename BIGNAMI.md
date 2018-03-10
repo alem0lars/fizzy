@@ -76,12 +76,12 @@ elems:
 # vim: set filetype=eruby.yaml :
 ```
 The tag `src` specifies which file, inside `elems` folder, should be used. The
-tag `dst` specifies where should the file be instantiated in the system.
-Finally, `only` tells fizzy whether the file should be instatiated:
+tag `dst` specifies where the configuration file should be instantiated in the
+system. Finally, `only` tells fizzy whether the file should be instatiated
 depending on the defined *features*: the configuration file will be instantiated
 only if `vars` contains a file were it was priorly defined a *feature* matching
-the one specified by the tag `only`. Every feature in `only` must be appended to
-the string `f?` that stands for *feature*.
+the one specified by the tag `only`. Each feature in `only` must be preceded by
+the string `f?` which stands for *feature*.
 
 ## Example of config
 

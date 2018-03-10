@@ -43,8 +43,8 @@ As a result of the previous command, **fizzy** cloned the repo to the following
 path:
 `~/.fizzy/cfg/<name>`
 
-The structure of a *fizzy compliant* configuration should following the follwing
-pattern:
+The structure of a *fizzy compliant* configuration should follow the pattern
+below:
 ```
 - <name>
   |

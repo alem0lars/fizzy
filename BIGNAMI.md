@@ -76,12 +76,12 @@ elems:
 # vim: set filetype=eruby.yaml :
 ```
 The tag `src` specifies which file, inside `elems` folder, should be used. The
-tag `dst` specifies where the configuration file should be instantiated in the
-system. Finally, `only` tells fizzy whether the file should be instatiated
+tag `dst` specifies where should the file be instantiated in the system.
+Finally, `only` tells fizzy whether the file should be instatiated:
 depending on the defined *features*: the configuration file will be instantiated
 only if `vars` contains a file were it was priorly defined a *feature* matching
-the one specified by the tag `only`. Each feature in `only` must be preceded by
-the string `f?` which stands for *feature*.
+the one specified by the tag `only`. Every feature in `only` must be appended to
+the string `f?` that stands for *feature*.
 
 ## Example of config
 
@@ -108,8 +108,8 @@ elems:
 
 We can now move to `vars` folder to define all the parameters that should be
 instantiated inside the config.
-It is a good practice to **always** create a file called `generic.yml`
-containing all the parameters and features shared by every instances.
+It is a good practice to create **always** a file called `generic.yml`
+containing all the parameters and features shared by every instance.
 
 Following is a possible example of the `general.yml` file:
 ```
@@ -162,7 +162,7 @@ user:
 Let's move inside `elems` folder now. The files inside this folder will have the
 same syntax of those representing the actual config.
 NOTE: the files placed inside this folder, containing the parameters interpreted
-by **fizzy** **MUST** end in `.tt`, thus in our case the file should be named
+by **fizzy**, **MUST** end in `.tt`, thus in our case the file should be named
 `gitconfig.tt`. If the actual config file already as his own extension, what we
 need to do is just to append `.tt` e.g. `dunst.conf.tt`.
 
